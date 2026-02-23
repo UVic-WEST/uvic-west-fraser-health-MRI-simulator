@@ -1,13 +1,13 @@
 ---
 name: New Feature Issue
 about: Describe this issue template's purpose here.
-title: 'FEAT: [descriptive title]'
+title: 'Task: [descriptive title]'
 labels: feature
 assignees: ''
 
 ---
 
-# FR: <Short descriptive title>
+# Feat: <Short descriptive title>
 
 ## Description
 Describe what the system **shall do** to satisfy the related user story or feature.  
@@ -19,10 +19,5 @@ Each criterion must be **testable** and **unambiguous**:
 - [ ] <Expected behavior under edge case>
 - [ ] <Validation or feedback condition>
 
-## Definition of Done
-- [ ] All child issues complete  
-- [ ] Linked MRs merged  
-- [ ] Tests (unit/integration/E2E) pass  
-
-NOTE TO DELETE LATER AFTER COMPLETION !: PLEASE REMEMBER TO ADD LABELS TO HELP ORGANIZE THE ISSUES! 
+NOTE: make sure to add relevant labels to this issue and list dependencies after creation. delete this note before submitting issue
 ---
