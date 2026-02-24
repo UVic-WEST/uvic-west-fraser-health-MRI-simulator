@@ -1,0 +1,2 @@
+# Uvic West Fraser Health MRI Simulator
+This repository contains the software and system documentation for the Pediatric MRI Simulator, a WEST project developed with Fraser Health. The project aims to create a safe, interactive MRI simulation to help pediatric patients reduce anxiety and prepare for real MRI scans.
