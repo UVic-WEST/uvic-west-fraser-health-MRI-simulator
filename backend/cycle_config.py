@@ -38,15 +38,18 @@ def get_light_info(self):
     return ("{self.light_settings.intensity}, {self.light_settings.frequency}")
 
 def __repr__(self):
-    """
-    returns string representation of given cycle
-    """
+    """returns string representation of given cycle"""
     return (f"CycleConfig info for {self.cycle_name}: \n"
             f"\ttotal duration: {self.cycle_duration}\n"
             f"\tsounds used: {self.get_sounds()}\n"
             f"\tlight info: {self.get_light_info()\n")
 
 """
-I will add functions to modify cycle
+I will add functions to modify cycle:
+
+def add_sound(self, sound_config)
+
+def delete_sound(self, sound_name)
+
 """
         
