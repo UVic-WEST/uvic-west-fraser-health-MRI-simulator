@@ -20,6 +20,7 @@ class AppRouter(QMainWindow):
         #create page routings with their respective controllers
         self.signInPage = SignInPage()
         self.HomePage = HomePage()
+        self.main_layout.addWidget(self.HomePage)
         self.CycleRunningPage = CycleRunningPage()
 
         #set layout of QstackedWidget
