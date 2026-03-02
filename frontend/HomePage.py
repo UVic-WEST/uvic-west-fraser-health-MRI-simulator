@@ -7,11 +7,14 @@ from frontend.home_page_widgets.CyclePlayerWidget import CyclePlayerWidget
 class HomePage(QWidget):
     def __init__(self, controller):
 
-        #basic setup
+        #Homepage setup
         super().__init__()
         self.controller = controller
+        self.setStyleSheet("white")
+        self.main_layout = QGridLayout()
 
-        self.component_layout = QGridLayout()
+        #setting up and organizing widgets
         self.play_widget = CyclePlayerWidget()
-        self.component_layout.addWidget(self.play_widget)
-        self.setLayout(self.component_layout)
+        self.main_layout.addWidget(self.play_widget)
+
+        self.setLayout(self.main_layout)
