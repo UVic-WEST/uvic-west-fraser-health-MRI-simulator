@@ -10,7 +10,6 @@ class HomePage(QWidget):
         #Homepage setup
         super().__init__()
         self.controller = controller
-        self.setStyleSheet("white")
         self.main_layout = QGridLayout()
 
         #setting up and organizing widgets

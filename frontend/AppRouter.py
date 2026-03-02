@@ -17,6 +17,7 @@ class AppRouter(QMainWindow):
         #create window
         self.setFixedSize(1024, 600)
         self.main_layout = QStackedLayout()
+        self.setStyleSheet("background-color: white;")
         self.setWindowTitle("MRI Simulator")
 
         #create pages, connect controllers, add to app widget stack

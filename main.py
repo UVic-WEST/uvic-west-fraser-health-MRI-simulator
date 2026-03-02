@@ -1,6 +1,6 @@
 
 import sys
-from frontend.router import AppRouter
+from frontend.AppRouter import AppRouter
 from PySide6.QtWidgets import QApplication
 
 def main():
