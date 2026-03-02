@@ -1,5 +1,5 @@
 import pytest
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 from backend.cycle_logic import CycleLogic
 from state import AppStateMachine
 
@@ -8,8 +8,8 @@ from state import AppStateMachine
 # TODO: change this to match actual signatures once lower layer controller class is finalized
 # -------------------------
 class FakeController(QObject):
-    started = pyqtSignal()
-    failed = pyqtSignal(str)
+    started = Signal()
+    failed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -18,7 +18,7 @@ class FakeController(QObject):
 
     def start_cycle(self):
         self.start_called = True
-    
+
     def stop_cycle(self):
         self.stop_called = True
 
