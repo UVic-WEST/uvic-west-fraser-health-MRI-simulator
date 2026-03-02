@@ -8,7 +8,9 @@ from frontend.HomePage import HomePage
 from backend.HomePageLogic import HomePageLogic
 
 from frontend.SignInPage import SignInPage
+
 from frontend.CycleRunningPage import CycleRunningPage
+from backend.CycleRunningLogic import CycleRunningLogic
 
 class AppRouter(QMainWindow):
     def __init__(self):
@@ -27,9 +29,11 @@ class AppRouter(QMainWindow):
         self.home_page = HomePage(self.home_page_controller)
         self.main_layout.addWidget(self.home_page)
 
-        self.cycle_running_page = CycleRunningPage()
+        self.cycle_running_page_controller = CycleRunningLogic()
+        self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller)
+        self.main_layout.addWidget(self.cycle_running_page)
 
         #set layout of QstackedWidget
-        self.widget = QWidget()
-        self.widget.setLayout(self.main_layout)
-        self.setCentralWidget(self.widget)
+        self.app = QWidget()
+        self.app.setLayout(self.main_layout)
+        self.setCentralWidget(self.app)

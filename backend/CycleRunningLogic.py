@@ -1,0 +1,2 @@
+class CycleRunningLogic:
+    pass

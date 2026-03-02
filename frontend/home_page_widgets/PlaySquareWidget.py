@@ -10,7 +10,6 @@ from PySide6.QtGui import (
 from PySide6.QtCore import Qt, QSize
 from frontend.helpers import make_button_circle
 from frontend.ConfirmationPopupDialog import ConfirmationPopupDialog
-from embedded.Cycle import Cycle
 
 class PlaySquareWidget(QWidget):
     '''
@@ -62,5 +61,5 @@ class PlaySquareWidget(QWidget):
             pass 
             #this should emit signal to cycleplayer -> homepage to open cycle running page
 
-    def update_selected_cycle(self, new_cycle: Cycle):
+    def update_selected_cycle(self, new_cycle):
         self.cur_cycle = new_cycle
