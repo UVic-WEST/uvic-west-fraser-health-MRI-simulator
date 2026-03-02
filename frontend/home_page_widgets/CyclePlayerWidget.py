@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout
 )
 from frontend.home_page_widgets.PlaySquareWidget import PlaySquareWidget
+from embedded.Cycle import Cycle
 
 class CyclePlayerWidget(QWidget):
     def __init__(self):
@@ -17,4 +18,9 @@ class CyclePlayerWidget(QWidget):
 
         #setting layout
         self.setLayout(self.main_layout)
+
+        #dummy cycle for future sprints, 
+        #this would be selected from cycle selector embedded in this widget in later iteration
+        self.cur_cycle = Cycle()
+        self.play_square_widget.update_selected_cycle(self.cur_cycle)
 

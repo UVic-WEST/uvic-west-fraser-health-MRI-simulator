@@ -4,9 +4,11 @@ from PySide6.QtWidgets import (
     QDialog, 
     QDialogButtonBox )
 
-class CustomDialog(QDialog):
+class ConfirmationPopupDialog(QDialog):
     def __init__(self, window_name: str, message: str, acceptance: str, rejection: str, angry: bool):
-        
+        ##THIS JUST HAD BASELINE FUNCTIONALITY!! PLEASE MAKE THIS LOOK NICER EMILY THANK YOUUU
+
+
         #setup
         super().__init__()
         self.setWindowTitle(window_name)
