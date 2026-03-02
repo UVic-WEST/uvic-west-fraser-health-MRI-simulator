@@ -11,12 +11,15 @@ from PySide6.QtCore import Qt, QSize
 
 class PlaySquareWidget(QWidget):
     def __init__(self):
+        blue_box_asset_path = 'resources/home_page_assets/blue_cycle_player.png'
+        play_button_asset_path = 'resources/home_page_assets/cycle_play_button.png'
+
         super().__init__()
         main_layout = QGridLayout()
         self.setFixedSize(353,273)
         
         
-        blue_box_pix = QPixmap('../resources/home_page_assets/blue_cycle_player.png')
+        blue_box_pix = QPixmap(blue_box_asset_path)
         blue_box = QLabel()
         blue_box.setScaledContents(True)
         blue_box.setPixmap(blue_box_pix)
@@ -24,7 +27,7 @@ class PlaySquareWidget(QWidget):
 
         main_layout.addWidget(blue_box)
         
-        cycle_play_button_pix = QPixmap('../resources/home_page_assets/cycle_play_button.png')
+        cycle_play_button_pix = QPixmap(play_button_asset_path)
         cycle_play_button = QPushButton()
         cycle_play_button.setFixedSize(136,136)
         cycle_play_button.setIcon(cycle_play_button_pix)

@@ -4,9 +4,11 @@ from PySide6.QtWidgets import (
     QStackedLayout,
 )
 
-from HomePage import HomePage
-from SignInPage import SignInPage
-from CycleRunningPage import CycleRunningPage
+from frontend.HomePage import HomePage
+from backend.HomePageLogic import HomePageLogic
+
+from frontend.SignInPage import SignInPage
+from frontend.CycleRunningPage import CycleRunningPage
 
 class AppRouter(QMainWindow):
     def __init__(self):
@@ -17,11 +19,14 @@ class AppRouter(QMainWindow):
         self.main_layout = QStackedLayout()
         self.setWindowTitle("MRI Simulator")
 
-        #create page routings with their respective controllers
-        self.signInPage = SignInPage()
-        self.HomePage = HomePage()
-        self.main_layout.addWidget(self.HomePage)
-        self.CycleRunningPage = CycleRunningPage()
+        #create pages, connect controllers, add to app widget stack
+        self.sign_in_Page = SignInPage()
+
+        self.home_page_controller = HomePageLogic()
+        self.home_page = HomePage(self.home_page_controller)
+        self.main_layout.addWidget(self.home_page)
+
+        self.cycle_running_page = CycleRunningPage()
 
         #set layout of QstackedWidget
         self.widget = QWidget()

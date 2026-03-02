@@ -2,16 +2,14 @@ from PySide6.QtWidgets import(
     QWidget,
     QGridLayout
 )
-#from ../backend/HomePageLogic import HomePageLogic
-from CyclePlayerWidget import CyclePlayerWidget
+from frontend.home_page_widgets.CyclePlayerWidget import CyclePlayerWidget
 
 class HomePage(QWidget):
-    def __init__(self):
+    def __init__(self, controller):
 
         #basic setup
         super().__init__()
-        #self.controller = controller
-        #self.setFixedSize(372,600)
+        self.controller = controller
 
         self.component_layout = QGridLayout()
         self.play_widget = CyclePlayerWidget()

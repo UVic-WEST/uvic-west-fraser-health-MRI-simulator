@@ -1,9 +1,8 @@
 from PySide6.QtWidgets import (
     QWidget,
-    QGridLayout,
     QVBoxLayout
 )
-from PlaySquareWidget import PlaySquareWidget
+from frontend.home_page_widgets.PlaySquareWidget import PlaySquareWidget
 
 class CyclePlayerWidget(QWidget):
     def __init__(self):
