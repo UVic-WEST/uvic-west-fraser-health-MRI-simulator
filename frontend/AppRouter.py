@@ -25,13 +25,14 @@ class AppRouter(QMainWindow):
         #create pages, connect controllers, add to app widget stack
         self.sign_in_Page = SignInPage()
 
-        self.home_page_controller = HomePageLogic()
-        self.home_page = HomePage(self.home_page_controller)
-        self.main_layout.addWidget(self.home_page)
-
+        #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningLogic()
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller)
         self.main_layout.addWidget(self.cycle_running_page)
+
+        self.home_page_controller = HomePageLogic()
+        self.home_page = HomePage(self.home_page_controller)
+        self.main_layout.addWidget(self.home_page)
 
         #set layout of QstackedWidget
         self.app = QWidget()
