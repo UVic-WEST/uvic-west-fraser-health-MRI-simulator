@@ -24,15 +24,15 @@ class CycleRunningPage(QWidget):
 
         #setting up widgets
         #setup for time display screen
-        self.time_display_screen = TimeDisplayWidget()
-        self.main_layout.addSpacing(60)
-        self.main_layout.addWidget(self.time_display_screen)
+        # self.time_display_screen = TimeDisplayWidget()
+        # self.main_layout.addSpacing(60)
+        # self.main_layout.addWidget(self.time_display_screen)
 
 
         #setting up widgets
         #setup for control buttons
         self.controlling_buttons = ControllingButtons()
-        self.main_layout.addSpacing(-20)
+        self.main_layout.addSpacing(40)
         self.main_layout.addWidget(self.controlling_buttons)
 
 
