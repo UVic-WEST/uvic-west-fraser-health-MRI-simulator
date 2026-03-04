@@ -5,7 +5,9 @@ from PySide6.QtWidgets import (
     QPushButton
 )
 from PySide6.QtGui import(
-    QPixmap
+    QPixmap,
+    QFont,
+    QFontDatabase
 )
 from PySide6.QtCore import (
     QTimer,
@@ -20,12 +22,13 @@ class TimerWidget(QWidget):
         '''
         #write text that gets changed, Qtimer is hardware
         super().__init__()
-        self.setFixedSize(403,149)
+        self.setFixedSize(395,141)
         self.main_layout = QGridLayout()
-        self.rem_time_s = None
+        self.rem_time_s = 10
 
         #create the bg of the widget
         timer_box_asset_path = 'resources/running_page_assets/timer_box.png'
+
         timer_box_asset_pix = QPixmap(timer_box_asset_path)
         self.timer_box = QLabel()
         self.timer_box.setPixmap(timer_box_asset_pix)
@@ -33,17 +36,23 @@ class TimerWidget(QWidget):
         self.timer_box.setAlignment(Qt.AlignCenter)
         self.main_layout.addWidget(self.timer_box,0,0)
 
-        #create label that actually displays the time on the widget. this gets updated by update_countdown
-        self.timer_label = QLabel("00:00")
-        self.timer_label.setStyleSheet(
-            "color: black; \n font-size: 36px;") 
-        self.timer_label.setAlignment(Qt.AlignCenter)
-        self.main_layout.addWidget(self.timer_label,0,0)
+        font_family = None
+        font_id = QFontDatabase.addApplicationFont("resources/cycle_running_page_assets/DigitalNumbers.ttf")
 
-        #REMOVE!!!! dummy button to remove after running cycle page is comepleted
-        self.dumbutton = QPushButton("start")
-        self.dumbutton.clicked.connect(self.start_countdown)
-        self.main_layout.addWidget(self.dumbutton)
+        if font_id == -1:
+            print("Font failed to load")
+        else:
+            # Get the actual font family name
+            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+
+
+        #create label that actually displays the time on the widget. this gets updated by update_countdown
+        countdown_font = QFont(font_family, 65)
+        self.timer_label = QLabel("00:00", self.timer_box)
+        self.timer_label.setFont(countdown_font)
+        self.timer_label.setStyleSheet(
+            "color: #34C759; \n font-size: 36px;") 
+        self.timer_label.move(115,13) #manual placement
 
         self.setLayout(self.main_layout)
 
