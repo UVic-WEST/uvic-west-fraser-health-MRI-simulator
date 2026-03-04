@@ -12,7 +12,6 @@ from PySide6.QtCore import (
     QSize
 ) 
 from frontend.helpers import make_button_circle
-from frontend.ConfirmationPopupDialog import ConfirmationPopupDialog
 
 class PlaySquareWidget(QWidget):
     '''
