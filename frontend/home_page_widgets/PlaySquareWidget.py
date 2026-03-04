@@ -58,7 +58,8 @@ class PlaySquareWidget(QWidget):
         cycle_play_button.clicked.connect(self.cycle_play_button_pressed)
 
     def cycle_play_button_pressed(self):
-        self.play_cycle_confirmation = ConfirmationPopupDialog("Confirmation", "Are you sure you want to start {self.cur}?", "Start Cycle", "Cancel", False)
+        cycle_name = self.cur_cycle.name if self.cur_cycle else "a cycle"
+        self.play_cycle_confirmation = ConfirmationPopupDialog("Confirmation", f"Are you sure you want to start {cycle_name}?", "Start Cycle", "Cancel", False)
         if self.play_cycle_confirmation.exec():
             pass 
             #this should emit signal to cycleplayer -> homepage to open cycle running page

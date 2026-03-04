@@ -166,7 +166,7 @@ def test_cycle_logic_resets_after_stop(cycle_logic, fake_controller):
     assert cycle_logic.total_duration_sec == 0
 
 # ======================
-# Signal emissions
+# Signal emissions ? might be needed for UI layer , not neceaasry i guess
 # ======================
 def test_progress_changed_emitted(cycle_logic, fake_controller, qtbot):
     """
