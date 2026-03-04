@@ -21,6 +21,7 @@ class PlaySquareWidget(QWidget):
     def __init__(self, parent=None):
         #setting up widget size and main_layout
         super().__init__(parent)
+        self.parent = parent
         main_layout = QGridLayout()
         self.setFixedSize(353,273)
 
@@ -58,11 +59,15 @@ class PlaySquareWidget(QWidget):
         cycle_play_button.clicked.connect(self.cycle_play_button_pressed)
 
     def cycle_play_button_pressed(self):
+        '''
         cycle_name = self.cur_cycle.name if self.cur_cycle else "a cycle"
         self.play_cycle_confirmation = ConfirmationPopupDialog("Confirmation", f"Are you sure you want to start {cycle_name}?", "Start Cycle", "Cancel", False)
         if self.play_cycle_confirmation.exec():
             pass 
             #this should emit signal to cycleplayer -> homepage to open cycle running page
+        '''
+        self.parent.play_selected_cycle()
+        
 
     def update_selected_cycle(self, new_cycle):
         self.cur_cycle = new_cycle

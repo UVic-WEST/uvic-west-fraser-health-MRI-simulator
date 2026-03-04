@@ -6,14 +6,15 @@ from frontend.home_page_widgets.PlaySquareWidget import PlaySquareWidget
 from embedded.Cycle import Cycle
 
 class CyclePlayerWidget(QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         #setup
-        super().__init__()
+        super().__init__(parent)
+        self.parent = parent
         self.main_layout = QVBoxLayout()
 
         #setting up widgets
         #setup for play square widget
-        self.play_square_widget = PlaySquareWidget()
+        self.play_square_widget = PlaySquareWidget(self)
         self.main_layout.addWidget(self.play_square_widget)
 
         #setting layout
@@ -23,4 +24,7 @@ class CyclePlayerWidget(QWidget):
         #this would be selected from cycle selector embedded in this widget in later iteration
         self.cur_cycle = Cycle()
         self.play_square_widget.update_selected_cycle(self.cur_cycle)
+
+    def play_selected_cycle(self):
+        self.parent.play_selected_cycle()
 

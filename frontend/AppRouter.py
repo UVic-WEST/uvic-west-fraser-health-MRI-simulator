@@ -25,19 +25,26 @@ class AppRouter(QMainWindow):
         #create pages, connect controllers, add to app widget stack
         self.sign_in_Page = SignInPage()
 
+        #code for homepage
+        self.home_page_controller = HomePageLogic()
+        self.home_page = HomePage(self.home_page_controller,self)
+        self.main_layout.addWidget(self.home_page)
+
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningLogic()
-        self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,self,None)
+        self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
-
-        self.home_page_controller = HomePageLogic()
-        self.home_page = HomePage(self.home_page_controller)
-        self.main_layout.addWidget(self.home_page)
 
         #set layout of QstackedWidget
         self.app = QWidget()
         self.app.setLayout(self.main_layout)
         self.setCentralWidget(self.app)
+
+    def play_cycle(self):
+        self.main_layout.setCurrentWidget(self.cycle_running_page)
+        #REMOVE LATER
+        dummytime = 30
+        self.cycle_running_page.play_cycle(dummytime)
 
     def show_home(self):
         self.main_layout.setCurrentWidget(self.home_page)
