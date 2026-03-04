@@ -99,7 +99,7 @@ class TimerWidget(QWidget):
         self.cycle_completed()
 
     def cycle_completed(self):
-        self.parent.cycle_completed()
+        self.timer.stop()
         #emit that cycle is done
 
 
