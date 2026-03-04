@@ -29,13 +29,24 @@ class ControllingButtons(QWidget):
         #for the blue_box that has the play button in it
         pause_button_pix = QPixmap(pause_button_asset_path)
         self.pause_button = QPushButton()
-        pause_size = pause_button_pix.width()
-        self.pause_button.setFixedSize(pause_size, pause_size)
-        self.pause_button.setIcon(QIcon(pause_button_pix))
-        self.pause_button.setIconSize(QSize(pause_size, pause_size))
-        self.pause_button.setStyleSheet("background: transparent; border: none;")
-        self.pause_button.clicked.connect(self.pause_clicked)
 
+        #setting button size to image size
+        self.pause_button.setFixedSize(pause_button_pix.size())
+        self.pause_button.setIcon(QIcon(pause_button_pix))
+        self.pause_button.setIconSize(QSize(pause_button_pix.size()))
+        self.pause_button.setStyleSheet("""
+                                        
+                QPushButton{background: transparent; border: none;}
+                    QPushButton:pressed{
+                    padding-left:2px;
+                    padding-top:2px;
+                }
+            QPushButton:focus {
+                outline: none;
+                border: none;
+            }""")
+        self.pause_button.clicked.connect(self.pause_clicked)
+        self.pause_button.setMask(pause_button_pix.mask())
 
 
         #stop button
@@ -43,12 +54,25 @@ class ControllingButtons(QWidget):
         stop_button_pix = QPixmap(stop_button_asset_path)
         self.stop_button = QPushButton()
 
-        stop_size = stop_button_pix.width()
-        self.stop_button.setFixedSize(stop_size,stop_size)
+        
+        self.stop_button.setFixedSize(stop_button_pix.size())
         self.stop_button.setIcon(QIcon(stop_button_pix))
-        self.stop_button.setIconSize(QSize(stop_size,stop_size))
-        self.stop_button.setStyleSheet("background: transparent; border: none;")
+        self.stop_button.setIconSize(QSize(stop_button_pix.size()))
+        self.stop_button.setFocusPolicy(Qt.NoFocus)
+        self.stop_button.setStyleSheet("""
+            QPushButton{background: transparent; border: none;outline:none;}
+            QPushButton:pressed{
+                padding-left:2px;
+                padding-top:2px;
+            }
+            QPushButton:focus {
+                outline: none;
+                border: none;
+            }
+        """)
         self.stop_button.clicked.connect(self.stop_clicked)
+        # self.stop_button.setMask(stop_button_pix.mask())
+        
           # add buttons
         button_layout.addWidget(self.pause_button)
         button_layout.addWidget(self.stop_button)

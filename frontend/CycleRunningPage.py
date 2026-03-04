@@ -4,18 +4,21 @@ from PySide6.QtWidgets import( # type: ignore
     QLabel
 )
 
-from frontend.home_page_widgets.TimeDisplayWidget import TimeDisplayWidget
-from frontend.home_page_widgets.ControllingButtons import ControllingButtons
+
+from frontend.running_cycle_page_widgets.ControllingButtons import ControllingButtons
 from PySide6.QtCore import Qt #type: ignore
 from PySide6.QtGui import QPixmap, QPalette, QBrush #type: ignore
 
 class CycleRunningPage(QWidget):
-    def __init__(self,controller,router):
+    def __init__(self,controller,router,cycle):
         super().__init__()
         self.controller = controller
         self.router = router
+        # cycle running logic
 
-        self.setFixedSize(842,445)
+        self.cycle = None
+
+        self.setFixedSize(1024,600)
         self.set_background("resources/cycle_running_page_assets/running_cycle.png")
 
 
@@ -25,11 +28,7 @@ class CycleRunningPage(QWidget):
         self.setLayout(self.main_layout)
 
 
-        #setting up widgets
-        #setup for time display screen
-        # self.time_display_screen = TimeDisplayWidget()
-        # self.main_layout.addSpacing(60)
-        # self.main_layout.addWidget(self.time_display_screen)
+        ##timer screen needs to be linked
 
 
         #setting up widgets
@@ -49,16 +48,8 @@ class CycleRunningPage(QWidget):
         ))
         self.bg_label.setGeometry(0, 1, self.width(), self.height())
         self.bg_label.lower()  # send to back
-        # pixmap = QPixmap(image_path)
-        # palette = QPalette()
-        # palette.setBrush(QPalette.Window, QBrush(pixmap.scaled(
-        #     self.size(), 
-        #     Qt.IgnoreAspectRatio, 
-        #     Qt.SmoothTransformation
-        # )))
-        # self.setPalette(palette)
-        # self.setAutoFillBackground(True)
-
-
-
-        #setting up timer screen
+        
+    def update_cycle(self,cycle):
+        self.curr_cycle = cycle
+        #placeholder
+        print(f'current cycle: cycle["minutes"],cycle["seconds"]')
