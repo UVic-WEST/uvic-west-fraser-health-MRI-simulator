@@ -34,6 +34,8 @@ class ControllingButtons(QWidget):
         self.pause_button.setIcon(QIcon(pause_button_pix))
         self.pause_button.setIconSize(QSize(pause_size, pause_size))
         self.pause_button.setStyleSheet("background: transparent; border: none;")
+        self.pause_button.clicked.connect(self.pause_clicked)
+
 
 
         #stop button
@@ -46,10 +48,16 @@ class ControllingButtons(QWidget):
         self.stop_button.setIcon(QIcon(stop_button_pix))
         self.stop_button.setIconSize(QSize(stop_size,stop_size))
         self.stop_button.setStyleSheet("background: transparent; border: none;")
-
+        self.stop_button.clicked.connect(self.stop_clicked)
           # add buttons
         button_layout.addWidget(self.pause_button)
         button_layout.addWidget(self.stop_button)
 
         # **IMPORTANT:** set layout to this widget
         self.setLayout(button_layout)
+
+    def pause_clicked(self):
+        print("Pause")
+
+    def stop_clicked(self):
+        print("Stop")

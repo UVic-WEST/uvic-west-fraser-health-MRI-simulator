@@ -10,8 +10,11 @@ from PySide6.QtCore import Qt #type: ignore
 from PySide6.QtGui import QPixmap, QPalette, QBrush #type: ignore
 
 class CycleRunningPage(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self,controller,router):
         super().__init__()
+        self.controller = controller
+        self.router = router
+
         self.setFixedSize(842,445)
         self.set_background("resources/cycle_running_page_assets/running_cycle.png")
 
@@ -35,7 +38,7 @@ class CycleRunningPage(QWidget):
         self.main_layout.addSpacing(40)
         self.main_layout.addWidget(self.controlling_buttons)
 
-
+        self.controlling_buttons.stop_button.clicked.connect(self.router.show_home)
     def set_background(self, image_path):
         
         self.bg_label = QLabel(self)
