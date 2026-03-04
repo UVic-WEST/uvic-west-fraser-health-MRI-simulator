@@ -9,6 +9,8 @@ from backend.HomePageLogic import HomePageLogic
 
 from frontend.SignInPage import SignInPage
 
+from frontend.ConfirmationPage import ConfirmationPage
+
 from frontend.CycleRunningPage import CycleRunningPage
 from backend.CycleRunningLogic import CycleRunningLogic
 
@@ -30,6 +32,10 @@ class AppRouter(QMainWindow):
         self.home_page = HomePage(self.home_page_controller,self)
         self.main_layout.addWidget(self.home_page)
 
+        #Code for confirmation page
+        self.confirmation_page = ConfirmationPage(None,None,self)
+        self.main_layout.addWidget(self.confirmation_page)
+
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningLogic()
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
@@ -41,6 +47,12 @@ class AppRouter(QMainWindow):
         self.setCentralWidget(self.app)
 
     def play_cycle(self):
+        self.main_layout.setCurrentWidget(self.confirmation_page)
+
+    def show_confirmation(self):
+        self.main_layout.setCurrentWidget(self.confirmation_page)
+
+    def play_cycle_confirmed(self):
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         #REMOVE LATER
         dummytime = 30
