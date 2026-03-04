@@ -15,19 +15,21 @@ from PySide6.QtCore import (
 )
         
 class TimerWidget(QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         '''
         Timer widget for the cycle running page.
         Call .start_countdown(time_s)
         '''
         #write text that gets changed, Qtimer is hardware
-        super().__init__()
+        super().__init__(parent)
         self.setFixedSize(395,141)
+        self.setStyleSheet("background-color: #0474BA;")
         self.main_layout = QGridLayout()
         self.rem_time_s = 10
+        self.parent = parent
 
         #create the bg of the widget
-        timer_box_asset_path = 'resources/running_page_assets/timer_box.png'
+        timer_box_asset_path = 'resources/cycle_running_page_assets/timer_box.png'
 
         timer_box_asset_pix = QPixmap(timer_box_asset_path)
         self.timer_box = QLabel()
@@ -51,7 +53,7 @@ class TimerWidget(QWidget):
         self.timer_label = QLabel("00:00", self.timer_box)
         self.timer_label.setFont(countdown_font)
         self.timer_label.setStyleSheet(
-            "color: #34C759; \n font-size: 36px;") 
+            "color: #34C759; \n font-size: 36px; \nbackground-color: white;") 
         self.timer_label.move(115,13) #manual placement
 
         self.setLayout(self.main_layout)
