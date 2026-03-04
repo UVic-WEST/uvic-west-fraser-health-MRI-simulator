@@ -7,7 +7,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import (
     QPixmap,
 )
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import (
+    Qt, 
+    QSize
+) 
 from frontend.helpers import make_button_circle
 from frontend.ConfirmationPopupDialog import ConfirmationPopupDialog
 
@@ -35,7 +38,6 @@ class PlaySquareWidget(QWidget):
         blue_box.setScaledContents(True)
         blue_box.setPixmap(blue_box_pix)
         blue_box.setAlignment(Qt.AlignCenter)
-
         
         #for the actual play button to press the cycle
         cycle_play_button_pix = QPixmap(play_button_asset_path)
