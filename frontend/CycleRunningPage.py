@@ -64,7 +64,10 @@ class CycleRunningPage(QWidget):
     def cycle_completed(self):
         self.countdown_timer.stop_timer()
         self.parent.show_home()
-        
+
+    def cycle_ended(self):
+        self.parent.show_home()
+
     def update_cycle(self,cycle):
         self.curr_cycle = cycle
         #placeholder

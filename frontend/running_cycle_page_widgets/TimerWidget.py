@@ -93,13 +93,13 @@ class TimerWidget(QWidget):
             self.timer_label.setText(self.get_time(self.rem_time_s))
         else:
             self.timer.stop()
-            self.cycle_completed()
+            self.parent.cycle_ended()
 
     def stop_timer(self):
         self.cycle_completed()
 
     def cycle_completed(self):
-        pass
+        self.parent.cycle_completed()
         #emit that cycle is done
 
 
