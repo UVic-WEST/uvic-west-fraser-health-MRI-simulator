@@ -1,17 +1,19 @@
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QPushButton
+    QLabel
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import (
     QPixmap, 
     QFont
 )
+from frontend.confirmation_page_widgets.ConfirmationButtons import ConfirmationButtons
 
 class ConfirmationPage(QWidget):
+    start_cycle_requested = Signal()
+    cancel_requested = Signal()
+
     def __init__(self,controller,cycle,parent=None):
         super().__init__(parent)
         self.controller = controller
@@ -52,55 +54,10 @@ class ConfirmationPage(QWidget):
         content_layout.addWidget(self.cycle_status)
 
         #setup for control buttons
-        button_layout = QHBoxLayout()
-        button_layout.setSpacing(40)
-        button_layout.setAlignment(Qt.AlignCenter)
-        
-        # No button (red)
-        self.no_button = QPushButton("NO")
-        self.no_button.setFixedSize(120, 60)
-        self.no_button.setFont(QFont("Ubuntu", 16, QFont.Bold))
-        self.no_button.setStyleSheet("""
-            QPushButton {
-                background-color: #EC221F;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #d41810;
-            }
-            QPushButton:pressed {
-                background-color: #b01208;
-            }
-        """)
-        self.no_button.clicked.connect(self.cycle_completed)
-        
-        # Yes button (green)
-        self.yes_button = QPushButton("YES")
-        self.yes_button.setFixedSize(120, 60)
-        self.yes_button.setFont(QFont("Ubuntu", 16, QFont.Bold))
-        self.yes_button.setStyleSheet("""
-            QPushButton {
-                background-color: #00AA00;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #008800;
-            }
-            QPushButton:pressed {
-                background-color: #006600;
-            }
-        """)
-        self.yes_button.clicked.connect(self.cycle_confirmed)
-        
-        button_layout.addWidget(self.yes_button)
-        button_layout.addWidget(self.no_button)
-        content_layout.addLayout(button_layout)
+        self.confirmation_buttons = ConfirmationButtons(self)
+        self.confirmation_buttons.yes_clicked.connect(self.cycle_confirmed)
+        self.confirmation_buttons.no_clicked.connect(self.cycle_cancelled)
+        content_layout.addWidget(self.confirmation_buttons)
         
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
@@ -116,16 +73,10 @@ class ConfirmationPage(QWidget):
         self.bg_label.setGeometry(0, 1, self.width(), self.height())
         self.bg_label.lower()  # send to back
 
-    def cycle_completed(self):
-        self.parent.show_home()
+    # using the signals created for cycle running page
+    def cycle_cancelled(self):
+        self.cancel_requested.emit()
 
+    # using the signals created for cycle running page
     def cycle_confirmed(self):
-        self.parent.play_cycle_confirmed()
-
-    def cycle_ended(self):
-        self.parent.show_home()
-
-    def update_cycle(self,cycle):
-        self.curr_cycle = cycle
-        #placeholder
-        print(f'current cycle: cycle["minutes"],cycle["seconds"]')
+        self.start_cycle_requested.emit()
