@@ -3,7 +3,7 @@ from PySide6.QtWidgets import(
     QGridLayout
 )
 
-from frontend.home_page_widgets.CyclePlayerWidget import CyclePlayerWidget
+from frontend.home_page_widgets.cycle_player_widget import CyclePlayerWidget
 
 class HomePage(QWidget):
     def __init__(self, controller, parent=None):
