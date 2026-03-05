@@ -34,6 +34,8 @@ class AppRouter(QMainWindow):
 
         #Code for confirmation page
         self.confirmation_page = ConfirmationPage(None,None,self)
+        self.confirmation_page.start_cycle_requested.connect(self.play_cycle_confirmed)
+        self.confirmation_page.cancel_requested.connect(self.show_home)
         self.main_layout.addWidget(self.confirmation_page)
 
         #Code for cycle running page. 
