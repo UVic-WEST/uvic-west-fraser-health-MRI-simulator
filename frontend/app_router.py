@@ -5,14 +5,14 @@ from PySide6.QtWidgets import (
 )
 
 from frontend.home_page import HomePage
-from backend.HomePageLogic import HomePageLogic
+from backend.home_page_logic import HomePageLogic
 
 from frontend.sign_in_page import SignInPage
 
 from frontend.confirmation_page import ConfirmationPage
 
 from frontend.cycle_running_page import CycleRunningPage
-from backend.CycleRunningLogic import CycleRunningLogic
+from backend.cycle_running_page_logic import CycleRunningPageLogic
 
 class AppRouter(QMainWindow):
     def __init__(self):
@@ -39,7 +39,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.confirmation_page)
 
         #Code for cycle running page. 
-        self.cycle_running_page_controller = CycleRunningLogic()
+        self.cycle_running_page_controller = CycleRunningPageLogic()
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
