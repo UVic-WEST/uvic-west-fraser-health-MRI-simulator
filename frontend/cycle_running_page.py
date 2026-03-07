@@ -8,8 +8,8 @@ from PySide6.QtGui import (
     QPixmap, 
     QFont
 )
-from frontend.running_cycle_page_widgets.ControllingButtons import ControllingButtons
-from frontend.running_cycle_page_widgets.TimerWidget import TimerWidget
+from frontend.running_cycle_page_widgets.controlling_buttons import ControllingButtons
+from frontend.running_cycle_page_widgets.timer_widget import TimerWidget
 
 class CycleRunningPage(QWidget):
     def __init__(self,controller,cycle,parent=None):

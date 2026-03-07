@@ -4,14 +4,14 @@ from PySide6.QtWidgets import (
     QStackedLayout,
 )
 
-from frontend.HomePage import HomePage
+from frontend.home_page import HomePage
 from backend.home_page_logic import HomePageLogic
 
-from frontend.SignInPage import SignInPage
+from frontend.sign_in_page import SignInPage
 
-from frontend.ConfirmationPage import ConfirmationPage
+from frontend.confirmation_page import ConfirmationPage
 
-from frontend.CycleRunningPage import CycleRunningPage
+from frontend.cycle_running_page import CycleRunningPage
 from backend.cycle_running_page_logic import CycleRunningPageLogic
 
 class AppRouter(QMainWindow):

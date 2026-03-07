@@ -8,7 +8,7 @@ from PySide6.QtGui import (
     QPixmap, 
     QFont
 )
-from frontend.confirmation_page_widgets.ConfirmationButtons import ConfirmationButtons
+from frontend.confirmation_page_widgets.confirmation_buttons import ConfirmationButtons
 
 class ConfirmationPage(QWidget):
     start_cycle_requested = Signal()
