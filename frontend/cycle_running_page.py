@@ -16,7 +16,8 @@ class CycleRunningPage(QWidget):
         super().__init__(parent)
         self.controller = controller
         self.parent = parent
-        self.cycle = None
+        self.cycle = cycle
+        self.is_paused = False
         self.setFixedSize(1024,600)
 
         # Create main layout
@@ -46,6 +47,7 @@ class CycleRunningPage(QWidget):
         self.main_layout.addWidget(self.controlling_buttons)
 
         self.controlling_buttons.stop_button.clicked.connect(self.cycle_completed)
+        self.controlling_buttons.pause_button.clicked.connect(self.toggle_pause)
         
     def play_cycle(self, cycle_dur_s:int):
         self.countdown_timer.start_countdown(cycle_dur_s)
@@ -72,3 +74,32 @@ class CycleRunningPage(QWidget):
         self.curr_cycle = cycle
         #placeholder
         print(f'current cycle: cycle["minutes"],cycle["seconds"]')
+
+    def toggle_pause(self):
+        if not self.is_paused:
+
+            if self.controller:
+                self.controller.pause_cycle()
+
+            self.countdown_timer.stop_timer()
+
+            self.cycle_status.setText("PAUSED")
+
+            self.set_background("resources/cycle_running_assets/resume.png")
+
+            self.controlling_buttons.pause_button.setText("Resume")
+            self.is_paused = True
+
+        else:
+            if self.controller:
+                self.controller.resume_cycle()
+
+            self.countdown_timer.start_countdown()
+
+            self.cycle_status.setText("RUNNING")
+
+            self.set_background("resources/cycle_running_page_assets/running_cycle.png")
+
+            self.controlling_buttons.pause_button.setText("Pause")
+
+            self.is_paused = False
