@@ -43,16 +43,17 @@ class CycleRunningPageLogic(QObject):
         return True
     
     def resume_cycle(self):
-        #Im pretty sure a new timer will have to be set if the timer is paused so 
-        self.timer = QTimer(1000)
-        self.timer.start()
-        return self.timer
+        if self.rem_time_ms and self.rem_time_ms > 0:
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.update_timer)
+            self.timer.start(1000)
     
     def stop_cycle(self):
         if self.timer:
             self.timer.stop()
+            self.timer = None
+        self.rem_time_ms = None
         self.time_signal_in_s.emit(-1)
-        return True
     
     def update_timer(self):
         '''

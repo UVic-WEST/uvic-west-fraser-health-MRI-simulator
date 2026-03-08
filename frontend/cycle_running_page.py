@@ -16,7 +16,7 @@ class CycleRunningPage(QWidget):
         super().__init__(parent)
         self.controller = controller
         self.parent = parent
-        self.cycle = None
+        self.cycle = cycle
         self.setFixedSize(1024,600)
 
         # Create main layout

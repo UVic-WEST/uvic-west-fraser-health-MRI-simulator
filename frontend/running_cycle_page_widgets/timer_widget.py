@@ -73,7 +73,7 @@ class TimerWidget(QWidget):
 
     def update_gui_timer(self, time_s: int):
         if time_s < 0:
-            # timer was cancelled/stopped, cycle running page changes page
+            self.timer_label.setText("00:00")
             return
         elif time_s == 0:
             #timer has ended
