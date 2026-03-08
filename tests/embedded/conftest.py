@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from embedded.sound_player import SoundPlayer
-from embedded.sound_config import SoundConfig
+from backend.sound_config import SoundConfig
 
 # -------------------------
 # Fixtures

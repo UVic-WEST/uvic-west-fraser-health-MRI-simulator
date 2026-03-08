@@ -1,5 +1,5 @@
 import subprocess 
-from embedded.sound_config import SoundConfig
+from backend.sound_config import SoundConfig
 
 class SoundPlayer:
     """
