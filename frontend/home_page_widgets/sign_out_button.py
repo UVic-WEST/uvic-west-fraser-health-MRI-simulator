@@ -1,0 +1,47 @@
+from PySide6.QtWidgets import (
+    QWidget,
+    QPushButton
+)
+from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt
+
+class SignOutButton(QWidget):
+    '''
+    GUI implementation for the "Sign Out" button on the homepage.
+    '''
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+        
+        # Set widget size to contain the button
+        self.setFixedSize(120, 45)
+        
+        # Create the button
+        self.sign_out_button = QPushButton("Sign Out", self)
+        self.sign_out_button.setGeometry(0, 0, 120, 45)
+        self.sign_out_button.setFont(QFont("Ubuntu", 14))
+        
+        # Blue button styling to match the play square box
+        self.sign_out_button.setStyleSheet("""
+            QPushButton {
+                background-color: #0474BA;
+                color: white;
+                border: none;
+                border-radius: 22px;
+            }
+            QPushButton:hover {
+                background-color: #035A8F;
+            }
+            QPushButton:pressed {
+                background-color: #024570;
+            }
+        """)
+        
+        # Connect button click
+        self.sign_out_button.clicked.connect(self.sign_out_button_pressed)
+    
+    def sign_out_button_pressed(self):
+        '''
+        Handle button press - currently just prints to terminal.
+        '''
+        print("Sign Out button pressed")

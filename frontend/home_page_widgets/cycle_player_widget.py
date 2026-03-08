@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QFont
 from frontend.home_page_widgets.play_square_widget import PlaySquareWidget
+from frontend.home_page_widgets.custom_cycle_button import CustomCycleButton
 
 CYCLE_OPTIONS_DROPDOWN_COLOUR = "#FAF5F5"
 PLAY_SQUARE_DROPDOWN_GAP_PX = 20
@@ -48,6 +49,7 @@ class CyclePlayerWidget(QWidget):
         self.cycle_selector.setStyleSheet(f"""
             QComboBox {{
                 background-color: {CYCLE_OPTIONS_DROPDOWN_COLOUR};
+                color: black;
                 border: 1px solid #0474BA;
                 border-radius: 16px;
                 padding: 4px 10px;
@@ -66,12 +68,17 @@ class CyclePlayerWidget(QWidget):
         self.cycle_selector.setCurrentIndex(0)  # Default to first cycle
         self.main_layout.addWidget(self.cycle_selector)
 
+        #setup for create custom cycle button
+        self.custom_cycle_button = CustomCycleButton(self)
+        self.main_layout.addWidget(self.custom_cycle_button)
+
         # Keep this container tightly wrapped to its content to avoid extra vertical slack.
         self.setFixedWidth(353)
         self.setFixedHeight(
             self.play_square_widget.height() +
             self.cycle_selector.sizeHint().height() +
-            PLAY_SQUARE_DROPDOWN_GAP_PX
+            self.custom_cycle_button.height() +
+            (PLAY_SQUARE_DROPDOWN_GAP_PX * 2)  # Gap between play square and dropdown, and dropdown and button
         )
 
         #setting layout
