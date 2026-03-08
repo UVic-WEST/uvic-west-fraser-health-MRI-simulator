@@ -30,7 +30,7 @@ class CycleConfig:
     def get_sounds(self):
         """Return list of sound info strings for this cycle."""
         return [
-            f"{s.file_name}: {s.duration}s" for s in self.sound_list if s.enabled
+            f"{s.file_name}: {s.duration}s" for s in self.sound_list
         ]
 
     def get_light_info(self):

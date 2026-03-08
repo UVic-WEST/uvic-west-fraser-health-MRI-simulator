@@ -3,11 +3,10 @@ from dataclasses import dataclass
 @dataclass
 class SoundConfig: 
     """Stores configuration for a single sound used in a cycle."""
-    
-    file_name: str
-    enabled: bool 
+
+    file_name: str # file path of sound file 
     duration: float # seconds
-    volume: float   # 0.0-1.0 (percentage of full volume)
+    volume: 50 # value from 0 - 100 (preset percentage of full volume, initally 50%)
     
     def __post_init__(self):
         """Validate sound config values"""
@@ -18,14 +17,14 @@ class SoundConfig:
         if self.duration < 0:
             raise ValueError("duration must be between 1 and 100")
         
-        if not (0.0 <= self.volume <= 1.0):
-            raise ValueError("volume must be between 0.0 and 1.0")
+        if not (0 <= self.volume <= 100):
+            raise ValueError("volume must be between 0 and 100")
     
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """String representation of sound config object"""
+        
         return (
             f"SoundConfig({self.file_name}, "
-            f"enabled={self.enabled}, "
             f"duration={self.duration}, "
             f"volume={self.volume})"
         )
-    

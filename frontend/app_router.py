@@ -14,9 +14,14 @@ from frontend.confirmation_page import ConfirmationPage
 from frontend.cycle_running_page import CycleRunningPage
 from backend.cycle_running_page_logic import CycleRunningPageLogic
 
+from embedded.light_controller import LightController
+
 class AppRouter(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
+        self.light_controller = LightController(self)
 
         #create window
         self.setFixedSize(1024, 600)
@@ -39,7 +44,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.confirmation_page)
 
         #Code for cycle running page. 
-        self.cycle_running_page_controller = CycleRunningPageLogic()
+        self.cycle_running_page_controller = CycleRunningPageLogic(self)
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
@@ -47,6 +52,7 @@ class AppRouter(QMainWindow):
         self.app = QWidget()
         self.app.setLayout(self.main_layout)
         self.setCentralWidget(self.app)
+
 
     def play_cycle(self):
         self.main_layout.setCurrentWidget(self.confirmation_page)

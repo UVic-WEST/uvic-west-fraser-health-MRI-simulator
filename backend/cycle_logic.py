@@ -51,6 +51,24 @@ class CycleLogic(QObject):
         self._reset()
         self.app_state.set_state("IDLE")
 
+    def pause(self):
+        """Pause the running cycle. Stops the timer but preserves elapsed
+        time and duration so the cycle can be resumed."""
+        if self.timer is not None:
+            self.timer.stop()
+        self.controller.stop_cycle()
+        self.app_state.set_state("PAUSED")
+
+    def resume(self):
+        """Resume a paused cycle. Re-issues a start request to the lower
+        layer. Returns True if the request was issued."""
+        if self.app_state.get_state() != "PAUSED":
+            return True
+
+        self._pending = True
+        self.controller.start_cycle()
+        return True
+
     # ------------------------------------------------------------------
     # Controller signal handlers
     # ------------------------------------------------------------------
@@ -62,8 +80,9 @@ class CycleLogic(QObject):
 
     def _on_failed(self):
         self._pending = False
-        self._reset()
-        self.app_state.set_state("IDLE")
+        if self.app_state.get_state() == "RUNNING":
+            self._reset()
+            self.app_state.set_state("IDLE")
 
     # ------------------------------------------------------------------
     # Timer internals
@@ -74,6 +93,8 @@ class CycleLogic(QObject):
         self.timer.setInterval(TICK_INTERVAL_MS)
         self.timer.timeout.connect(self._tick)
         self.timer.start()
+        if self.elapsed_ms == 0:
+            self._tick()
 
     def _tick(self):
         self.elapsed_ms += TICK_INTERVAL_MS
@@ -83,7 +104,7 @@ class CycleLogic(QObject):
         self.progress_changed.emit(progress)
         self.time_changed.emit(self.elapsed_ms)
 
-        if total_ms > 0 and self.elapsed_ms >= total_ms:
+        if total_ms > 0 and self.elapsed_ms > total_ms:
             self._complete()
 
     def _complete(self):
