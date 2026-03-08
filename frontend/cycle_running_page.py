@@ -38,6 +38,7 @@ class CycleRunningPage(QWidget):
 
         #adding the countdown. Timer sends a dummy cycle time of 30s REMOVE LATER
         self.countdown_timer = TimerWidget(self)
+        self.countdown_timer.connect_to_backend(self.controller)
         self.main_layout.addWidget(self.countdown_timer)
 
         #setup for control buttons
@@ -45,10 +46,10 @@ class CycleRunningPage(QWidget):
         self.main_layout.addSpacing(40)
         self.main_layout.addWidget(self.controlling_buttons)
 
-        self.controlling_buttons.stop_button.clicked.connect(self.cycle_completed)
+        self.controlling_buttons.stop_button.clicked.connect(self.cycle_stopped)
         
     def play_cycle(self, cycle_dur_s:int):
-        self.countdown_timer.start_countdown(cycle_dur_s)
+        self.controller.start_cycle(1,cycle_dur_s)
 
     def set_background(self, image_path):
         
@@ -61,14 +62,14 @@ class CycleRunningPage(QWidget):
         self.bg_label.setGeometry(0, 1, self.width(), self.height())
         self.bg_label.lower()  # send to back
 
-    def cycle_completed(self):
-        self.countdown_timer.stop_timer()
+    def cycle_stopped(self):
+        self.controller.stop_cycle()
         self.parent.show_home()
 
-    def cycle_ended(self):
+    def cycle_completed(self):
         self.parent.show_home()
 
     def update_cycle(self,cycle):
         self.curr_cycle = cycle
         #placeholder
-        print(f'current cycle: cycle["minutes"],cycle["seconds"]')
+        print('current cycle: cycle["minutes"],cycle["seconds"]')

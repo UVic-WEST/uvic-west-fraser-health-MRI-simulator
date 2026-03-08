@@ -11,8 +11,10 @@ class CycleRunningPageLogic(QObject):
     '''
     Right now this class stubs basic functionality between the cycle running page UI in frontend and backend.
     '''
-    def __init__(self):
+    def __init__(self, parent=None):
 
+        super().__init__(parent)
+        self.parent = parent
         self.cur_cycle = None
         self.rem_time_ms = None
         self.timer = None
