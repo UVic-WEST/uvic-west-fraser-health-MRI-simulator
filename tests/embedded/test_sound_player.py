@@ -1,0 +1,96 @@
+import subprocess
+
+# ======================
+# Play Sound Behavior
+# ======================
+
+def test_play_sets_current_sound(sound_player, sound_mid_volume):
+    sound_player.play(sound_mid_volume)
+    assert sound_player.current_sound == sound_mid_volume
+
+def test_play_sets_current_volume(sound_player, sound_mid_volume):
+    sound_player.play(sound_mid_volume)
+    assert sound_player.current_volume == sound_mid_volume.volume
+
+def test_play_returns_filename_in_result(sound_player, sound_mid_volume):
+    result = sound_player.play(sound_mid_volume)
+    assert "test.wav" in result
+
+# ======================
+# Stop Sound Behavior
+# ======================
+
+def test_stop_clears_current_sound(sound_player, sound_mid_volume):
+    sound_player.play(sound_mid_volume)
+    sound_player.stop()
+    assert sound_player.current_sound is None
+
+def test_stop_with_no_current_sound(sound_player):
+    result = sound_player.stop()
+    assert result == "Stopped current sound"
+
+# ======================
+# Increment Sound Behavior
+# ======================
+
+def test_incr_volume_increases_volume(sound_player, sound_low_volume):
+    sound_player.play(sound_low_volume)
+    before = sound_player.current_volume
+    sound_player.incr_volume()
+    assert sound_player.current_volume > before
+
+def test_incr_volume_does_not_exceed_max(sound_player, sound_mid_volume):
+    sound_player.play(sound_mid_volume)
+    sound_player.current_volume = 100
+    sound_player.incr_volume()
+    assert sound_player.current_volume == 100
+
+def test_incr_volume_no_sound_playing(sound_player):
+    result = sound_player.incr_volume()
+    assert result == "No sound is currently playing"
+
+# ======================
+# Decrement Sound Behavior
+# ======================
+
+def test_decr_volume_decreases_volume(sound_player, sound_mid_volume):
+    sound_player.play(sound_mid_volume)
+    before = sound_player.current_volume
+    sound_player.decr_volume()
+    assert sound_player.current_volume < before
+
+def test_decr_volume_does_not_go_below_min(sound_player, sound_mid_volume):
+    sound_player.play(sound_mid_volume)
+    sound_player.current_volume = 0
+    sound_player.decr_volume()
+    assert sound_player.current_volume == 0
+
+def test_decr_volume_no_sound_playing(sound_player):
+    result = sound_player.decr_volume()
+    assert result == "No sound is currently playing"
+
+# ======================
+# Error Handling
+# ======================
+
+def test_play_returns_error_on_failure(sound_player, sound_mid_volume, mock_subprocess):
+    mock_subprocess.side_effect = subprocess.CalledProcessError(1, "aplay")
+    result = sound_player.play(sound_mid_volume)
+    assert "Failed to play sound" in result
+
+def test_stop_returns_error_on_failure(sound_player, mock_subprocess):
+    mock_subprocess.side_effect = subprocess.CalledProcessError(1, "killall")
+    result = sound_player.stop()
+    assert "Failed to stop sound" in result
+
+def test_incr_volume_returns_error_on_failure(sound_player, sound_mid_volume, mock_subprocess):
+    sound_player.play(sound_mid_volume)
+    mock_subprocess.side_effect = subprocess.CalledProcessError(1, "amixer")
+    result = sound_player.incr_volume()
+    assert "Failed to increment sound" in result
+
+def test_decr_volume_returns_error_on_failure(sound_player, sound_mid_volume, mock_subprocess):
+    sound_player.play(sound_mid_volume)
+    mock_subprocess.side_effect = subprocess.CalledProcessError(1, "amixer")
+    result = sound_player.decr_volume()
+    assert "Failed to decrement sound" in result
