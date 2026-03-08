@@ -18,9 +18,11 @@ class FakeController(QObject):
 
     def start_cycle(self):
         self.start_called = True
+        self.stop_called = False
 
     def stop_cycle(self):
         self.stop_called = True
+        self.start_called = False
 
 # -------------------------
 # Fixtures
