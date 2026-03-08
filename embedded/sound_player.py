@@ -24,11 +24,12 @@ class SoundPlayer:
         self.current_volume = sound.volume
 
         try:
-            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True)
-            subprocess.run(["aplay", self.current_sound.file_name], check=True)
+            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
+            subprocess.run(["aplay", self.current_sound.file_name], check=True, capture_output=True)
 
         except subprocess.CalledProcessError as e:
-            return "Failed to play sound, error: {e}"
+            error_msg = e.stderr.decode() if e.stderr else e
+            return f"Failed to play sound, error: {error_msg}"
 
         return f"Playing sound {self.current_sound.file_name} at {self.current_volume}%"
 
@@ -42,10 +43,11 @@ class SoundPlayer:
         self.current_sound = None
         
         try:
-            subprocess.run(["killall", "aplay"], check=True)
+            subprocess.run(["killall", "aplay"], check=True, capture_output=True)
 
         except subprocess.CalledProcessError as e:
-            return "Failed to stop sound, error: {e}"
+            error_msg = e.stderr.decode() if e.stderr else e
+            return f"Failed to stop sound, error: {error_msg}"
             
         return "Stopped current sound"
 
@@ -63,10 +65,11 @@ class SoundPlayer:
         self.current_volume = min(100, self.current_volume + 10)
 
         try:
-            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True)
+            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
             
         except subprocess.CalledProcessError as e:
-            return "Failed to increment sound, error: {e}"
+            error_msg = e.stderr.decode() if e.stderr else e
+            return f"Failed to increment sound, error: {error_msg}"
         
         return f"Set volume to {self.current_volume}%"
 
@@ -84,10 +87,11 @@ class SoundPlayer:
         self.current_volume = max(0, self.current_volume - 10)
         
         try:
-            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True)
+            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
             
         except subprocess.CalledProcessError as e:
-            return "Failed to decrement sound, error: {e}"
+            error_msg = e.stderr.decode() if e.stderr else e
+            return f"Failed to decrement sound, error: {error_msg}"
         
 
         return f"Set volume to {self.current_volume}%"
