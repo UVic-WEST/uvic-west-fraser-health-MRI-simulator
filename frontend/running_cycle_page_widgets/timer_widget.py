@@ -2,7 +2,6 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QWidget,
     QLabel,
-    QPushButton
 )
 from PySide6.QtGui import(
     QPixmap,
@@ -10,7 +9,6 @@ from PySide6.QtGui import(
     QFontDatabase
 )
 from PySide6.QtCore import (
-    QTimer,
     Qt
 )
         
@@ -22,10 +20,10 @@ class TimerWidget(QWidget):
         '''
         #write text that gets changed, Qtimer is hardware
         super().__init__(parent)
+        self.timer_controller = None
         self.setFixedSize(395,141)
         self.setStyleSheet("background-color: #0474BA;")
         self.main_layout = QGridLayout()
-        self.rem_time_s = 10
         self.parent = parent
 
         #create the bg of the widget
@@ -58,13 +56,9 @@ class TimerWidget(QWidget):
 
         self.setLayout(self.main_layout)
 
-    def start_countdown (self, time_s):
-        '''
-        call this to set and start the timer (in seconds)
-        '''
-        self.rem_time_s = time_s
-        self.start()
-    
+    def cycle_not_running(self):
+        self.parent.cycle_completed()
+
     def get_time(self, time_s) -> str:
         '''
         returns the time as a string for countdown label
@@ -73,33 +67,14 @@ class TimerWidget(QWidget):
         seconds = time_s - (minutes*60)
         return f"{minutes:02}:{seconds:02}"
 
-    def start(self):
-        '''
-        starts actually running the timer based of the value of rem_time_s
-        '''
-        self.timer_label.setText(self.get_time(self.rem_time_s))
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_countdown)
+    def connect_to_backend(self, timer_controller):
+        self.timer_controller = timer_controller
+        self.timer_controller.time_signal_in_s.connect(self.update_gui_timer)
 
-        self.timer.start(1000) 
-        #1000 gives it an offset of 1s before starting.
-
-    def update_countdown(self):
-        '''
-        this function updates the timer label to display the remaining time left on the cycle on screen
-        '''
-        if self.rem_time_s > 0:
-            self.rem_time_s -= 1
-            self.timer_label.setText(self.get_time(self.rem_time_s))
+    def update_gui_timer(self, time_s: int):
+        if time_s == 0:
+            #timer has ended
+            self.cycle_not_running()
         else:
-            self.timer.stop()
-            self.parent.cycle_ended()
-
-    def stop_timer(self):
-        self.cycle_completed()
-
-    def cycle_completed(self):
-        self.timer.stop()
-        #emit that cycle is done
-
-
+            #timer is still going
+            self.timer_label.setText(self.get_time(time_s))
