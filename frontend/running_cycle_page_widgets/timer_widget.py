@@ -72,10 +72,7 @@ class TimerWidget(QWidget):
         self.timer_controller.time_signal_in_s.connect(self.update_gui_timer)
 
     def update_gui_timer(self, time_s: int):
-        if time_s < 0:
-            self.timer_label.setText("00:00")
-            return
-        elif time_s == 0:
+        if time_s == 0:
             #timer has ended
             self.cycle_not_running()
         else:
