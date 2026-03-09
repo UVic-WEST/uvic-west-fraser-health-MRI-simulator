@@ -61,6 +61,17 @@ class ConfirmationPage(QWidget):
         
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
+
+    def set_cycle(self, cycle):
+        self.cycle = cycle
+        if not cycle:
+            self.cycle_status.setText("Are you sure you want to run cycle?")
+            return
+
+        cycle_text = str(cycle)
+        parts = cycle_text.split()
+        cycle_suffix = parts[-1] if parts and parts[-1].isdigit() else cycle_text
+        self.cycle_status.setText(f"Are you sure you want to run cycle {cycle_suffix}?")
         
     def set_background(self, image_path):
         
