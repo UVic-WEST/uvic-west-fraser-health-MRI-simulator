@@ -16,6 +16,8 @@ class CycleLogic(QObject):
     def __init__(self, app_state, controller):
         super().__init__()
         self.app_state = app_state
+        super().__init__()
+        self.app_state = app_state
         self.controller = controller
 
         self.timer = None
