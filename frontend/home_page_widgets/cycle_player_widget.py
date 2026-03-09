@@ -54,9 +54,16 @@ class CyclePlayerWidget(QWidget):
                 border-radius: 16px;
                 padding: 4px 10px;
             }}
+            QComboBox QAbstractItemView {{
+                color: black;
+                background: white;
+                selection-color: black;
+                selection-background-color: #d9d9d9;
+            }}
             QComboBox::drop-down {{
                 border: none;
                 width: 22px;
+                color: black;
             }}
             QComboBox::down-arrow {{
                 image: url(resources/frontend_common_assets/blacktriangle.png);
