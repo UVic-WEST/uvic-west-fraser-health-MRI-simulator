@@ -12,10 +12,9 @@ class CycleLogic(QObject):
     time_changed = Signal(int)
     cycle_finished = Signal()
     resumed = Signal()
+    paused = Signal()
 
     def __init__(self, app_state, controller):
-        super().__init__()
-        self.app_state = app_state
         super().__init__()
         self.app_state = app_state
         self.controller = controller
@@ -55,12 +54,16 @@ class CycleLogic(QObject):
         self.app_state.set_state("IDLE")
 
     def pause(self):
-        """Pause the running cycle. Stops the timer but preserves elapsed
-        time and duration so the cycle can be resumed."""
+        """Pause the running cycle"""
+        if self.app_state.get_state() != "RUNNING":
+            return
+        
         if self.timer is not None:
             self.timer.stop()
+            
         self.controller.stop_cycle()
         self.app_state.set_state("PAUSED")
+        self.paused.emit()
 
     def resume(self):
         """Resume a paused cycle without restarting it."""
