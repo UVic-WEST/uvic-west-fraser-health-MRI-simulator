@@ -19,6 +19,7 @@ from embedded.light_controller import LightController
 class AppRouter(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.cur_cycle = None
 
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
         self.light_controller = LightController(self)
@@ -54,7 +55,11 @@ class AppRouter(QMainWindow):
         self.setCentralWidget(self.app)
 
 
-    def play_cycle(self):
+    def play_cycle(self, selected_cycle=None):
+        self.cur_cycle = selected_cycle
+        # Backward-compatible alias while transitioning to cur_cycle naming.
+        self.selected_cycle = selected_cycle
+        self.confirmation_page.set_cycle(self.cur_cycle)
         self.main_layout.setCurrentWidget(self.confirmation_page)
 
     def show_confirmation(self):
