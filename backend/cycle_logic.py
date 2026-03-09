@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-# The CycleLogic class manages the simulation timeline.
-class CycleLogic:
-    app_state = None
-    controller = None
-=======
 from PySide6.QtCore import QObject, Signal, QTimer
 
 TICK_INTERVAL_MS = 100
@@ -18,16 +12,12 @@ class CycleLogic(QObject):
     time_changed = Signal(int)
     cycle_finished = Signal()
     resumed = Signal()
->>>>>>> Stashed changes
 
     def __init__(self, app_state, controller):
-        self.controller = controller
+        super().__init__()
         self.app_state = app_state
+        self.controller = controller
 
-<<<<<<< Updated upstream
-    def play():
-        pass
-=======
         self.timer = None
         self.elapsed_ms = 0
         self.total_duration_sec = 0
@@ -76,7 +66,6 @@ class CycleLogic(QObject):
             return False
 
         self._pending = True
-        self.resumed.emit()
         self.controller.start_cycle() # lower layer resumes (audio/light)
         return True
     
@@ -86,6 +75,10 @@ class CycleLogic(QObject):
 
     def _on_started(self):
         self._pending = False
+        
+        if self.app_state.get_state() == "PAUSED":
+            self.resumed.emit()
+            
         self.app_state.set_state("RUNNING")
         self._start_timer()
 
@@ -118,7 +111,7 @@ class CycleLogic(QObject):
         self.progress_changed.emit(progress)
         self.time_changed.emit(self.elapsed_ms)
 
-        if total_ms > 0 and self.elapsed_ms > total_ms:
+        if total_ms > 0 and self.elapsed_ms >= total_ms:
             self._complete()
 
     def _complete(self):
@@ -133,4 +126,3 @@ class CycleLogic(QObject):
         self.elapsed_ms = 0
         self.total_duration_sec = 0
         self._pending = False
->>>>>>> Stashed changes
