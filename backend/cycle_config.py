@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import List
 import json
-from cycle_action import CycleAction
+from backround.cycle_action import CycleAction, ActionType
 
 @dataclass
 class CycleConfig:
