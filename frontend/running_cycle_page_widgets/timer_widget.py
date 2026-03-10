@@ -75,6 +75,6 @@ class TimerWidget(QWidget):
         if time_s == 0:
             #timer has ended
             self.cycle_not_running()
-        else:
+        elif time_s > 0:
             #timer is still going
             self.timer_label.setText(self.get_time(time_s))
