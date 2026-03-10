@@ -14,9 +14,16 @@ class ConfirmationPage(QWidget):
     start_cycle_requested = Signal()
     cancel_requested = Signal()
 
-    def __init__(self,controller,cycle,parent=None):
+    def __init__(self,cycle,parent=None):
+        """
+        This is the confirmation page that appears when a user wants to play a cycle. it prompts them
+        to confirm they want to play a cycle to prevent misclicks
+
+        Args:
+            cycle (Cycle): Cycle to confirm to begin playing
+            parent (QWidget): Widget which is the parent or holder of this instance of ConfirmationPage. Defaults to None.
+        """
         super().__init__(parent)
-        self.controller = controller
         self.parent = parent
         self.cycle = None
         self.setFixedSize(1024,600)
@@ -63,6 +70,13 @@ class ConfirmationPage(QWidget):
         self.main_layout.addWidget(self.content_box)
 
     def set_cycle(self, cycle):
+        """
+        This sets the confirmation question with the proper cycle name.
+
+        Args:
+            cycle (Cycle): Cycle to confirm to begin playing
+        """
+        
         self.cycle = cycle
         if not cycle:
             self.cycle_status.setText("Are you sure you want to run cycle?")
@@ -74,6 +88,12 @@ class ConfirmationPage(QWidget):
         self.cycle_status.setText(f"Are you sure you want to run cycle {cycle_suffix}?")
         
     def set_background(self, image_path):
+        """
+        This sets the background of the page
+
+        Args:
+            image_path (str): path to the asset for the background image
+        """
         
         self.bg_label = QLabel(self)
         self.bg_label.setPixmap(QPixmap(image_path).scaled(
@@ -86,8 +106,14 @@ class ConfirmationPage(QWidget):
 
     # using the signals created for cycle running page
     def cycle_cancelled(self):
+        """
+        If the confirmation is cancelled, this informs app router class that the cycle is not being played
+        """
         self.cancel_requested.emit()
 
     # using the signals created for cycle running page
     def cycle_confirmed(self):
+        """
+        If the confirmation is accepted, this informs app router class that the cycle should start playing
+        """
         self.start_cycle_requested.emit()

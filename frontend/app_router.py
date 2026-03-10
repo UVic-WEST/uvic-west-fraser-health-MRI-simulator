@@ -44,7 +44,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.home_page)
 
         #Code for confirmation page
-        self.confirmation_page = ConfirmationPage(None,None,self)
+        self.confirmation_page = ConfirmationPage(None,self)
         self.confirmation_page.start_cycle_requested.connect(self.play_cycle_confirmed)
         self.confirmation_page.cancel_requested.connect(self.show_home)
         self.main_layout.addWidget(self.confirmation_page)
@@ -84,12 +84,6 @@ class AppRouter(QMainWindow):
         """
         This function routes the app to the cycle running page when the user has confirmed 
         they want to play a cycle
-
-        Args:
-	        None
-
-        Returns:
-	        None
         """
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         #REMOVE LATER
@@ -97,4 +91,7 @@ class AppRouter(QMainWindow):
         self.cycle_running_page.play_cycle(dummytime)
 
     def show_home(self):
+        """
+        This function routes the application to show the homepage
+        """
         self.main_layout.setCurrentWidget(self.home_page)
