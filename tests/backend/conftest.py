@@ -1,6 +1,7 @@
 import pytest
 from PySide6.QtCore import QObject, Signal
 from backend.cycle_logic import CycleLogic
+from backend.auth import Auth
 from state import AppStateMachine
 
 # -------------------------
@@ -39,3 +40,8 @@ def app_state():
 def cycle_logic(app_state, fake_controller):
     logic = CycleLogic(app_state=app_state, controller=fake_controller)
     return logic
+
+@pytest.fixture
+def auth():
+    auth = Auth(correct_pin='1234')
+    return auth
