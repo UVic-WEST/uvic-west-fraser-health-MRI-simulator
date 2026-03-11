@@ -97,3 +97,6 @@ class AppRouter(QMainWindow):
         This function routes the application to show the homepage
         """
         self.main_layout.setCurrentWidget(self.home_page)
+
+    def timeout_signin(self):
+        print('timeout')
