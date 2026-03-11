@@ -396,7 +396,7 @@ def test_pause_resume_state_transition(cycle_logic, fake_controller, app_state):
 
     assert app_state.get_state() == "RUNNING"
 
-    def test_stop_during_paused_state(cycle_logic, fake_controller, app_state):
+def test_stop_during_paused_state(cycle_logic, fake_controller, app_state):
     """
     Tests that calling stop() while the cycle is paused resets the cycle
     and returns the application state to IDLE.
