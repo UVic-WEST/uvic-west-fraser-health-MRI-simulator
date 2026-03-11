@@ -184,6 +184,197 @@ def test_time_changed_emitted(cycle_logic, fake_controller, qtbot):
         cycle_logic.play(duration_sec=1.0)
         fake_controller.started.emit()
 
+# ======================
+# Cycle Pause Behaviour
+# ======================
+def test_pause_calls_lower_layer(cycle_logic, fake_controller):
+    """
+    Tests that cycle logic sends instruction to lower layer.
+
+    TODO: I am assuming lower layer does not have a separate PAUSE function
+    """
+    cycle_logic.play(duration_sec=CYCLE_DURATION_SEC)
+    fake_controller.started.emit()
+
+    cycle_logic.pause()
+    assert fake_controller.stop_called
+
+def test_pause_stops_timer_progress(cycle_logic, fake_controller, qtbot):
+    """
+    Tests that timer stops progressing after pause has been called.
+    """
+    cycle_logic.play(duration_sec=CYCLE_DURATION_SEC)
+    fake_controller.started.emit()
+
+    cycle_logic.pause()
+    time_elapsed = cycle_logic.elapsed_ms
+
+    qtbot.wait(100)
+
+    # Elapsed time has not increased if cycle has not been resumed
+    assert cycle_logic.elapsed_ms == time_elapsed
+
+def test_pause_sets_paused_state(cycle_logic, fake_controller, app_state):
+    """
+    Tests that the application state is set to PAUSED.
+    """
+    cycle_logic.play(duration_sec=CYCLE_DURATION_SEC)
+    fake_controller.started.emit()
+
+    cycle_logic.pause()
+    assert app_state.get_state() == "PAUSED"
+
+def test_pause_does_not_reset(cycle_logic, fake_controller):
+    """
+    Tests that cycle logic's internal state is not reset when paused.
+    """
+    cycle_logic.play(duration_sec=CYCLE_DURATION_SEC)
+    fake_controller.started.emit()
+
+    cycle_logic.pause()
+    assert not cycle_logic.timer == None
+    assert not cycle_logic.elapsed_ms == 0
+    assert not cycle_logic.total_duration_sec == 0
+
+# ======================
+# Cycle Resume Behaviour
+# ======================
+def test_cannot_resume_running_cycle(cycle_logic, fake_controller):
+    """
+    Tests that cycle must be in PAUSED state in order to be resumed.
+
+    TODO: I am assuming lower layer won't have a separate function for resume, and layer
+    2 will simply call layer 3's start with updated values?
+    """
+    cycle_logic.play()
+    assert fake_controller.start_called
+
+    # force fake controller start_called to be false
+    fake_controller.start_called = False
+
+    cycle_logic.resume()
+    assert not fake_controller.start_called
+
+def test_resume_calls_lower_layer(cycle_logic, fake_controller):
+    """
+    Tests that cycle logic passes instruction to lower layer.
+    """
+    cycle_logic.play()
+    cycle_logic.pause()
+
+    cycle_logic.resume()
+
+    assert fake_controller.start_called
+
+def test_resume_returns_true_on_success(cycle_logic):
+    """
+    Tests that resume() returns True when it successfully issues a resume request.
+    """
+    success = cycle_logic.resume()
+    assert success
+
+def test_state_paused_after_control_failed(cycle_logic, app_state, fake_controller):
+    """
+    Tests that app state is not set to running after receiving signal from lower layer
+    that there was a failure when resuming the cycle.
+    """
+    cycle_logic.play(duration_sec=1.0)
+    cycle_logic.pause()
+    cycle_logic.resume()
+    fake_controller.failed.emit()
+    assert not app_state.get_state() == "RUNNING"
+    assert app_state.get_state() == "PAUSED"
+
+def test_cycle_logic_maintains_state_after_failure(cycle_logic, fake_controller):
+    """
+    Tests that cycle logic maintain its previous internal state after a failure (i.e., info related to the cycle
+    currently running)
+
+    TODO: do we want to maintain state after a failure, and allow for retries, or should we reset upon a failure.
+    """
+    cycle_logic.start()
+    cycle_logic.pause()
+
+    paused_timer = cycle_logic.timer
+    paused_elapsed_ms = cycle_logic.elapsed_ms
+    paused_total_duration_sec = cycle_logic.total_duration_sec
+
+    cycle_logic.resume()
+    fake_controller.failed.emit()
+
+    # PAUSED STATE
+    assert cycle_logic.timer == paused_timer
+    assert cycle_logic.elapsed_ms == paused_elapsed_ms
+    assert cycle_logic.total_duration_sec == paused_total_duration_sec
+
+def test_resume_resumes_timer_progression(cycle_logic, fake_controller, qtbot):
+    """
+    Tests that timer continues progressing after the running cycle has been resumed.
+    """
+    # play and pause
+    cycle_logic.play(duration_sec=1.0)
+    fake_controller.started.emit()
+
+    qtbot.wait(100)
+    cycle_logic.pause()
+
+    # get time elapsed so far
+    elapsed_after_pause = cycle_logic.elapsed_ms
+
+    # resume
+    cycle_logic.resume()
+    fake_controller.started.emit()
+    qtbot.wait(100)
+
+    # assert elapsed time has changed
+    assert cycle_logic.elapsed_ms > elapsed_after_pause
+
+def test_resume_sets_running_state(cycle_logic, fake_controller, app_state):
+    """
+    Tests that the application state is set back to running after a successful resume request.
+    """
+    cycle_logic.play(duration_sec=1.0)
+    fake_controller.started.emit()
+
+    assert app_state.get_state() == "RUNNING"
+
+def test_resume_finishes_after_resume(cycle_logic, fake_controller, qtbot):
+    """
+    Tests that cycle finishes after being resumed.
+    """
+    # play and pause
+    cycle_logic.play(duration_sec=1.0)
+    fake_controller.started.emit()
+
+    qtbot.wait(100)
+    cycle_logic.pause()
+
+    # resume
+    with qtbot.waitSignal(cycle_logic.cycle_finished, timeout=1000):
+        cycle_logic.resume()
+        fake_controller.started.emit()
+
+    assert cycle_logic.timer == None
+    assert cycle_logic.elapsed_ms == 0
+    assert cycle_logic.total_duration_sec == 0
+
+def test_pause_resume_multiple_times(cycle_logic, fake_controller, app_state):
+    """
+    Tests that a cycle can be paused and resumed more than once.
+    """
+    cycle_logic.play(duration_sec=CYCLE_DURATION_SEC)
+    fake_controller.started.emit()
+
+    for _ in range(3):
+        # pause
+        cycle_logic.pause()
+        assert app_state.get_state() == "PAUSED"
+
+        # resume
+        cycle_logic.resume()
+        fake_controller.started.emit()
+        assert app_state.get_state() == "RUNNING"
+
 def test_pause_resume_state_transition(cycle_logic, fake_controller, app_state):
     """
     Tests that the application state transitions correctly from
