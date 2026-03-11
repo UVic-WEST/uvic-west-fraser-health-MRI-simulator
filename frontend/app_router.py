@@ -36,7 +36,9 @@ class AppRouter(QMainWindow):
         self.setWindowTitle("MRI Simulator")
 
         #create pages, connect controllers, add to app widget stack
-        self.sign_in_Page = SignInPage()
+        self.sign_in_page_controller = None #CHANGE WHEN THERES A CONTROLLER TO CONNECT
+        self.sign_in_page = SignInPage(self.sign_in_page_controller, self)
+        self.main_layout.addWidget(self.sign_in_page)
 
         #code for homepage
         self.home_page_controller = HomePageLogic()
