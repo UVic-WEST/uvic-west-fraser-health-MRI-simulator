@@ -374,3 +374,47 @@ def test_pause_resume_multiple_times(cycle_logic, fake_controller, app_state):
         cycle_logic.resume()
         fake_controller.started.emit()
         assert app_state.get_state() == "RUNNING"
+
+def test_pause_resume_state_transition(cycle_logic, fake_controller, app_state):
+    """
+    Tests that the application state transitions correctly from
+    RUNNING -> PAUSED -> RUNNING when pause and resume are called.
+    """
+    cycle_logic.play(duration_sec=1.0)
+    fake_controller.started.emit()
+
+    # Cycle should now be running
+    assert app_state.get_state() == "RUNNING"
+
+    # Pause the cycle
+    cycle_logic.pause()
+    assert app_state.get_state() == "PAUSED"
+
+    # Resume the cycle
+    cycle_logic.resume()
+    fake_controller.started.emit()
+
+    assert app_state.get_state() == "RUNNING"
+
+def test_stop_during_paused_state(cycle_logic, fake_controller, app_state):
+    """
+    Tests that calling stop() while the cycle is paused resets the cycle
+    and returns the application state to IDLE.
+    """
+    cycle_logic.play(duration_sec=1.0)
+    fake_controller.started.emit()
+
+    # Pause the cycle
+    cycle_logic.pause()
+    assert app_state.get_state() == "PAUSED"
+
+    # Stop the cycle
+    cycle_logic.stop()
+
+    # State should return to IDLE
+    assert app_state.get_state() == "IDLE"
+
+    # Cycle logic should reset to initial state
+    assert cycle_logic.timer is None
+    assert cycle_logic.elapsed_ms == 0
+    assert cycle_logic.total_duration_sec == 0
