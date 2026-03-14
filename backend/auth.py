@@ -1,6 +1,6 @@
 # The Auth class handles the the PIN validation logic, timeout logic after three failed login attempts, and logout logic.
 
-from PyQt6.QtCore import QTimer
+from PySide6.QtCore import QObject, Signal, QTimer
 
 class Auth:
     """
