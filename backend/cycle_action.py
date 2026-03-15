@@ -28,14 +28,14 @@ class CycleAction:
       raise ValueError(
         "timestamp_ms must be non-negative"
       )
-      if not self.action_type:
-        raise ValueError(
-          "action_type must be non-empty string"
-        )
-      if not isinstance(self.parameters, dict):
-        raise ValueError(
-          "parameters must be a dictionary"
-        )
+    if not self.action_type:
+      raise ValueError(
+        "action_type must be non-empty string"
+      )
+    if not isinstance(self.parameters, dict):
+      raise ValueError(
+        "parameters must be a dictionary"
+      )
 
 
   def is_execution_time(self, current_ms: int, last_check_ms: int) -> bool:

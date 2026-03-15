@@ -3,7 +3,8 @@
 from dataclasses import dataclass, field
 from typing import List
 import json
-from backround.cycle_action import CycleAction, ActionType
+from pathlib import Path
+from backend.cycle_action import CycleAction, ActionType
 
 @dataclass
 class CycleConfig:
@@ -58,8 +59,8 @@ class CycleConfig:
                 f"cannot add action at {action.timestamp_ms}ms: "
                 f"exceeds cycle duration of {self.cycle_id} of {self.cycle_duration_ms}ms"
             )
-            self.actions.append(action)
-            self.actions.sort(key=lambda a: a.timestamp_ms)
+        self.actions.append(action)
+        self.actions.sort(key=lambda a: a.timestamp_ms)
 
     def get_actions_at(self, timestamp_ms: int, window_ms: int = 100) -> List[CycleAction]:
         """
@@ -97,8 +98,8 @@ class CycleConfig:
         filepath = Path(filepath)
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(filepath, 'w') as f:
-        json.dump(data, f, indent=2)
+        with open(filepath, 'w') as f:
+            json.dump(data, f, indent=2)
 
     @classmethod
     def from_json(cls, filepath: str) -> 'CycleConfig':
