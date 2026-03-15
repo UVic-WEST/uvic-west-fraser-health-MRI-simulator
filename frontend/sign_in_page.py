@@ -22,7 +22,7 @@ class SignInPage(QWidget):
         
         Args:
             controller (signInPageLogic): controller that handles the backend logic for sign in page
-            parent (AppRouter): parent that creates this class
+            parent (AppRouter): parent that creates/initializes this class
         """
         #page setup
         super().__init__(parent)
@@ -104,11 +104,15 @@ class SignInPage(QWidget):
         
     def clr_password_input(self):
         self.current_entry = ""
-    
+        self.input_box.setText("*"*len(self.current_entry))
+
     def del_pressed(self):
         self.current_entry = self.current_entry[0:len(self.current_entry)-1]
         
     def enter_pressed(self):
+        if len(self.current_entry) < 4:
+            return
+        
         if self.current_entry == PASS_TEMP:
             self.login_successful()
         else: 
@@ -118,6 +122,8 @@ class SignInPage(QWidget):
 
     def login_successful(self):
         self.parent.show_home()
+        self.clr_password_input()
+        self.password_attempts = 0
 
     def update_password_attempts(self):
         self.password_attempts += 1
