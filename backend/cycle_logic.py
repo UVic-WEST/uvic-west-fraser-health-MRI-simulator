@@ -11,6 +11,8 @@ class CycleLogic(QObject):
     progress_changed = Signal(float)
     time_changed = Signal(int)
     cycle_finished = Signal()
+    resumed = Signal()
+    paused = Signal()
 
     def __init__(self, app_state, controller):
         super().__init__()
@@ -52,29 +54,36 @@ class CycleLogic(QObject):
         self.app_state.set_state("IDLE")
 
     def pause(self):
-        """Pause the running cycle. Stops the timer but preserves elapsed
-        time and duration so the cycle can be resumed."""
+        """Pause the running cycle"""
+        if self.app_state.get_state() != "RUNNING":
+            return
+        
         if self.timer is not None:
             self.timer.stop()
+            
         self.controller.stop_cycle()
         self.app_state.set_state("PAUSED")
+        self.paused.emit()
 
     def resume(self):
-        """Resume a paused cycle. Re-issues a start request to the lower
-        layer. Returns True if the request was issued."""
+        """Resume a paused cycle without restarting it."""
         if self.app_state.get_state() != "PAUSED":
-            return True
+            return False
 
         self._pending = True
-        self.controller.start_cycle()
+        self.controller.start_cycle() # lower layer resumes (audio/light)
         return True
-
+    
     # ------------------------------------------------------------------
     # Controller signal handlers
     # ------------------------------------------------------------------
 
     def _on_started(self):
         self._pending = False
+        
+        if self.app_state.get_state() == "PAUSED":
+            self.resumed.emit()
+            
         self.app_state.set_state("RUNNING")
         self._start_timer()
 
@@ -89,10 +98,13 @@ class CycleLogic(QObject):
     # ------------------------------------------------------------------
 
     def _start_timer(self):
-        self.timer = QTimer(self)
-        self.timer.setInterval(TICK_INTERVAL_MS)
-        self.timer.timeout.connect(self._tick)
+        if self.timer is None:
+            self.timer = QTimer(self)
+            self.timer.setInterval(TICK_INTERVAL_MS)
+            self.timer.timeout.connect(self._tick)
+        
         self.timer.start()
+        
         if self.elapsed_ms == 0:
             self._tick()
 
@@ -104,7 +116,7 @@ class CycleLogic(QObject):
         self.progress_changed.emit(progress)
         self.time_changed.emit(self.elapsed_ms)
 
-        if total_ms > 0 and self.elapsed_ms > total_ms:
+        if total_ms > 0 and self.elapsed_ms >= total_ms:
             self._complete()
 
     def _complete(self):
