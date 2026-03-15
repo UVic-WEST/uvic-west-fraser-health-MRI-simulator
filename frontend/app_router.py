@@ -18,7 +18,13 @@ from embedded.light_controller import LightController
 
 class AppRouter(QMainWindow):
     def __init__(self):
+        """
+        This is the App router class which initializes the UI pages and their respective controllers.
+        It also handles page routing logic.
+        """
+
         super().__init__()
+        self.cur_cycle = None
 
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
         self.light_controller = LightController(self)
@@ -54,13 +60,37 @@ class AppRouter(QMainWindow):
         self.setCentralWidget(self.app)
 
 
-    def play_cycle(self):
+    def play_cycle(self, selected_cycle=None):
+        """
+        This function prepares a cycle to be played, selected on the homepage.
+
+        Args:
+            selected_cycle (Cycle): selected cycle to play
+        """
+        
+        self.cur_cycle = selected_cycle
+        # Backward-compatible alias while transitioning to cur_cycle naming.
+        self.selected_cycle = selected_cycle
+        self.confirmation_page.set_cycle(self.cur_cycle)
         self.main_layout.setCurrentWidget(self.confirmation_page)
 
     def show_confirmation(self):
+        """
+        This function shows the play cycle confirmation page to play a cycle
+        """
         self.main_layout.setCurrentWidget(self.confirmation_page)
 
     def play_cycle_confirmed(self):
+        """
+        This function routes the app to the cycle running page when the user has confirmed 
+        they want to play a cycle
+
+        Args:
+	        None
+
+        Returns:
+	        None
+        """
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         #REMOVE LATER
         dummytime = 30

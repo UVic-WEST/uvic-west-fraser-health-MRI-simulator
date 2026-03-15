@@ -40,6 +40,7 @@ class CycleRunningPageLogic(QObject):
     def pause_cycle(self):
         if self.timer:
             self.timer.stop()
+            self.time_signal_in_s.emit(-1)
         return True
     
     def resume_cycle(self):
