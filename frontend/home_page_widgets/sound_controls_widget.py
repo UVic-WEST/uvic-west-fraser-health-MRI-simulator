@@ -13,8 +13,8 @@ from PySide6.QtGui import QFont, QPixmap, QIcon, QPainter, QPen
 SOUND_DROPDOWN_COLOUR = "#FAF5F5"
 SOUND_PANEL_BUTTON_COLOUR = SOUND_DROPDOWN_COLOUR
 SOUND_SELECTED_BUTTON_COLOUR = "#2E9B41"
-SOUND_PANEL_COLS = 3
-SOUND_NAMES = ["Sound 1", "Sound 2", "Sound 3", "Sound 4", "Sound 5", "Sound 6"]
+SOUND_PANEL_COLS = 4
+SOUND_NAMES = ["Sound 1", "Sound 2", "Sound 3", "Sound 4", "Sound 5", "Sound 6", "Sound 7", "Sound 8"]
 
 
 class _ReadOnlySlider(QSlider):
