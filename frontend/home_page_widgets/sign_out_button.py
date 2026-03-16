@@ -32,9 +32,6 @@ class SignOutButton(QWidget):
                 border: none;
                 border-radius: 22px;
             }
-            QPushButton:hover {
-                background-color: #035A8F;
-            }
             QPushButton:pressed {
                 background-color: #024570;
             }

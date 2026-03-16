@@ -11,20 +11,41 @@ from PySide6.QtGui import QFont, QPixmap, QIcon, QPainter, QPen
 
 LIGHT_DROPDOWN_COLOUR = "#FAF5F5"
 
-
 class _ReadOnlySlider(QSlider):
-    """Visual slider that ignores direct user interaction."""
-
     def mousePressEvent(self, event):
+        """
+        This function ignores mouse press events for the slider
+
+        Args:
+            event: the Qt mouse press event
+        """
         event.ignore()
 
     def mouseMoveEvent(self, event):
+        """
+        This function ignores mouse move events for the slider
+
+        Args:
+            event: the Qt mouse move event
+        """
         event.ignore()
 
     def wheelEvent(self, event):
+        """
+        This function ignores mouse wheel events for the slider
+
+        Args:
+            event: the Qt wheel event
+        """
         event.ignore()
 
     def keyPressEvent(self, event):
+        """
+        This function ignores key press events for the slider
+
+        Args:
+            event: the Qt key press event
+        """
         event.ignore()
 
 
@@ -33,6 +54,12 @@ class LightControlsWidget(QWidget):
     light_power_changed = Signal(bool)
 
     def __init__(self, parent=None):
+        """
+        This function builds the Light Controls widget and initializes its state
+
+        Args:
+            parent: the parent widget for this controls container
+        """
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._expanded = False
@@ -95,9 +122,6 @@ class LightControlsWidget(QWidget):
                 border: none;
                 border-radius: 8px;
             }
-            QPushButton:hover {
-                background-color: #035a8e;
-            }
             QPushButton:pressed {
                 background-color: #024a74;
             }
@@ -112,9 +136,6 @@ class LightControlsWidget(QWidget):
                 color: white;
                 border: none;
                 border-radius: 8px;
-            }
-            QPushButton:hover {
-                background-color: #035a8e;
             }
             QPushButton:pressed {
                 background-color: #024a74;
@@ -146,6 +167,12 @@ class LightControlsWidget(QWidget):
         self.header_button.clicked.connect(self._toggle_panel)
 
     def _apply_header_style(self, expanded: bool):
+        """
+        This function updates the header button style based on panel state
+
+        Args:
+            expanded: whether the light controls panel is expanded
+        """
         if expanded:
             self.header_button.setStyleSheet(f"""
                 QPushButton {{
@@ -176,12 +203,21 @@ class LightControlsWidget(QWidget):
             """)
 
     def _toggle_panel(self):
+        """
+        This function toggles the expanded/collapsed state of the controls panel
+        """
         self._expanded = not self._expanded
         self._apply_header_style(expanded=self._expanded)
         self._controls_widget.setVisible(self._expanded)
         self.header_button.setIcon(self._close_icon if self._expanded else self._arrow_icon)
 
     def _build_close_icon(self) -> QIcon:
+        """
+        This function creates and returns the close (x) icon
+
+        Returns:
+            icon: the close icon for the expanded header button
+        """
         pixmap = QPixmap(12, 12)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
@@ -195,6 +231,9 @@ class LightControlsWidget(QWidget):
         return QIcon(pixmap)
 
     def _update_light_power_button_style(self):
+        """
+        This function updates the light power button text and style
+        """
         if self._light_is_on:
             self.light_power_button.setText("OFF")
             self.light_power_button.setStyleSheet("""
@@ -204,9 +243,6 @@ class LightControlsWidget(QWidget):
                     border: none;
                     border-radius: 8px;
                     padding: 6px 12px;
-                }
-                QPushButton:hover {
-                    background-color: #C9302C;
                 }
                 QPushButton:pressed {
                     background-color: #A72824;
@@ -222,24 +258,36 @@ class LightControlsWidget(QWidget):
                     border-radius: 8px;
                     padding: 6px 12px;
                 }
-                QPushButton:hover {
-                    background-color: #237A33;
-                }
                 QPushButton:pressed {
                     background-color: #1D682B;
                 }
             """)
 
     def _set_light_power(self, is_on: bool):
+        """
+        This function sets the light power state and emits its signal
+
+        Args:
+            is_on: True to set lights on, False to set lights off
+        """
         self._light_is_on = is_on
         self._update_light_power_button_style()
         print("Light power changed:", "ON" if self._light_is_on else "OFF")
         self.light_power_changed.emit(self._light_is_on)
 
     def _toggle_light_power(self):
+        """
+        This function toggles the current light power state
+        """
         self._set_light_power(not self._light_is_on)
 
     def _on_brightness_changed(self, value: int):
+        """
+        This function handles brightness updates and snaps values to 10-point increments
+
+        Args:
+            value: the requested slider brightness value
+        """
         snapped = max(0, min(100, int(round(value / 10.0) * 10)))
         if snapped != value:
             self.brightness_slider.blockSignals(True)
@@ -249,7 +297,13 @@ class LightControlsWidget(QWidget):
         self.brightness_changed.emit(snapped)
 
     def _decrease_brightness(self):
+        """
+        This function decreases brightness by 10
+        """
         self.brightness_slider.setValue(max(0, self.brightness_slider.value() - 10))
 
     def _increase_brightness(self):
+        """
+        This function increases brightness by 10
+        """
         self.brightness_slider.setValue(min(100, self.brightness_slider.value() + 10))

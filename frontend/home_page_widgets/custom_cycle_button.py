@@ -32,9 +32,6 @@ class CustomCycleButton(QWidget):
                 border: none;
                 border-radius: 24px;
             }
-            QPushButton:hover {
-                background-color: #FF9520;
-            }
             QPushButton:pressed {
                 background-color: #FF8410;
             }

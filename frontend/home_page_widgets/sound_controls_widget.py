@@ -106,9 +106,6 @@ class SoundControlsWidget(QWidget):
                 border: none;
                 border-radius: 8px;
             }
-            QPushButton:hover {
-                background-color: #035a8e;
-            }
             QPushButton:pressed {
                 background-color: #024a74;
             }
@@ -123,9 +120,6 @@ class SoundControlsWidget(QWidget):
                 color: white;
                 border: none;
                 border-radius: 8px;
-            }
-            QPushButton:hover {
-                background-color: #035a8e;
             }
             QPushButton:pressed {
                 background-color: #024a74;
@@ -208,7 +202,6 @@ class SoundControlsWidget(QWidget):
 
     def _sound_button_stylesheet(self, is_selected: bool) -> str:
         base_colour = SOUND_SELECTED_BUTTON_COLOUR if is_selected else SOUND_PANEL_BUTTON_COLOUR
-        hover_colour = "#237A33" if is_selected else "#EDEDED"
         text_colour = "white" if is_selected else "black"
         border_style = "none" if is_selected else "1px solid #CFCFCF"
         return f"""
@@ -218,9 +211,6 @@ class SoundControlsWidget(QWidget):
                 border: {border_style};
                 border-radius: 10px;
                 padding: 10px 16px;
-            }}
-            QPushButton:hover {{
-                background-color: {hover_colour};
             }}
         """
 
