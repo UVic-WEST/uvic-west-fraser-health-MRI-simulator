@@ -112,3 +112,8 @@ class HomePage(QWidget):
         print("Current cycle confirmed to play:", self.cur_cycle)
         self.parent.play_cycle(self.cur_cycle)
     
+    def signout(self):
+        '''
+        when sign out button is pressed, user is signed out and sent to sign in page.
+        '''
+        self.parent.show_signin()

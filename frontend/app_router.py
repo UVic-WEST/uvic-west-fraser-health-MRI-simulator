@@ -8,6 +8,7 @@ from frontend.home_page import HomePage
 from backend.home_page_logic import HomePageLogic
 
 from frontend.sign_in_page import SignInPage
+from frontend.sign_in_page_widgets.timed_out_page import TimeOutPage
 
 from frontend.confirmation_page import ConfirmationPage
 
@@ -42,7 +43,12 @@ class AppRouter(QMainWindow):
         self.setWindowTitle("MRI Simulator")
 
         #create pages, connect controllers, add to app widget stack
-        self.sign_in_Page = SignInPage()
+        #code for sign in page
+        self.sign_in_page_controller = None #CHANGE WHEN THERES A CONTROLLER TO CONNECT
+        self.sign_in_page = SignInPage(self.sign_in_page_controller, self)
+        self.timed_out_page = TimeOutPage(self)
+        self.main_layout.addWidget(self.sign_in_page)
+        self.main_layout.addWidget(self.timed_out_page)
 
         #code for homepage
         self.home_page_controller = HomePageLogic()
@@ -50,7 +56,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.home_page)
 
         #Code for confirmation page
-        self.confirmation_page = ConfirmationPage(None,None,self)
+        self.confirmation_page = ConfirmationPage(None,self)
         self.confirmation_page.start_cycle_requested.connect(self.play_cycle_confirmed)
         self.confirmation_page.cancel_requested.connect(self.show_home)
         self.main_layout.addWidget(self.confirmation_page)
@@ -92,12 +98,6 @@ class AppRouter(QMainWindow):
         """
         This function routes the app to the cycle running page when the user has confirmed 
         they want to play a cycle
-
-        Args:
-	        None
-
-        Returns:
-	        None
         """
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         #REMOVE LATER
@@ -105,4 +105,20 @@ class AppRouter(QMainWindow):
         self.cycle_running_page.play_cycle(dummytime)
 
     def show_home(self):
+        """
+        This function routes the application to show the homepage
+        """
         self.main_layout.setCurrentWidget(self.home_page)
+
+    def timeout_signin(self):
+        """
+        This function routes the application to the time out page after failed sign in then starts the 30s timeout counter
+        """
+        self.timed_out_page.start_countdown()
+        self.main_layout.setCurrentWidget(self.timed_out_page)
+
+    def show_signin(self):
+        """
+        This function routes the application to the sign in page after completed timeout
+        """
+        self.main_layout.setCurrentWidget(self.sign_in_page)
