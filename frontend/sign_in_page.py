@@ -7,6 +7,13 @@ from PySide6.QtWidgets import(
     QPushButton
 )
 from PySide6.QtGui import QFont, Qt, QPixmap
+from frontend.sign_in_page_widgets.pinpad_widget import PinPad
+
+MAX_PASSWORD_INPUT = 4
+MAX_PASSWORD_ATTEMPTS = 3
+
+## DELETE LATER THIS IS A DUMMY PASSWORD TO GET INTO THE SYSTEM
+PASS_TEMP = '2026'
 
 class SignInPage(QWidget):
     def __init__(self, controller, parent=None):
@@ -15,14 +22,16 @@ class SignInPage(QWidget):
         
         Args:
             controller (signInPageLogic): controller that handles the backend logic for sign in page
-            parent (AppRouter): parent that creates this class
+            parent (AppRouter): parent that creates/initializes this class
         """
         #page setup
         super().__init__(parent)
         self.parent = parent
-        #self.setStyleSheet("background: grey;")
-        self.main_layout = QVBoxLayout()
-        self.left_layout = QVBoxLayout()
+        self.login_controller = controller
+
+        #password management
+        self.current_entry = ""
+        self.password_attempts = 0
 
         #fraser logo
         fraser_logo_path = 'resources/frontend_common_assets/west_logo.png'
@@ -42,13 +51,15 @@ class SignInPage(QWidget):
         self.enter_pin_label.move(170,112)
 
         #password input box label
-        self.input_box = QLabel("text here", self)
+        self.input_box = QLabel("", self)
+        self.input_box.setFont(QFont("Ubuntu",40))
         self.input_box.setFixedSize(341, 77) 
         self.input_box.setStyleSheet("""
             background-color: white;
             color: #676363;
             border: 3px solid black;
             border-radius: 24px;
+            qproperty-alignment: AlignCenter;
         """)
         self.input_box.move(135,185)
 
@@ -63,8 +74,83 @@ class SignInPage(QWidget):
                 border: 3px solid #00A7E1;
                 border-radius: 24px
             }
+            QPushButton:pressed {
+                background-color: #0A6AA6;
+                color: #E9E1E1;
+                border: 3px solid #0474BA;
+                }
         """)
         self.enter_button.move(130,293)
+        self.enter_button.clicked.connect(self.enter_pressed)
 
-        #self.main_layout.addLayout(self.left_layout)
-        self.setLayout(self.left_layout)
+        self.pinpad = PinPad(self)
+        self.pinpad.pinpad_pressed.connect(self.update_entry)
+        self.pinpad.move(567,41)
+
+    def update_entry(self, pin:str):
+        """
+        this gets called by the pinpad widget when the pinpad is selected and updates the password entry.
+        
+        Args:
+            controller (signInPageLogic): controller that handles the backend logic for sign in page
+            parent (AppRouter): parent that creates/initializes this class
+        """
+
+        if pin == "clr":
+            self.clr_password_input()
+        elif pin == "del":
+            self.del_pressed()
+        elif len(self.current_entry) == MAX_PASSWORD_INPUT:
+            return   
+        else:
+            self.current_entry += pin
+        
+        self.input_box.setText("*"*len(self.current_entry))
+
+        print(self.current_entry)
+        
+    def clr_password_input(self):
+        """
+        This clears the password input on screen if the clear or enter button is pressed
+        """
+        self.current_entry = ""
+        self.input_box.setText("*"*len(self.current_entry))
+
+    def del_pressed(self):
+        """
+        This deletes the most recent number from the current password entry when the delete button is pressed
+        """
+        self.current_entry = self.current_entry[0:len(self.current_entry)-1]
+        
+    def enter_pressed(self):
+        """
+        this submits the current password entry for verification and acts accordingly. Only acts if the pin is 4 numbers long.
+        """
+        if len(self.current_entry) < 4:
+            return
+        
+        if self.current_entry == PASS_TEMP:
+            self.login_successful()
+        else: 
+            self.update_password_attempts()
+
+        self.clr_password_input()
+
+    def login_successful(self):
+        """
+        if the password was validated this function is called and shows the homepage via parent class
+        """
+        self.parent.show_home()
+        self.clr_password_input()
+        self.password_attempts = 0
+
+    def update_password_attempts(self):
+        """
+        this function updates the password attempt count and times out the sign in page if the maximum attempt number is reached.
+        """
+        self.password_attempts += 1
+
+        if self.password_attempts == MAX_PASSWORD_ATTEMPTS:
+            self.parent.timeout_signin()
+            self.password_attempts = 0
+
