@@ -15,6 +15,8 @@ from frontend.cycle_running_page import CycleRunningPage
 from backend.cycle_running_page_logic import CycleRunningPageLogic
 
 from embedded.light_controller import LightController
+from embedded.sound_player import SoundPlayer
+from backend.cycle_controller import CycleController
 
 class AppRouter(QMainWindow):
     def __init__(self):
@@ -28,6 +30,10 @@ class AppRouter(QMainWindow):
 
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
         self.light_controller = LightController(self)
+        self.sound_player = SoundPlayer()
+        self.cycle_controller = CycleController(
+            self.light_controller, self.sound_player, parent=self
+        )
 
         #create window
         self.setFixedSize(1024, 600)
@@ -50,7 +56,9 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.confirmation_page)
 
         #Code for cycle running page. 
-        self.cycle_running_page_controller = CycleRunningPageLogic(self)
+        self.cycle_running_page_controller = CycleRunningPageLogic(
+            cycle_controller=self.cycle_controller, parent=self
+        )
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
