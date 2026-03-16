@@ -6,10 +6,13 @@ from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
 class SignOutButton(QWidget):
-    '''
-    GUI implementation for the "Sign Out" button on the homepage.
-    '''
     def __init__(self, parent=None):
+        """
+        This function builds the Sign Out button widget 
+
+        Args:
+            parent: the parent widget for this button container
+        """
         super().__init__(parent)
         self.parent = parent
         
@@ -28,9 +31,6 @@ class SignOutButton(QWidget):
                 color: white;
                 border: none;
                 border-radius: 22px;
-            }
-            QPushButton:hover {
-                background-color: #035A8F;
             }
             QPushButton:pressed {
                 background-color: #024570;
