@@ -9,7 +9,7 @@ class Auth:
         correct_pin: PIN that will authenticate user (str)
         can_attempt_login: whether or not user can attempt to login (bool)
         is_authenticated: whether or not user successfully signed in after entering PIN (bool)
-        remaining_attempts: number of PIN entry attempts left for user before 30s timeout begins (int)
+        remaining_attempts: number of PIN entry attempts left for user before 15 second timeout begins (int)
     """
     
     def __init__(self, correct_pin):
@@ -22,13 +22,13 @@ class Auth:
         self.correct_pin = correct_pin
         self.can_attempt_login = True  # whether a user can attempt to login or not
         self.is_authenticated = False # whether PIN entered is the correct PIN
-        self.remaining_attempts = 3  # sign in attempts remaining before 30 second timeout
+        self.remaining_attempts = 3  # sign in attempts remaining before 15 second timeout
     
     
     def login(self, pin):
         """
         checks that pin is the correct PIN and user is successfully signed in if so
-        o/w, user has ability to reattempt PIN entry twice before login() initiates 30s timeout
+        o/w, user has ability to reattempt PIN entry twice before login() initiates 15 second timeout
         """
         # user already logged in
         if self.is_authenticated:
@@ -50,7 +50,7 @@ class Auth:
             self.can_attempt_login = False
             self.remaining_attempts = 3
 
-            QTimer.singleShot(30000, self.unlock)
+            QTimer.singleShot(15000, self.unlock)
 
         return False
 
