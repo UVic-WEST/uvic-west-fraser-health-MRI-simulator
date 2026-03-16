@@ -41,15 +41,24 @@ class CycleLogic(QObject):
         self.controller.start_cycle()
         return True
 
-    def start(self, duration_sec=0):
-        """Alias for play()."""
-        return self.play(duration_sec)
+    def start_cycle(self, cycle_id: int, rem_time_s: int):
+        """
+        Alias for play().
+        
+        right now frontend will send the cycle ID until the cycle class is made
+        later the cycle class will include duration time which should be extracted by backend automatically
+        """
+        return self.play(rem_time_s)
 
     def stop(self):
         """Stop the running cycle, tell the lower layer, and reset."""
         self.controller.stop_cycle()
         self._reset()
         self.app_state.set_state("IDLE")
+
+    def stop_cycle(self):
+        """ Alias for stop """
+        self.stop()
 
     def pause(self):
         """Pause the running cycle. Stops the timer but preserves elapsed
@@ -58,6 +67,10 @@ class CycleLogic(QObject):
             self.timer.stop()
         self.controller.stop_cycle()
         self.app_state.set_state("PAUSED")
+
+    def pause_cyle(self):
+        """ Alias for pause """
+        self.pause()
 
     def resume(self):
         """Resume a paused cycle. Re-issues a start request to the lower
@@ -68,6 +81,10 @@ class CycleLogic(QObject):
         self._pending = True
         self.controller.start_cycle()
         return True
+    
+    def resume_cycle(self):
+        """ Alias for resume """
+        self.resume()
 
     # ------------------------------------------------------------------
     # Controller signal handlers

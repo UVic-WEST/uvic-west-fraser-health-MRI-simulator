@@ -12,7 +12,7 @@ from frontend.sign_in_page import SignInPage
 from frontend.confirmation_page import ConfirmationPage
 
 from frontend.cycle_running_page import CycleRunningPage
-from backend.cycle_running_page_logic import CycleRunningPageLogic
+from backend.cycle_logic import CycleLogic
 
 from embedded.light_controller import LightController
 
@@ -50,7 +50,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.confirmation_page)
 
         #Code for cycle running page. 
-        self.cycle_running_page_controller = CycleRunningPageLogic(self)
+        self.cycle_running_page_controller = CycleLogic(self)
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
