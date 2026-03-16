@@ -6,22 +6,25 @@ from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
 class CustomCycleButton(QWidget):
-    '''
-    GUI implementation for the "Create Custom Cycle" button on the homepage.
-    '''
     def __init__(self, parent=None):
+        """
+        This function builds the Create Custom Cycle button widget
+
+        Args:
+            parent: the parent widget for this button container
+        """
         super().__init__(parent)
         self.parent = parent
         
-        # Set widget size to match dropdown width
+        #set widget size to match dropdown width
         self.setFixedSize(353, 50)
         
-        # Create the button
+        #create the button
         self.custom_cycle_button = QPushButton("Create Custom Cycle", self)
         self.custom_cycle_button.setFixedSize(353, 50)
         self.custom_cycle_button.setFont(QFont("Ubuntu", 20))
         
-        # Orange button styling
+        #orange button styling
         self.custom_cycle_button.setStyleSheet("""
             QPushButton {
                 background-color: #FFA630;
@@ -37,11 +40,15 @@ class CustomCycleButton(QWidget):
             }
         """)
         
-        # Connect button click
+        #connect button click
         self.custom_cycle_button.clicked.connect(self.custom_cycle_button_pressed)
     
+    # Handle Create Custom Cycle button presses.
+    #######################
+    #################
+    #we will probably want to delete this once the custom cycle page is created
     def custom_cycle_button_pressed(self):
-        '''
-        Handle button press - currently just prints to terminal.
-        '''
+        """
+        This function handles the Create Custom Cycle button press action.
+        """
         print("Create Custom Cycle selected")
