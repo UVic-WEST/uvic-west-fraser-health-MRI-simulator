@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import(
     QWidget,
-    QHBoxLayout,
     QLabel,
-    QVBoxLayout,
-    QGridLayout,
     QPushButton
 )
-from PySide6.QtGui import QFont, Qt, QPixmap
+from PySide6.QtGui import (
+    QFont, 
+    QPixmap
+)
 from frontend.sign_in_page_widgets.pinpad_widget import PinPad
 
 MAX_PASSWORD_INPUT = 4

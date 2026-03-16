@@ -1,16 +1,11 @@
 from PySide6.QtWidgets import(
     QWidget,
-    QHBoxLayout,
-    QLabel,
-    QVBoxLayout,
     QGridLayout,
     QPushButton,
 )
 
 from PySide6.QtCore import (
-    QTimer,
     Signal,
-    QObject
 )
 
 from PySide6.QtGui import QFont, Qt, QPixmap, QFont
@@ -31,6 +26,7 @@ class PinPad(QWidget):
         self.setFixedSize(370,498)
         self.buttons = []
 
+        #styling the pinpad
         self.setObjectName("PinPad")
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet("""
@@ -44,6 +40,7 @@ class PinPad(QWidget):
         self.main_layout.setHorizontalSpacing(9)
         self.main_layout.setVerticalSpacing(12)
 
+        #create buttons and organize them as a grid on widget
         self.create_buttons()
 
         horiz_butn_index = 0
@@ -53,9 +50,16 @@ class PinPad(QWidget):
             horiz_butn_index = (horiz_butn_index+1)%3
             if horiz_butn_index == 0:
                 vert_butn_index += 1
+        
         self.setLayout(self.main_layout)
 
     def set_button_dimensions(self,button:QPushButton):
+            """
+            sets all of the initialized pinpad buttons to the necessary size and style
+
+            Args:
+                button (QPushButton): button to be changed
+            """
             button.setFixedSize(109,109)
             button.setStyleSheet("""
             QPushButton{
@@ -74,15 +78,20 @@ class PinPad(QWidget):
             button.setFont(QFont("Ubuntu", 43))
 
     def create_buttons(self):
+        """
+        creates the buttons for the pinpad and saves them to the list of buttons for this class, this function also sets up their signal connections.
+        """
         for digit in range(1,13):
-            #pins at end of pad
+            
             pin = str(digit)
+
             if pin == '10':
                 pin = "del"
             elif pin == '11':
                 pin = '0'
             elif pin == '12':
                 pin = 'clr'
+
             button = QPushButton(pin)
             self.set_button_dimensions(button)
             button.clicked.connect(lambda checked=False, p=pin: self.pinpad_pressed.emit(p))
