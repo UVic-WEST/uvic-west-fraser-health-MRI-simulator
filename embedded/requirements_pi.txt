@@ -1,0 +1,6 @@
+# Python dependencies required when running the MRI simulator on Raspberry Pi
+# Install with: pip install -r requirements-pi.txt
+
+PySide6
+pyserial
+RPi.GPIO

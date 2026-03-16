@@ -36,8 +36,8 @@ class LightController(QObject):
         CALL THIS FUNCTION'S .system_idle() FUNC WHEN FINISHED WITH ROUTINE.
         '''
         assert (brightness <= 1 and brightness >= 0), "Brightness not within proper range."
-        assert (self.locked is not False), "This resource is in use."
-
+        #Changed this b/c I want to be able to use this function in a loop and not have to worry about the resource being locked.
+        assert (self.locked is False), "This resource is in use." 
         self.locked = True
 
         #to ask: will this require a fork?
