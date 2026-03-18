@@ -9,6 +9,14 @@ from dataclasses import dataclass
 from typing import Dict, Any
 from enum import Enum
 
+class ActionType(Enum):
+    SOUND_START = "sound_start"
+    SOUND_STOP = "sound_stop"
+    SOUND_RESET = "sound_reset"
+    LIGHT_ON = "light_on"
+    LIGHT_OFF = "light_off"
+    LIGHT_RESET = "light_reset"
+
 @dataclass
 class CycleAction:
   """configures single timestamped (in milliseconds) action with a cycle"""
@@ -75,10 +83,3 @@ class CycleAction:
 #  LIGHT_OFF = "light_off"
 #  LIGHT_RESET = "light_reset"  #resets light intensity to safe level
   
-class ActionType(Enum):
-    SOUND_START = "sound_start"
-    SOUND_STOP = "sound_stop"
-    SOUND_RESET = "sound_reset"
-    LIGHT_ON = "light_on"
-    LIGHT_OFF = "light_off"
-    LIGHT_RESET = "light_reset"
