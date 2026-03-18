@@ -107,9 +107,10 @@ def test_get_cycle_by_index_negative(factory):
     # Python allows negative indexing — verify expected behavior
     assert cycle.cycle_id == "scan_2"
 
-def test_cycle_does_not_start_on_invalid_config(factory, mocker):
+from unittest.mock import Mock
+def test_cycle_does_not_start_on_invalid_config(factory):
     """Cycle should not start if configuration retrieval fails."""
-    mock_runner = mocker.Mock()
+    mock_runner = Mock()
 
     with pytest.raises(ValueError):
         factory.get_cycle_by_id("bad_id")
