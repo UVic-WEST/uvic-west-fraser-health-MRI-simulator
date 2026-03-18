@@ -41,7 +41,7 @@ class CyclePlayerWidget(QWidget):
         #setup for play square widget
         self.play_square_widget = PlaySquareWidget(self)
         self.main_layout.addWidget(self.play_square_widget)
-        
+
         #setup for cycle selector dropdown
         self.cycle_selector = FixedComboBox()
         self.cycle_selector.setFixedWidth(353)

@@ -1,12 +1,15 @@
 from PySide6.QtCore import QObject, Signal, QTimer
+from backend.cycle_factory import CycleFactory
+from backend.cycle_config import CycleConfig
+
 
 TICK_INTERVAL_MS = 100
 
 
 class CycleLogic(QObject):
-    """Manages the simulation timeline: tracks elapsed time against total
+    """ Manages the simulation timeline: tracks elapsed time against total
     duration and emits signals so the UI layer can update progress, remaining
-    time, and cycle-finished state."""
+    time, and cycle-finished state. """
 
     progress_changed = Signal(float)
     time_changed = Signal(int)
@@ -18,43 +21,65 @@ class CycleLogic(QObject):
         super().__init__()
         self.app_state = app_state
         self.controller = controller
+        self.cycle_factory = CycleFactory()
 
+        self.current_cycle: CycleConfig | None = None  # loaded cycle
         self.timer = None
         self.elapsed_ms = 0
         self.total_duration_sec = 0
         self._pending = False
+        self._cycle_config = None
+        self._last_action_check_ms = 0
 
         self.controller.started.connect(self._on_started)
         self.controller.failed.connect(self._on_failed)
+
+    def load_cycle_by_id(self, cycle_id: str):
+        """ Load a predefined cycle from the factory by its ID """
+        self.current_cycle = self.cycle_factory.get_cycle_by_id(cycle_id)
+        self.total_duration_sec = self.current_cycle.cycle_duration_sec
+        self.elapsed_ms = 0
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
-    def play(self, duration_sec=0):
+    def play(self, duration_sec=0, cycle_config=None):
         """Request the lower-layer controller to start a cycle.
         Returns True if the request was issued, False if a cycle is already
-        active or pending."""
+        active or pending.
+
+        Args:
+            duration_sec: cycle duration (used if cycle_config is not provided)
+            cycle_config: optional CycleConfig with timestamped actions
+        """
         if self.app_state.get_state() == "RUNNING" or self._pending:
             return False
 
         self._pending = True
-        self.total_duration_sec = duration_sec
+        self._cycle_config = cycle_config
+        self._last_action_check_ms = 0
+
+        if cycle_config is not None:
+            self.total_duration_sec = cycle_config.cycle_duration_sec
+        else:
+            self.total_duration_sec = duration_sec
+
         self.controller.start_cycle()
         return True
 
     def start(self, duration_sec=0):
-        """Alias for play()."""
+        """ alias for play() """
         return self.play(duration_sec)
 
     def stop(self):
-        """Stop the running cycle, tell the lower layer, and reset."""
+        """ stop the running cycle, tell the lower layer, and reset """
         self.controller.stop_cycle()
         self._reset()
         self.app_state.set_state("IDLE")
 
     def pause(self):
-        """Pause the running cycle"""
+        """ pause the running cycle """
         if self.app_state.get_state() != "RUNNING":
             return
         
@@ -66,7 +91,7 @@ class CycleLogic(QObject):
         self.paused.emit()
 
     def resume(self):
-        """Resume a paused cycle without restarting it."""
+        """ resume a paused cycle without restarting it """
         if self.app_state.get_state() != "PAUSED":
             return False
 
@@ -112,12 +137,36 @@ class CycleLogic(QObject):
         self.elapsed_ms += TICK_INTERVAL_MS
         total_ms = int(self.total_duration_sec * 1000)
 
+        # emit progress for UI
         progress = min(self.elapsed_ms / total_ms, 1.0) if total_ms > 0 else 0.0
         self.progress_changed.emit(progress)
         self.time_changed.emit(self.elapsed_ms)
-
+        
+        # execute actions whose time has come
+        if self.current_cycle:
+            for action in self.current_cycle.actions:
+                if action.is_execution_time(self.elapsed_ms, self.elapsed_ms - TICK_INTERVAL_MS):
+                    self.controller.execute_action(action)
+        
+        # complete cycle if done
         if total_ms > 0 and self.elapsed_ms >= total_ms:
             self._complete()
+
+    def _dispatch_actions(self):
+        """Check for CycleActions due in the current tick window and dispatch them."""
+        if self._cycle_config is None:
+            return
+        if not hasattr(self.controller, 'dispatch_action'):
+            return
+
+        actions = self._cycle_config.get_actions_at(
+            self.elapsed_ms, window_ms=TICK_INTERVAL_MS
+        )
+        for action in actions:
+            if action.is_execution_time(self.elapsed_ms, self._last_action_check_ms):
+                self.controller.dispatch_action(action)
+
+        self._last_action_check_ms = self.elapsed_ms
 
     def _complete(self):
         self.cycle_finished.emit()
@@ -131,3 +180,5 @@ class CycleLogic(QObject):
         self.elapsed_ms = 0
         self.total_duration_sec = 0
         self._pending = False
+        self._cycle_config = None
+        self._last_action_check_ms = 0
