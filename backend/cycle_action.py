@@ -7,12 +7,14 @@ action (parameters)
 """
 from dataclasses import dataclass
 from typing import Dict, Any
+from enum import Enum
 
 @dataclass
 class CycleAction:
   """configures single timestamped (in milliseconds) action with a cycle"""
   timestamp_ms: int  #when to execute action in relation to cycle start (in milliseconds)
-  action_type: str  #strings such as "sound_start", "light_stop", "light_reset", etc.
+  #action_type: str  #strings such as "sound_start", "light_stop", "light_reset", etc.
+  action_type: ActionType
   parameters: Dict[str, Any]  #parameters specific to action (if any)
 
   def __post_init__(self):
@@ -24,6 +26,10 @@ class CycleAction:
       ValueError: if action_type is empty string
       ValueError: if parameters is not a dictionary
     """
+    # Convert string to enum
+    if isinstance(self.action_type, str):
+      self.action_type = ActionType(self.action_type)
+
     if self.timestamp_ms < 0:
       raise ValueError(
         "timestamp_ms must be non-negative"
@@ -60,12 +66,19 @@ class CycleAction:
     )
 
 
-class ActionType:
-  """constants for commonly used action types"""
-  SOUND_START = "sound_start"
-  SOUND_STOP = "sound_stop"
-  SOUND_RESET = "sound_reset"  #resets sound to safe decibel level
-  LIGHT_ON = "light_on"
-  LIGHT_OFF = "light_off"
-  LIGHT_RESET = "light_reset"  #resets light intensity to safe level
+#class ActionType:
+#  """constants for commonly used action types"""
+#  SOUND_START = "sound_start"
+#  SOUND_STOP = "sound_stop"
+#  SOUND_RESET = "sound_reset"  #resets sound to safe decibel level
+#  LIGHT_ON = "light_on"
+#  LIGHT_OFF = "light_off"
+#  LIGHT_RESET = "light_reset"  #resets light intensity to safe level
   
+class ActionType(Enum):
+    SOUND_START = "sound_start"
+    SOUND_STOP = "sound_stop"
+    SOUND_RESET = "sound_reset"
+    LIGHT_ON = "light_on"
+    LIGHT_OFF = "light_off"
+    LIGHT_RESET = "light_reset"
