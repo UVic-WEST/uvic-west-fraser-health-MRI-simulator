@@ -9,6 +9,7 @@ from backend.home_page_logic import HomePageLogic
 
 from frontend.sign_in_page import SignInPage
 from frontend.sign_in_page_widgets.timed_out_page import TimeOutPage
+from backend.auth import Auth
 
 from frontend.confirmation_page import ConfirmationPage
 
@@ -18,6 +19,9 @@ from backend.cycle_running_page_logic import CycleRunningPageLogic
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
 from backend.cycle_controller import CycleController
+
+#PASSWORD 
+PASS = '2026'
 
 class AppRouter(QMainWindow):
     def __init__(self):
@@ -44,9 +48,9 @@ class AppRouter(QMainWindow):
 
         #create pages, connect controllers, add to app widget stack
         #code for sign in page
-        self.sign_in_page_controller = None #CHANGE WHEN THERES A CONTROLLER TO CONNECT
+        self.sign_in_page_controller = Auth(PASS, self)
         self.sign_in_page = SignInPage(self.sign_in_page_controller, self)
-        self.timed_out_page = TimeOutPage(self)
+        self.timed_out_page = TimeOutPage(self.sign_in_page_controller, self)
         self.main_layout.addWidget(self.sign_in_page)
         self.main_layout.addWidget(self.timed_out_page)
 
@@ -114,8 +118,14 @@ class AppRouter(QMainWindow):
         """
         This function routes the application to the time out page after failed sign in then starts the 30s timeout counter
         """
-        self.timed_out_page.start_countdown()
         self.main_layout.setCurrentWidget(self.timed_out_page)
+
+    def signout(self):
+        """
+        Properly signs user out in auth then moves to show the signin page
+        """
+        self.sign_in_page_controller.logout()
+        self.show_signin()
 
     def show_signin(self):
         """
