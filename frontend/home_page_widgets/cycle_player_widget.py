@@ -14,14 +14,37 @@ PLAY_SQUARE_DROPDOWN_GAP_PX = 20
 
 
 class FixedComboBox(QComboBox):
+    """
+    This class builds a combo box (AKA DROPDOWN) with a fixed popup position
+
+    Args:
+        None
+    """
+    
     def showPopup(self):
+        """
+        This function shows the combo box popup below the widget
+        """
         super().showPopup()
         popup = self.view().window()
         if popup:
             popup.move(self.mapToGlobal(QPoint(0, self.height())))
 
 class CyclePlayerWidget(QWidget):
+    """
+    This class builds the cycle player widget and its controls
+
+    Args:
+        parent: the parent widget for this container
+    """
+
     def __init__(self, parent=None):
+        """
+        This function builds the cycle player widget and its controls
+
+        Args:
+            parent: the parent widget for this container
+        """
         #setup
         super().__init__(parent)
         self.parent = parent
@@ -99,11 +122,20 @@ class CyclePlayerWidget(QWidget):
     
     #called when user selects a cycle from the dropdown
     def on_cycle_selected(self, cycle_name):
+        """
+        This function updates the selected cycle from the dropdown
+
+        Args:
+            cycle_name: the cycle name selected by the user
+        """
         self.cur_cycle = cycle_name
         print("Current cycle updated to:", cycle_name)  
         self.parent.set_cur_cycle(cycle_name)
         self.play_square_widget.update_selected_cycle(cycle_name)
 
     def play_selected_cycle(self):
+        """
+        This function tells the parent widget to play the selected cycle
+        """
         self.parent.play_selected_cycle()
 

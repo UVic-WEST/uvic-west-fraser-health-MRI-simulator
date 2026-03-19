@@ -16,10 +16,13 @@ from PySide6.QtCore import (
 from frontend.helpers import make_button_circle
 
 class PlaySquareWidget(QWidget):
-    '''
-    GUI implementation for the blue box that is on the homepage which plays a cycle.
-    '''
     def __init__(self, parent=None):
+        """
+        This function builds the play square widget
+
+        Args:
+            parent: the parent widget for this container
+        """
         #setting up widget size and main_layout
         super().__init__(parent)
         self.parent = parent
@@ -86,15 +89,20 @@ class PlaySquareWidget(QWidget):
         cycle_play_button.clicked.connect(self.cycle_play_button_pressed)
 
     def cycle_play_button_pressed(self):
-        '''
-        cycle_name = self.cur_cycle.name if self.cur_cycle else "a cycle"
-        self.play_cycle_confirmation = ConfirmationPopupDialog("Confirmation", f"Are you sure you want to start {cycle_name}?", "Start Cycle", "Cancel", False)
-        if self.play_cycle_confirmation.exec():
-            pass 
-            #this should emit signal to cycleplayer -> homepage to open cycle running page
-        '''
+        """
+        This function triggers playback for the selected cycle
+
+        Args:
+            None
+        """
         self.parent.play_selected_cycle()
         
 
-    def update_selected_cycle(self, new_cycle):
-        self.cur_cycle = new_cycle
+    def update_selected_cycle(self, cycle_name):
+        """
+        This function updates the selected cycle from the dropdown
+
+        Args:
+            cycle_name: the cycle name selected by the user
+        """
+        self.cur_cycle = cycle_name
