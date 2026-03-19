@@ -73,13 +73,4 @@ class CycleAction:
       f"parameters={self.parameters})"
     )
 
-
-#class ActionType:
-#  """constants for commonly used action types"""
-#  SOUND_START = "sound_start"
-#  SOUND_STOP = "sound_stop"
-#  SOUND_RESET = "sound_reset"  #resets sound to safe decibel level
-#  LIGHT_ON = "light_on"
-#  LIGHT_OFF = "light_off"
-#  LIGHT_RESET = "light_reset"  #resets light intensity to safe level
   
