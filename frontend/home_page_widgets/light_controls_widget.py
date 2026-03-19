@@ -8,46 +8,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QFont, QPixmap, QIcon, QPainter, QPen
+from frontend.helpers import ReadOnlySlider
 
 LIGHT_DROPDOWN_COLOUR = "#FAF5F5"
-
-class _ReadOnlySlider(QSlider):
-    def mousePressEvent(self, event):
-        """
-        This function ignores mouse press events for the slider
-
-        Args:
-            event: the Qt mouse press event
-        """
-        event.ignore()
-
-    def mouseMoveEvent(self, event):
-        """
-        This function ignores mouse move events for the slider
-
-        Args:
-            event: the Qt mouse move event
-        """
-        event.ignore()
-
-    def wheelEvent(self, event):
-        """
-        This function ignores mouse wheel events for the slider
-
-        Args:
-            event: the Qt wheel event
-        """
-        event.ignore()
-
-    def keyPressEvent(self, event):
-        """
-        This function ignores key press events for the slider
-
-        Args:
-            event: the Qt key press event
-        """
-        event.ignore()
-
 
 class LightControlsWidget(QWidget):
     brightness_changed = Signal(int)
@@ -142,7 +105,7 @@ class LightControlsWidget(QWidget):
             }
         """)
 
-        self.brightness_slider = _ReadOnlySlider(Qt.Orientation.Horizontal)
+        self.brightness_slider = ReadOnlySlider(Qt.Orientation.Horizontal)
         self.brightness_slider.setRange(0, 100)
         self.brightness_slider.setSingleStep(10)
         self.brightness_slider.setPageStep(10)
