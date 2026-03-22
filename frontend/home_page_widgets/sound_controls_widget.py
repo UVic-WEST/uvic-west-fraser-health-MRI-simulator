@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QFont, QPixmap, QIcon, QPainter, QPen
+from frontend.helpers import ReadOnlySlider
 
 SOUND_DROPDOWN_COLOUR = "#FAF5F5"
 SOUND_PANEL_BUTTON_COLOUR = SOUND_DROPDOWN_COLOUR
@@ -16,28 +17,19 @@ SOUND_SELECTED_BUTTON_COLOUR = "#2E9B41"
 SOUND_PANEL_COLS = 4
 SOUND_NAMES = ["Sound 1", "Sound 2", "Sound 3", "Sound 4", "Sound 5", "Sound 6", "Sound 7", "Sound 8"]
 
-
-class _ReadOnlySlider(QSlider):
-    """Visual slider that ignores direct user interaction."""
-
-    def mousePressEvent(self, event):
-        event.ignore()
-
-    def mouseMoveEvent(self, event):
-        event.ignore()
-
-    def wheelEvent(self, event):
-        event.ignore()
-
-    def keyPressEvent(self, event):
-        event.ignore()
-
-
 class SoundControlsWidget(QWidget):
+    # Emitted when a sound is selected (or cleared with an empty string).
     sound_selected = Signal(str)
+    # Emitted when volume changes in 10-point increments.
     volume_changed = Signal(int)
 
     def __init__(self, parent=None):
+        """
+        This function builds the sound controls widget
+
+        Args:
+            parent: the parent widget for this container
+        """
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._expanded = False
@@ -126,7 +118,7 @@ class SoundControlsWidget(QWidget):
             }
         """)
 
-        self.volume_slider = _ReadOnlySlider(Qt.Orientation.Horizontal)
+        self.volume_slider = ReadOnlySlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setSingleStep(10)
         self.volume_slider.setPageStep(10)
@@ -150,6 +142,12 @@ class SoundControlsWidget(QWidget):
         self.header_button.clicked.connect(self._toggle_panel)
 
     def _apply_header_style(self, expanded: bool):
+        """
+        This function updates the header button style based on panel state
+
+        Args:
+            expanded: whether the sound panel is expanded
+        """
         if expanded:
             # top of an open box: only top border + left/right, rounded top corners only
             self.header_button.setStyleSheet(f"""
@@ -181,13 +179,25 @@ class SoundControlsWidget(QWidget):
             """)
 
     def _toggle_panel(self):
+        """
+        This function toggles the sound panel open or closed
+
+        Args:
+            None
+        """
+        # Keep visual state and panel visibility in sync.
         self._expanded = not self._expanded
         self._apply_header_style(expanded=self._expanded)
         self._buttons_widget.setVisible(self._expanded)
         self.header_button.setIcon(self._close_icon if self._expanded else self._arrow_icon)
 
     def _build_close_icon(self) -> QIcon:
-        """Create a simple x icon for the expanded panel state."""
+        """
+        This function builds the close icon used for the expanded panel state
+
+        Args:
+            None
+        """
         pixmap = QPixmap(12, 12)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
@@ -201,6 +211,12 @@ class SoundControlsWidget(QWidget):
         return QIcon(pixmap)
 
     def _sound_button_stylesheet(self, is_selected: bool) -> str:
+        """
+        This function returns the stylesheet for a sound button
+
+        Args:
+            is_selected: whether this sound button is currently selected
+        """
         base_colour = SOUND_SELECTED_BUTTON_COLOUR if is_selected else SOUND_PANEL_BUTTON_COLOUR
         text_colour = "white" if is_selected else "black"
         border_style = "none" if is_selected else "1px solid #CFCFCF"
@@ -215,10 +231,23 @@ class SoundControlsWidget(QWidget):
         """
 
     def _refresh_sound_button_styles(self):
+        """
+        This function refreshes all sound button styles to match selection state
+
+        Args:
+            None
+        """
+        # Repaint all buttons so only the active selection is highlighted.
         for name, btn in self._sound_buttons.items():
             btn.setStyleSheet(self._sound_button_stylesheet(is_selected=(name == self._selected_sound)))
 
     def _on_sound_button_clicked(self, sound_name):
+        """
+        This function handles sound button selection and deselection
+
+        Args:
+            sound_name: the sound name for the button that was clicked
+        """
         if self._selected_sound == sound_name:
             # Clicking the active sound turns it off.
             self._selected_sound = None
@@ -233,6 +262,12 @@ class SoundControlsWidget(QWidget):
         self.sound_selected.emit(sound_name)
 
     def _on_volume_changed(self, value: int):
+        """
+        This function snaps and emits the current volume value
+
+        Args:
+            value: the current slider volume value
+        """
         # Snap to 10-point increments even when dragging.
         snapped = max(0, min(100, int(round(value / 10.0) * 10)))
         if snapped != value:
@@ -243,7 +278,21 @@ class SoundControlsWidget(QWidget):
         self.volume_changed.emit(snapped)
 
     def _decrease_volume(self):
+        """
+        This function decreases the volume by one step
+
+        Args:
+            None
+        """
+        # Step volume down by one increment.
         self.volume_slider.setValue(max(0, self.volume_slider.value() - 10))
 
     def _increase_volume(self):
+        """
+        This function increases the volume by one step
+
+        Args:
+            None
+        """
+        # Step volume up by one increment.
         self.volume_slider.setValue(min(100, self.volume_slider.value() + 10))

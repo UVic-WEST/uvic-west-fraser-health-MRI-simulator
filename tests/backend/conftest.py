@@ -16,6 +16,7 @@ class FakeController(QObject):
         super().__init__()
         self.start_called = False
         self.stop_called = False
+        self.executed_actions = []
 
     def start_cycle(self):
         self.start_called = True
@@ -25,11 +26,14 @@ class FakeController(QObject):
         self.stop_called = True
         self.start_called = False
 
+    def execute_action(self, action):
+        self.executed_actions.append(action)
+
 # -------------------------
 # Fixtures
 # -------------------------
 @pytest.fixture
-def fake_controller():
+def fake_controller(qtbot):
     return FakeController()
 
 @pytest.fixture

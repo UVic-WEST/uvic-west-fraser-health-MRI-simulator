@@ -12,6 +12,7 @@ from frontend.sign_in_page_widgets.timed_out_page import TimeOutPage
 from backend.auth import Auth
 
 from frontend.confirmation_page import ConfirmationPage
+from frontend.warning_page import WarningPage
 
 from frontend.cycle_running_page import CycleRunningPage
 from backend.cycle_running_page_logic import CycleRunningPageLogic
@@ -65,6 +66,12 @@ class AppRouter(QMainWindow):
         self.confirmation_page.cancel_requested.connect(self.show_home)
         self.main_layout.addWidget(self.confirmation_page)
 
+        #Code for warning page
+        self.warning_page = WarningPage(self)
+        self.warning_page.proceed_requested.connect(self.show_custom_cycle_builder)
+        self.warning_page.cancel_requested.connect(self.show_home)
+        self.main_layout.addWidget(self.warning_page)
+
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningPageLogic(
             cycle_controller=self.cycle_controller, parent=self
@@ -97,6 +104,19 @@ class AppRouter(QMainWindow):
         This function shows the play cycle confirmation page to play a cycle
         """
         self.main_layout.setCurrentWidget(self.confirmation_page)
+
+    def show_warning(self):
+        """
+        This function shows the warning page before custom cycle creation
+        """
+        self.main_layout.setCurrentWidget(self.warning_page)
+
+    def show_custom_cycle_builder(self):
+        """
+        This function handles warning confirmation for custom cycle creation
+        """
+        print("Custom cycle builder page is not implemented yet")
+        self.show_home()
 
     def play_cycle_confirmed(self):
         """

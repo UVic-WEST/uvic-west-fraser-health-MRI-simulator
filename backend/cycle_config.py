@@ -89,7 +89,7 @@ class CycleConfig:
             "actions": [
                 {
                     "timestamp_ms": action.timestamp_ms,
-                    "type": action.action_type,
+                    "type": action.action_type.value,
                     "params": action.parameters
                 }
                 for action in self.actions
