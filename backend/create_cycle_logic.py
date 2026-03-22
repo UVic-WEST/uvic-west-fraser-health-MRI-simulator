@@ -1,10 +1,8 @@
 from PySide6.QtCore import QObject, Signal
-from dataclasses import dataclass, field
-from typing import List
+from typing import List, Tuple
 import json
-from backend/cycle_config.py CycleConfig
+from backend.sound_group import SoundGroup
 
-@dataclass
 class CreateCycleLogic(QObject):
   """
   Bridges between L1 (CreateCyclePages) and L2 to create, display, and save a custom cycle to json file.
@@ -16,32 +14,114 @@ class CreateCycleLogic(QObject):
     sound_list (list): list of sounds chosen for custom cycle soted in ascending order based on sound id
     light_level (int): light intensity from 0 to 100 (inclusive) in increments of 10
     sound_set (bool): whether or not sounds have been set to the custom cycle
-    """
+  """
+  #duration_changed = Signal(int)
+  #light_level_changed = Signal(int)
+  #sounds_changed = Signal()
+  sample_playing = Signal(int)
 
   cycle_id: int
   cycle_name: str
-  cycle_dur_s: int 
-  sound_list: List[(int, str)] = field(default_factory=list)
-  light_level: int
-  sound_set: bool
+  cycle_dur_s: int = 180
+  sound_list: List[Tuple[int, str]] = field(default_factory=list)
+  light_level: int = 50
+  sound_set: bool = False
 
-  def __post_init__(self):
-    """Validates custom cycle components and initializes custom cycle if all is validated."""
+  def __init__(self, cycle_id: int, cycle_name: str, cycle_dur_s: int = 180, light_level: int = 50, sound_set: bool = False, sound_list: Lists[Tuple[int, str]] | None = None):
+    super().__init__()
+    
+    self.cycle_id = cycle_id
+    self.cycle_name = cycle_name
+    self.cycle_dur_s = cycle_dur_s
+    self.light_level = light_level
+    self.sound_set = sound_set
+    self.sound_list = sound_list or []
+
+    self._validate()
+    
+  
+  def validate(self):
+    """Validates custom cycle components."""
+    if not (60 <= self.cycle_dur_s <= 900):
+      raise ValueError("Cycle duration must be within 60s-900s (1min-15min), inclusive")
+
+    if not (0 <= self.light_level <= 100) or self.light_level % 10 != 0:
+      raise ValueError("Light level must be within 0–100, inclusive, and in steps of 10")
+
+    if not (1 <= len(sound_list) <= 8):
+      raise ValueError("Must have between 1 and 8 sound groupings per custom cycle")
+
+    self.sound_list.sort(key=lambda x: x[0])
   
   # ---------------------------------------------------------------------------
   # duration methods for custom cycle creation
   # ---------------------------------------------------------------------------
   def get_duration(self):
+      """ Gets current duration of custom cycle in seconds.
       
+      RETURNS: cycle_dur_s (int)
+      """
+      return self.cycle_dur_s
+    
 
+  def set_duration(self, new_cycle_dur_s: int):
+    if not (60 <= self.cycle_dur_s <= 900):
+      raise ValueError("Cycle duration must be within 60s-900s (1min-15min), inclusive")
+      
+    self.cycle_dur_s = new_cycle_dur_s
+    # self.duration_changed.emit(new_cycle_dur_s)
+    return True
 
   # ---------------------------------------------------------------------------
   # light methods for custom cycle creation
   # ---------------------------------------------------------------------------
+  def get_light_level(self):
+    return self.light_level
+    
+
+  def set_light_level(self, new_light_level):
+    if not (0 <= self.light_level <= 100) or self.light_level % 10 != 0:
+      raise ValueError("Light level must be within 0–100, inclusive, and in steps of 10")
+      
+    self.light_level = new_light_level
+    # self.light_level_changed.emit(new_light_level)
+    return True
+    
+
+  def display_light_level(self, light_level: int):
+    return
+    
+
+  # ---------------------------------------------------------------------------
+  # sound group methods for custom cycle creation
+  # ---------------------------------------------------------------------------
+  def get_total_groups(self):
+    return len(self.sound_list), sound_set
+    
+
+  def set_total_groups(self, new_total_groups):
+    if not (1 <= len(sound_list) <= 8):
+      raise ValueError("Must have between 1 and 8 sound groupings per custom cycle")
+
+    return
+      
+
+  # ---------------------------------------------------------------------------
+  # sound to group mapping methods for custom cycle creation
+  # ---------------------------------------------------------------------------
+  def get_sound_in_group(self, group_id: int):
+    return
+
+  def set_sounds_in_group(self, group_id: int, sounds: List[]int):
+    return
+    
+
+  # ---------------------------------------------------------------------------
+  # save set custom cycle to json file
+  # ---------------------------------------------------------------------------
+  def save_to_json(self):
+    return
 
 
-  
-  # ---------------------------------------------------------------------------
-  # sound methods for custom cycle creation
-  # ---------------------------------------------------------------------------
+
 
