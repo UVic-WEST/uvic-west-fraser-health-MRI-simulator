@@ -1,10 +1,22 @@
+"""Factory for predefined MRI simulation cycle configurations.
+
+Houses hardcoded cycle presets (e.g. Standard MRI, Fast MRI) that can be
+retrieved by ID or index. New presets are added by creating private
+_create_cycleN() methods and registering them in _load_cycles().
+"""
+
 from typing import List
 from backend.cycle_config import CycleConfig
 from backend.cycle_action import CycleAction, ActionType
 
+
 class CycleFactory:
-    """ provides predefined MRI simulation cycle configurations """
-    
+    """Provides predefined MRI simulation cycle configurations.
+
+    Cycles are built at init time and stored in a list and a dict
+    for retrieval by index or by cycle_id respectively.
+    """
+
     def __init__(self):
         self._predefined_cycles: List[CycleConfig] = []
         self._load_cycles()
