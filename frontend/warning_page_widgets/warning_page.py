@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLabel
 )
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtGui import (
     QPixmap, 
     QFont
@@ -11,8 +11,6 @@ from PySide6.QtGui import (
 from frontend.warning_page_widgets.confirmation_buttons import WarningButtons
 
 class WarningPage(QWidget):
-    proceed_requested = Signal()
-    cancel_requested = Signal()
 
     def __init__(self, parent=None):
         """
@@ -88,10 +86,10 @@ class WarningPage(QWidget):
         """
         This function emits cancel when warning is dismissed
         """
-        self.cancel_requested.emit()
+        self.parent.show_home()
 
     def warning_confirmed(self):
         """
         This function emits proceed when warning is accepted
         """
-        self.proceed_requested.emit()
+        self.parent.show_create_cycle_pages()
