@@ -4,30 +4,36 @@ from PySide6.QtWidgets import (
     QStackedLayout,
 )
 
-from frontend.home_page import HomePage
+from frontend.home_page_widgets.home_page import HomePage
 from backend.home_page_logic import HomePageLogic
 
-from frontend.sign_in_page import SignInPage
+from frontend.sign_in_page_widgets.sign_in_page import SignInPage
 from frontend.sign_in_page_widgets.timed_out_page import TimeOutPage
+from backend.auth import Auth
 
-from frontend.confirmation_page import ConfirmationPage
-from frontend.warning_page import WarningPage
+from frontend.confirmation_page_widgets.confirmation_page import ConfirmationPage
+from frontend.warning_page_widgets.warning_page import WarningPage
 
-from frontend.cycle_running_page import CycleRunningPage
+from frontend.running_cycle_page_widgets.cycle_running_page import CycleRunningPage
 from backend.cycle_running_page_logic import CycleRunningPageLogic
+
+from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
 
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
 from backend.cycle_controller import CycleController
 
+#PASSWORD 
+PASS = '2026'
+
 class AppRouter(QMainWindow):
-    def __init__(self):
+    def __init__(self,parent=None):
         """
         This is the App router class which initializes the UI pages and their respective controllers.
         It also handles page routing logic.
         """
 
-        super().__init__()
+        super().__init__(parent)
         self.cur_cycle = None
 
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
@@ -45,9 +51,9 @@ class AppRouter(QMainWindow):
 
         #create pages, connect controllers, add to app widget stack
         #code for sign in page
-        self.sign_in_page_controller = None #CHANGE WHEN THERES A CONTROLLER TO CONNECT
+        self.sign_in_page_controller = Auth(PASS, self)
         self.sign_in_page = SignInPage(self.sign_in_page_controller, self)
-        self.timed_out_page = TimeOutPage(self)
+        self.timed_out_page = TimeOutPage(self.sign_in_page_controller, self)
         self.main_layout.addWidget(self.sign_in_page)
         self.main_layout.addWidget(self.timed_out_page)
 
@@ -64,8 +70,6 @@ class AppRouter(QMainWindow):
 
         #Code for warning page
         self.warning_page = WarningPage(self)
-        self.warning_page.proceed_requested.connect(self.show_custom_cycle_builder)
-        self.warning_page.cancel_requested.connect(self.show_home)
         self.main_layout.addWidget(self.warning_page)
 
         #Code for cycle running page. 
@@ -75,7 +79,12 @@ class AppRouter(QMainWindow):
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
+        #Code for create cycle pages
+        self.create_cycle_router = CreateCycleRouter(self)
+        self.main_layout.addWidget(self.create_cycle_router)
+
         #set layout of QstackedWidget
+
         self.app = QWidget()
         self.app.setLayout(self.main_layout)
         self.setCentralWidget(self.app)
@@ -107,13 +116,6 @@ class AppRouter(QMainWindow):
         """
         self.main_layout.setCurrentWidget(self.warning_page)
 
-    def show_custom_cycle_builder(self):
-        """
-        This function handles warning confirmation for custom cycle creation
-        """
-        print("Custom cycle builder page is not implemented yet")
-        self.show_home()
-
     def play_cycle_confirmed(self):
         """
         This function routes the app to the cycle running page when the user has confirmed 
@@ -134,11 +136,24 @@ class AppRouter(QMainWindow):
         """
         This function routes the application to the time out page after failed sign in then starts the 30s timeout counter
         """
-        self.timed_out_page.start_countdown()
         self.main_layout.setCurrentWidget(self.timed_out_page)
+
+    def signout(self):
+        """
+        Properly signs user out in auth then moves to show the signin page
+        """
+        self.sign_in_page_controller.logout()
+        self.show_signin()
 
     def show_signin(self):
         """
         This function routes the application to the sign in page after completed timeout
         """
         self.main_layout.setCurrentWidget(self.sign_in_page)
+
+    def show_create_cycle_pages(self):
+        """
+        routes application to the create cycle pages via the create cycle page router.
+        """
+        self.create_cycle_router.create_new_cycle()
+        self.main_layout.setCurrentWidget(self.create_cycle_router)

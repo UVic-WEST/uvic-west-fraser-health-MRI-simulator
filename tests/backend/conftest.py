@@ -47,5 +47,5 @@ def cycle_logic(app_state, fake_controller):
 
 @pytest.fixture
 def auth():
-    auth = Auth(correct_pin='1234')
+    auth = Auth(correct_pin='1234', parent=None)
     return auth

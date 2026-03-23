@@ -4,14 +4,15 @@ from PySide6.QtWidgets import(
 )
 from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtCore import (
+    Signal,
     QTimer
 )
 
 GREY = "#676363"
-TIMEOUT_TIME = 5
+TIMEOUT_PERIOD = 15
 
 class TimeOutPage(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, controller, parent=None):
         """
         This widget is the displayed timed out page which times out the system upon 3 failed logins.
         
@@ -20,11 +21,8 @@ class TimeOutPage(QWidget):
         """
         super().__init__(parent)
         self.parent = parent
-
-        self.remaining_time = TIMEOUT_TIME
-        self.timer = QTimer(self)
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.update_timer)
+        self.login_controller = controller
+        self.login_controller.countdown.connect(self.update_timer)
 
         #fraser logo
         fraser_logo_path = 'resources/frontend_common_assets/fraser_health_logo_large.png'
@@ -40,7 +38,7 @@ class TimeOutPage(QWidget):
         self.message_text.move(479,119)
 
         #countdown
-        self.countdown = QLabel("30s",self)
+        self.countdown = QLabel(f"{str(TIMEOUT_PERIOD)}s",self)
         self.countdown.setFont(QFont("Ubuntu",64))
         self.countdown.move(653,340)
         self.countdown.setStyleSheet(f"color: {GREY}; qproperty-alignment: AlignCenter;")
@@ -51,30 +49,24 @@ class TimeOutPage(QWidget):
         self.remaining_text.move(622,452)
         self.remaining_text.setStyleSheet(f"color: {GREY}; qproperty-alignment: AlignCenter;")
 
-    def start_countdown(self):
-        """
-        Starts the countdown for timeout
-        """
-        self.remaining_time = TIMEOUT_TIME
-        self.countdown.setText(str(self.remaining_time)+"s")
-        self.timer.start()
-        
-    def update_timer(self):
+    def update_timer(self, time_s):
         """
         updates the on screen countdown for timeout
+        
+        Args:
+            time_s (int): time remaining on timeout page
         """
-        self.countdown.setText(str(self.remaining_time)+"s")
-        self.remaining_time -= 1
+        self.countdown.setText(str(time_s)+"s")
 
-        if self.remaining_time < 0: 
+        if time_s <= 0: 
             self.complete_timeout()
 
     def complete_timeout(self):
         """
         returns user to sign in page when timeout countdown is completed
         """
-        self.timer.stop()
         self.parent.show_signin()
+        self.countdown.setText(f"{str(TIMEOUT_PERIOD)}s")
         
 
 

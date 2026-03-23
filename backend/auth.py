@@ -6,28 +6,26 @@ three failed attempts (15-second timeout), and logout/reset logic.
 
 from PySide6.QtCore import QObject, Signal, QTimer
 
+TIMEOUT_PERIOD = 15
 
-class Auth:
-    """Manages user authentication state for the MRI simulator.
-
-    Attributes:
-        correct_pin (str): The four-digit PIN required to authenticate.
-        can_attempt_login (bool): Whether the user is allowed to attempt login
-            (False during lockout period).
-        is_authenticated (bool): Whether the user is currently signed in.
-        remaining_attempts (int): Number of PIN entry attempts remaining before
-            the 15-second lockout is triggered.
+class Auth(QObject):
     """
-
-    def __init__(self, correct_pin):
-        """Initialise Auth with the correct PIN.
-
-        Args:
-            correct_pin (str): A four-digit string used as the valid PIN.
-
-        Raises:
-            ValueError: If correct_pin is not exactly four characters.
+    required attributes and functions to set and reset attribute values depending on stage of login attempt by user
+    attributes:
+        correct_pin: PIN that will authenticate user (str)
+        can_attempt_login: whether or not user can attempt to login (bool)
+        is_authenticated: whether or not user successfully signed in after entering PIN (bool)
+        remaining_attempts: number of PIN entry attempts left for user before 15 second timeout begins (int)
+        timer: timer used for timed-out countdown logic
+        time_rem_s: countdown value used for timed-out countdown logic
+    """
+    countdown = Signal(int)
+    
+    def __init__(self, correct_pin, parent):
         """
+        verifies PIN length is correct (four digits) and sets initial attribute values for authentication process
+        """
+        super().__init__(parent)
         if len(correct_pin) != 4:
             raise ValueError("PIN must be four digits long")
         
@@ -35,8 +33,9 @@ class Auth:
         self.can_attempt_login = True  # whether a user can attempt to login or not
         self.is_authenticated = False # whether PIN entered is the correct PIN
         self.remaining_attempts = 3  # sign in attempts remaining before 15 second timeout
-    
-    
+        self.timer = None
+        self.time_rem_s = 0
+
     def login(self, pin):
         """Attempt to authenticate with the given PIN.
 
@@ -70,9 +69,21 @@ class Auth:
             self.can_attempt_login = False
             self.remaining_attempts = 3
 
-            QTimer.singleShot(15000, self.unlock)
-
+            self.timer = QTimer(self)
+            self.time_rem_s = TIMEOUT_PERIOD
+            self.timer.timeout.connect(self._update_timer)
+            self.timer.start(1000)
+            return None
         return False
+    
+    def _update_timer(self):
+        """updates the timeout countdown for the front end to use"""
+        if self.time_rem_s > 0:
+            self.time_rem_s -= 1
+            self.countdown.emit(self.time_rem_s)
+        else:
+            self.timer.stop()
+            self.unlock()
 
     
     def unlock(self):

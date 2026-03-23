@@ -37,8 +37,8 @@ class CycleConfig:
         for action in self.actions:
             if action.timestamp_ms > self.cycle_duration_ms:
                 raise ValueError(
-                    f"action at {self.timestamp_ms}ms exceeds cycle duration "
-                    f"of {self.cycle_duration}ms"
+                    f"action at {action.timestamp_ms}ms exceeds cycle duration "
+                    f"of {self.cycle_duration_ms}ms"
                 )
 
         # sort actions by timestamp_ms
