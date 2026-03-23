@@ -100,20 +100,45 @@ class CreateCycleLogic(QObject):
     
 
   def set_total_groups(self, new_total_groups):
-    if not (1 <= len(sound_list) <= 8):
+    if not (1 <= new_total_groups <= 8):
       raise ValueError("Must have between 1 and 8 sound groupings per custom cycle")
 
-    return
+    current = len(self.sound_list)
+
+    # Case 1: Too many groups so trim sound_list
+    if new_total_groups < current:
+        self.sound_list = self.sound_list[:new_total_groups]
+
+    # Case 2: Too few groups so add to sound_list
+    elif new_total_groups > current:
+        for i in range(current, new_total_groups):
+            new_group = SoundGroup(
+                group_id=i + 1,
+                group_volume=50,
+                sound_ids=[0]  # placeholder (must satisfy 1–3 rule)
+            )
+            self.sound_list.append(new_group)
+
+    return True
       
 
   # ---------------------------------------------------------------------------
   # sound to group mapping methods for custom cycle creation
   # ---------------------------------------------------------------------------
-  def get_sound_in_group(self, group_id: int):
+  def get_sounds_in_group(self, group_id: int):
     return
 
   def set_sounds_in_group(self, group_id: int, sounds: List[]int):
+    return True
+
+  def set_volume_for_group(self, new_group_volume):
+    return True
+
+  def play_group_sample(self, group_id):
     return
+
+  def confirm_sounds_in_each_group(self):
+    return True
     
 
   # ---------------------------------------------------------------------------
