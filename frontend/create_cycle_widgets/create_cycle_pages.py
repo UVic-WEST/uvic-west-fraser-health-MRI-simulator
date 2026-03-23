@@ -45,7 +45,7 @@ class CreateCycleRouter(QWidget):
         #CHANGE WHEN L2 HAS IMPLEMENTATION
         self.cc_controller = None 
 
-        self.cc_duration_page = None #need vanyas implementation lol
+        #self.cc_duration_page = None 
         self.cc_groups_page = CCGroupsPage(self.cc_controller, self)
         self.cc_brightness_page = CCBrightnessPage(self.cc_controller, self)
         self.cc_sound_group_mapping_page = CCSoundGroupMappingPage(self.cc_controller, self)
@@ -59,7 +59,7 @@ class CreateCycleRouter(QWidget):
         """
         self.main_layout = QStackedLayout()
 
-        self.main_layout.addWidget(self.cc_duration_page)
+        #self.main_layout.addWidget(self.cc_duration_page)
         self.main_layout.addWidget(self.cc_groups_page) 
         self.main_layout.addWidget(self.cc_brightness_page)
         self.main_layout.addWidget(self.cc_sound_group_mapping_page)
