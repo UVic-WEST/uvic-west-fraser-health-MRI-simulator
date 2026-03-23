@@ -1,19 +1,38 @@
+"""Bridge between Layer 2 (backend logic) and Layer 3 (hardware controllers).
+
+CycleController wraps the LightController and SoundPlayer so that the
+backend cycle logic can issue high-level commands (start, stop, dispatch
+action) without knowing the details of the hardware interface.
+"""
+
 from PySide6.QtCore import QObject, Signal
 from backend.cycle_action import ActionType
 
 
 class CycleController(QObject):
-    """Bridge between Layer 2 (CycleLogic) and Layer 3 (LightController, SoundPlayer).
+    """Hardware abstraction layer for cycle playback.
 
-    CycleLogic calls start_cycle()/stop_cycle() on this object and listens for
-    started/failed signals. During playback, CycleLogic calls dispatch_action()
-    on each tick to execute timestamped actions against the hardware layer.
+    Wraps LightController and SoundPlayer from the embedded layer.
+    CycleLogic calls start_cycle()/stop_cycle() and listens for
+    started/failed signals. During playback, dispatch_action() routes
+    individual CycleActions to the appropriate hardware controller.
+
+    Signals:
+        started (): Emitted when hardware initialisation succeeds.
+        failed (): Emitted when hardware initialisation fails.
     """
 
     started = Signal()
     failed = Signal()
 
     def __init__(self, light_controller, sound_player, parent=None):
+        """Initialise with references to the Layer 3 hardware controllers.
+
+        Args:
+            light_controller (LightController): Controls LED strip brightness.
+            sound_player (SoundPlayer): Controls audio playback via aplay/amixer.
+            parent (QObject, optional): Qt parent for ownership.
+        """
         super().__init__(parent)
         self.light_controller = light_controller
         self.sound_player = sound_player
