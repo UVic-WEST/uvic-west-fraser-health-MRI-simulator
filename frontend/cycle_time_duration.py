@@ -150,12 +150,18 @@ class CustomCyclePage(QWidget):
         self.durationText.setAlignment(Qt.AlignCenter)
 
 
-        self.time_label = QLabel("03:00",self)
-        self.time_label.setGeometry(366,291,307,94)
-        self.time_label.setStyleSheet("background-color: white; color: green; border: 2px solid #34C759; border-radius: 8px; font-size: 52px; font-family: 'Digital Numbers';" )
+        self.time_img = QLabel(self)
+        self.time_img.setGeometry(366,291,307,94)
+        self.time_img.setPixmap(QPixmap("../resources/timeduration_assets/timebox.png").scaled(
+        307, 94, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+        ))
+        # self.time_label.setStyleSheet("background-color: white; color: green; border: 2px solid #34C759; border-radius: 8px; font-size: 52px; font-family: 'Digital Numbers';" )
+
+        self.time_label = QLabel("03:00", self)
+        self.time_label.setGeometry(366, 291, 307, 94)  # same position!
+        self.time_label.setStyleSheet("background: transparent; color: #34C759; font-size: 52px; font-family: '{Digital Numbers}'; padding-bottom: 10px;")
         self.time_label.setAlignment(Qt.AlignCenter)
-        # self.time_label.setText(f"{self.minutes:02}:{self.seconds:02}") 
-        #02 means two digits
+       
         
         self.minus_btn = QPushButton("",self)
         self.minus_btn.setGeometry(280,314,48,48)
@@ -335,13 +341,13 @@ class CustomCyclePage(QWidget):
 # added only for testing my testing
 
 # """
-# if __name__ == "__main__":
-#     import sys
-#     from PySide6.QtWidgets import QApplication
+if __name__ == "__main__":
+    import sys
+    from PySide6.QtWidgets import QApplication
     
-#     app = QApplication(sys.argv)
-#     window = CustomCyclePage(None,None)
-#     window.show()
-#     sys.exit(app.exec())
+    app = QApplication(sys.argv)
+    window = CustomCyclePage(None,None)
+    window.show()
+    sys.exit(app.exec())
 
  
