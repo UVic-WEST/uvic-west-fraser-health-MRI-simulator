@@ -22,10 +22,10 @@ class CreateCycleLogic(QObject):
 
   cycle_id: int
   cycle_name: str
-  cycle_dur_s: int = 180
+  cycle_dur_s: int = 300  # default cycle duration is 300s (5 minutes)
   sound_list: List[Tuple[int, str]] = field(default_factory=list)
-  light_level: int = 50
-  sound_set: bool = False
+  light_level: int = 50  # default light level is 50
+  sound_set: bool = False  # by default, sounds are not set
 
   def __init__(self, cycle_id: int, cycle_name: str, cycle_dur_s: int = 180, light_level: int = 50, sound_set: bool = False, sound_list: Lists[Tuple[int, str]] | None = None):
     super().__init__()
@@ -41,14 +41,14 @@ class CreateCycleLogic(QObject):
     
   
   def validate(self):
-    """Validates custom cycle components."""
-    if not (60 <= self.cycle_dur_s <= 900):
-      raise ValueError("Cycle duration must be within 60s-900s (1min-15min), inclusive")
+    """Validates custom cycle components and orders list of sounds in ascending order based on sound ids."""
+    if not (60 <= self.cycle_dur_s <= 900) or self.cycle_dur_s % 30 != 0:
+      raise ValueError("Cycle duration must be within 60s-900s (1min-15min), inclusive, and in steps of 30s")
 
     if not (0 <= self.light_level <= 100) or self.light_level % 10 != 0:
       raise ValueError("Light level must be within 0–100, inclusive, and in steps of 10")
 
-    if not (1 <= len(sound_list) <= 8):
+    if not (1 <= len(self.sound_list) <= 8):
       raise ValueError("Must have between 1 and 8 sound groupings per custom cycle")
 
     self.sound_list.sort(key=lambda x: x[0])
@@ -64,7 +64,7 @@ class CreateCycleLogic(QObject):
       return self.cycle_dur_s
     
 
-  def set_duration(self, new_cycle_dur_s: int):
+  def set_duration(self, new_cycle_dur_s):
     if not (60 <= self.cycle_dur_s <= 900):
       raise ValueError("Cycle duration must be within 60s-900s (1min-15min), inclusive")
       
@@ -88,7 +88,7 @@ class CreateCycleLogic(QObject):
     return True
     
 
-  def display_light_level(self, light_level: int):
+  def display_light_level(self, light_level):
     return
     
 
@@ -125,10 +125,10 @@ class CreateCycleLogic(QObject):
   # ---------------------------------------------------------------------------
   # sound to group mapping methods for custom cycle creation
   # ---------------------------------------------------------------------------
-  def get_sounds_in_group(self, group_id: int):
+  def get_sounds_in_group(self, group_id):
     return
 
-  def set_sounds_in_group(self, group_id: int, sounds: List[]int):
+  def set_sounds_in_group(self, group_id, sounds):
     return True
 
   def set_volume_for_group(self, new_group_volume):
