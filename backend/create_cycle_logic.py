@@ -15,9 +15,9 @@ class CreateCycleLogic(QObject):
     light_level (int): light intensity from 0 to 100 (inclusive) in increments of 10
     sound_set (bool): whether or not sounds have been set to the custom cycle
   """
-  #duration_changed = Signal(int)
-  #light_level_changed = Signal(int)
-  #sounds_changed = Signal()
+  # duration_changed = Signal(int)
+  # sounds_changed = Signal()
+  light_level_set = Signal(int)
   sample_playing = Signal(int)
 
   cycle_id: int
