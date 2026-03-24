@@ -1,16 +1,17 @@
 from PySide6.QtWidgets import(
      QWidget, QLabel, QPushButton
 )
-
 from PySide6.QtCore import Qt, QSize, QTimer
-from PySide6.QtGui import (QFont,
-    QPixmap, QIcon)
+from PySide6.QtGui import (
+    QPixmap,
+    QIcon, 
+    QPainter,
+    QColor)
 from PySide6.QtGui import QFontDatabase
-
 
 class CCDurationPage(QWidget):
 
-    def __init__(self,parent,controller):
+    def __init__(self,controller,parent):
         """
         Initializes the CCDurationPage widget with a parent and controller.
         Initialize minutes and seconds
@@ -18,20 +19,14 @@ class CCDurationPage(QWidget):
         Further call all the helper functions and link the logic
 
         Args:
-            parent: 
-                    The parent widget that contains this page. Used for UI hierarchy,
-                    positioning, and memory management. Defaults to None.
-
-            controller: 
-                    Handles the application logic and connects the frontend UI
-                    to the backend through signals and data flow. Defaults to None.
-
+            controller (QWidget): Handles the application logic and connects the frontend UI to the backend through signals and data flow. Defaults to None.
+            parent (QWidget): The parent widget that contains this page. Used for UI hierarchy, positioning, and memory management. Defaults to None.
         """
         super().__init__()
         self.parent = parent 
         self.controller = controller 
 
-        self.minutes= 3
+        self.minutes = 0
         self.seconds = 0
 
         self.setFixedSize(1024,600)
@@ -41,14 +36,13 @@ class CCDurationPage(QWidget):
         self.setup_DurationScreen()
         self.on_page_enter()
 
-        #---------------Background
     def set_background(self):
         """
         This functions sets the background and layout of screen
         
         """
         self.bg_label = QLabel(self)
-        self.bg_pixmap = QPixmap("../resources/timeduration_assets/timetemplate.png")
+        self.bg_pixmap = QPixmap("resources/timeduration_assets/timetemplate.png")
 
         self.bg_label.setPixmap(self.bg_pixmap.scaled(
             self.size(),
@@ -58,8 +52,6 @@ class CCDurationPage(QWidget):
         
         self.bg_label.setGeometry(0,0,self.width(),self.height())
         self.bg_label.lower()
-
-
         
     def set_logicbuttons(self):
         """
@@ -83,9 +75,6 @@ class CCDurationPage(QWidget):
             }
         """)
         self.next_btn.clicked.connect(self.go_next)
-
-        
-        
         
         #default button
         self.default_btn = QPushButton("",self)
@@ -144,20 +133,13 @@ class CCDurationPage(QWidget):
         """)
         self.help_btn.clicked.connect(self.go_help)
 
-
-
-        ##positionin
-
-
-
     def setup_DurationScreen(self):
         """
         This function sets the main screen orientation of time screen
         It habdles time box, label, plus/minus buttons
         """
 
-
-        font_id = QFontDatabase.addApplicationFont("../resources/timeduration_assets/DigitalNumbers.ttf")
+        font_id = QFontDatabase.addApplicationFont("resources/timeduration_assets/DigitalNumbers.ttf")
         font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
         self.durationText = QLabel("Enter Cycle Duration", self)
         self.durationText.setGeometry(328,199,415,76)
@@ -167,12 +149,12 @@ class CCDurationPage(QWidget):
 
         self.time_img = QLabel(self)
         self.time_img.setGeometry(366,291,307,94)
-        self.time_img.setPixmap(QPixmap("../resources/timeduration_assets/timebox.png").scaled(
+        self.time_img.setPixmap(QPixmap("resources/timeduration_assets/timebox.png").scaled(
         307, 94, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
         ))
         # self.time_label.setStyleSheet("background-color: white; color: green; border: 2px solid #34C759; border-radius: 8px; font-size: 52px; font-family: 'Digital Numbers';" )
 
-        self.time_label = QLabel("03:00", self)
+        self.time_label = QLabel("05:00", self)
         self.time_label.setGeometry(366, 291, 307, 94)  # same position!
         self.time_label.setStyleSheet(f"background: transparent; color: #34C759; font-size: 48px; font-family: '{font_family}'; padding-bottom: 10px;")
         self.time_label.setAlignment(Qt.AlignCenter)
@@ -180,7 +162,7 @@ class CCDurationPage(QWidget):
         
         self.minus_btn = QPushButton("",self)
         self.minus_btn.setGeometry(280,314,48,48)
-        self.minus_btn.setIcon(QIcon("../resources/timeduration_assets/minus_sign.png"))
+        self.minus_btn.setIcon(QIcon("resources/timeduration_assets/minus_sign.png"))
         self.minus_btn.setIconSize(QSize(48,48))
         self.minus_btn.setStyleSheet("""
                 QPushButton {
@@ -198,7 +180,8 @@ class CCDurationPage(QWidget):
                     border-radius: 24px;
                 }
                 QPushButton:disabled {
-                    opacity: 0.15;
+                    background: rgba(255, 255, 255, 60);  /* similar to selected/pressed look */
+                    border-radius: 24px;
                 }
         """)
         self.minus_btn.clicked.connect(self.dec_time)
@@ -212,7 +195,7 @@ class CCDurationPage(QWidget):
 
         self.plus_btn = QPushButton("",self)
         self.plus_btn.setGeometry(682,314,48,48)
-        self.plus_btn.setIcon(QIcon("../resources/timeduration_assets/plus_sign.png"))
+        self.plus_btn.setIcon(QIcon("resources/timeduration_assets/plus_sign.png"))
         self.plus_btn.setIconSize(QSize(48,48))
         self.plus_btn.setStyleSheet("""
             QPushButton {
@@ -230,20 +213,20 @@ class CCDurationPage(QWidget):
                 border-radius: 24px;
             }
             QPushButton:disabled {
-                opacity: 0.15;
+                background: rgba(255, 255, 255, 60);  /* similar to selected/pressed look */
+                border-radius: 24px;
             }
         """)
 
         self.plus_btn.clicked.connect(self.inc_time)
 
+        self.minus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/minus_sign.png"))
+        self.plus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/plus_sign.png"))
 
         self.plus_ripple = QLabel("",self)
         self.plus_ripple.setGeometry(682,314,48,48)
         self.plus_ripple.setStyleSheet("background:  rgba(255,255,255,100); border-radius: 24px")
         self.plus_ripple.hide()
-
-
-
 
     #Place holders
 
@@ -251,15 +234,13 @@ class CCDurationPage(QWidget):
         """
         This function handles the logic to land on next page
         """
-        print("next clicked")
-
-    
+        self.parent.next_pressed()
 
     def set_default(self):
         """
-        This function sets default cycle time to 3 minutes
+        This function sets default cycle time to system default
         """
-        self.minutes=3
+        self.minutes=5 #UPDATE TO USE L2 FUNCTION CALL
         self.seconds=0
         self.cycledisplayScreen()
         self.check_boundaries()
@@ -319,8 +300,6 @@ class CCDurationPage(QWidget):
             self.minus_ripple.show()
             self.minus_ripple.raise_()
             QTimer.singleShot(200, self.minus_ripple.hide)
-       
-
 
     def check_boundaries(self):
         """
@@ -329,14 +308,11 @@ class CCDurationPage(QWidget):
         since that's a minimum limit 
         Similarly, greying out of plus button when time screen shows 15 MINUTES since that is s max time limit a user can set
         """
-        if self.minutes==1 and self.seconds==00:
-            self.minus_btn.setEnabled(False) #grey and unclickable
-        elif self.minutes ==15 and self.seconds ==00:
-            self.plus_btn.setEnabled(False)
-        else:
-            self.minus_btn.setEnabled(True)
-            self.plus_btn.setEnabled(True)
-            
+        at_min = (self.minutes == 1 and self.seconds == 0)
+        at_max = (self.minutes == 15 and self.seconds == 0)
+
+        self.minus_btn.setEnabled(not at_min)
+        self.plus_btn.setEnabled(not at_max)      
 
     def cycledisplayScreen(self):
         """
@@ -350,7 +326,7 @@ class CCDurationPage(QWidget):
         minutes and seconds format before displaying
         """
        
-        total_dur = 180
+        total_dur = 300 #UPDATE TO USE L2 CALL FOR DEFAULT
 
         self.minutes = total_dur//60
         self.seconds = total_dur %60
@@ -358,17 +334,26 @@ class CCDurationPage(QWidget):
         self.cycledisplayScreen()
         self.check_boundaries()
 
-# """
-# added only for testing my testing
+    def _build_icon_with_disabled(self, path: str) -> QIcon:
+        """
+        Sets up the disabled mask for the plus and minus buttons when they are at boundary
+        Args:
+            path(str): path to the icon for the button
+        """
+        normal = QPixmap(path)
 
-# """
-if __name__ == "__main__":
-    import sys
-    from PySide6.QtWidgets import QApplication
-    
-    app = QApplication(sys.argv)
-    window = CCDurationPage(None,None)
-    window.show()
-    sys.exit(app.exec())
+        # Keep transparency, then tint to gray
+        disabled = QPixmap(normal.size())
+        disabled.fill(Qt.transparent)
 
- 
+        painter = QPainter(disabled)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.drawPixmap(0, 0, normal)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(disabled.rect(), QColor(150, 150, 150, 210))
+        painter.end()
+
+        icon = QIcon()
+        icon.addPixmap(normal, QIcon.Normal, QIcon.Off)
+        icon.addPixmap(disabled, QIcon.Disabled, QIcon.Off)
+        return icon
