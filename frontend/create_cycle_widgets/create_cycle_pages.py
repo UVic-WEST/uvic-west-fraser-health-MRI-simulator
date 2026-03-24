@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QStackedLayout,
 )
 
+from frontend.create_cycle_widgets.cc_duration_widgets.cc_duration import CCDurationPage
 from frontend.create_cycle_widgets.cc_groups_widgets.cc_groups import CCGroupsPage
 from frontend.create_cycle_widgets.cc_brightness_widgets.cc_brightness import CCBrightnessPage
 from frontend.create_cycle_widgets.cc_sound_group_mapping_widgets.cc_sound_group_mapping import CCSoundGroupMappingPage
@@ -45,7 +46,7 @@ class CreateCycleRouter(QWidget):
         #CHANGE WHEN L2 HAS IMPLEMENTATION
         self.cc_controller = None 
 
-        #self.cc_duration_page = None 
+        self.cc_duration_page = CCDurationPage(self.cc_controller,self)
         self.cc_groups_page = CCGroupsPage(self.cc_controller, self)
         self.cc_brightness_page = CCBrightnessPage(self.cc_controller, self)
         self.cc_sound_group_mapping_page = CCSoundGroupMappingPage(self.cc_controller, self)
@@ -59,7 +60,7 @@ class CreateCycleRouter(QWidget):
         """
         self.main_layout = QStackedLayout()
 
-        #self.main_layout.addWidget(self.cc_duration_page)
+        self.main_layout.addWidget(self.cc_duration_page)
         self.main_layout.addWidget(self.cc_groups_page) 
         self.main_layout.addWidget(self.cc_brightness_page)
         self.main_layout.addWidget(self.cc_sound_group_mapping_page)
@@ -71,12 +72,12 @@ class CreateCycleRouter(QWidget):
         """
         Reroutes to the next page of the create cycle process. Called by child widgets.
         """
-        next_page_index = (self.currentIndex()) + 1 
-        self.setCurrentIndex(next_page_index)
+        next_page_index = (self.main_layout.currentIndex()) + 1 
+        self.main_layout.setCurrentIndex(next_page_index)
 
     def back_pressed(self):
         """
         Reroutes to the previous page of the create cycle process. Called by child widgets.
         """
-        back_page_index = (self.currentIndex()) - 1 
-        self.setCurrentIndex(back_page_index)
+        back_page_index = (self.main_layout.currentIndex()) - 1 
+        self.main_layout.setCurrentIndex(back_page_index)
