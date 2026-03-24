@@ -5,16 +5,27 @@ from PySide6.QtWidgets import(
 from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import (QFont,
     QPixmap, QIcon)
+from PySide6.QtGui import QFontDatabase
 
 
-class CustomCyclePage(QWidget):
+class CCDurationPage(QWidget):
 
     def __init__(self,parent,controller):
         """
-        Initializes the CustomCyclePage widget with a parent and controller.
+        Initializes the CCDurationPage widget with a parent and controller.
         Initialize minutes and seconds
         Sets up window size, background, buttons and duration screen.
         Further call all the helper functions and link the logic
+
+        Args:
+            parent: 
+                    The parent widget that contains this page. Used for UI hierarchy,
+                    positioning, and memory management. Defaults to None.
+
+            controller: 
+                    Handles the application logic and connects the frontend UI
+                    to the backend through signals and data flow. Defaults to None.
+
         """
         super().__init__()
         self.parent = parent 
@@ -24,6 +35,7 @@ class CustomCyclePage(QWidget):
         self.seconds = 0
 
         self.setFixedSize(1024,600)
+        self.setStyleSheet("background-color: white;") 
         self.set_background()
         self.set_logicbuttons()
         self.setup_DurationScreen()
@@ -43,7 +55,7 @@ class CustomCyclePage(QWidget):
             Qt.IgnoreAspectRatio,
             Qt.SmoothTransformation
         ))
-
+        
         self.bg_label.setGeometry(0,0,self.width(),self.height())
         self.bg_label.lower()
 
@@ -144,6 +156,9 @@ class CustomCyclePage(QWidget):
         It habdles time box, label, plus/minus buttons
         """
 
+
+        font_id = QFontDatabase.addApplicationFont("../resources/timeduration_assets/DigitalNumbers.ttf")
+        font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
         self.durationText = QLabel("Enter Cycle Duration", self)
         self.durationText.setGeometry(328,199,415,76)
         self.durationText.setStyleSheet("Font-Family: Ubuntu; font-size: 44px; color: black")
@@ -159,7 +174,7 @@ class CustomCyclePage(QWidget):
 
         self.time_label = QLabel("03:00", self)
         self.time_label.setGeometry(366, 291, 307, 94)  # same position!
-        self.time_label.setStyleSheet("background: transparent; color: #34C759; font-size: 52px; font-family: '{Digital Numbers}'; padding-bottom: 10px;")
+        self.time_label.setStyleSheet(f"background: transparent; color: #34C759; font-size: 48px; font-family: '{font_family}'; padding-bottom: 10px;")
         self.time_label.setAlignment(Qt.AlignCenter)
        
         
@@ -181,6 +196,9 @@ class CustomCyclePage(QWidget):
                 QPushButton:pressed {
                     background: rgba(255, 255, 255, 60);
                     border-radius: 24px;
+                }
+                QPushButton:disabled {
+                    opacity: 0.15;
                 }
         """)
         self.minus_btn.clicked.connect(self.dec_time)
@@ -210,6 +228,9 @@ class CustomCyclePage(QWidget):
             QPushButton:pressed {
                 background: rgba(255, 255, 255, 30);
                 border-radius: 24px;
+            }
+            QPushButton:disabled {
+                opacity: 0.15;
             }
         """)
 
@@ -346,7 +367,7 @@ if __name__ == "__main__":
     from PySide6.QtWidgets import QApplication
     
     app = QApplication(sys.argv)
-    window = CustomCyclePage(None,None)
+    window = CCDurationPage(None,None)
     window.show()
     sys.exit(app.exec())
 
