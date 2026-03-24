@@ -6,14 +6,10 @@ from PySide6.QtWidgets import(
 from PySide6.QtGui import (
     QFont, 
     QPixmap
-)
+    )
 from frontend.sign_in_page_widgets.pinpad_widget import PinPad
 
 MAX_PASSWORD_INPUT = 4
-MAX_PASSWORD_ATTEMPTS = 3
-
-## DELETE LATER THIS IS A DUMMY PASSWORD TO GET INTO THE SYSTEM
-PASS_TEMP = '2026'
 
 class SignInPage(QWidget):
     def __init__(self, controller, parent=None):
@@ -129,10 +125,13 @@ class SignInPage(QWidget):
         if len(self.current_entry) < 4:
             return
         
-        if self.current_entry == PASS_TEMP:
+        validated = self.login_controller.login(self.current_entry)
+
+        if validated is None:
+            self.call_timeout()
+
+        if validated:
             self.login_successful()
-        else: 
-            self.update_password_attempts()
 
         self.clr_password_input()
 
@@ -142,15 +141,9 @@ class SignInPage(QWidget):
         """
         self.parent.show_home()
         self.clr_password_input()
-        self.password_attempts = 0
 
-    def update_password_attempts(self):
+    def call_timeout(self):
         """
-        this function updates the password attempt count and times out the sign in page if the maximum attempt number is reached.
+        calls the sign in time out page via parent.
         """
-        self.password_attempts += 1
-
-        if self.password_attempts == MAX_PASSWORD_ATTEMPTS:
-            self.parent.timeout_signin()
-            self.password_attempts = 0
-
+        self.parent.timeout_signin()

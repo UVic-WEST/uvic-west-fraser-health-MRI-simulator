@@ -425,3 +425,29 @@ def test_stop_during_paused_state(cycle_logic, fake_controller, app_state):
     assert cycle_logic.timer is None
     assert cycle_logic.elapsed_ms == 0
     assert cycle_logic.total_duration_sec == 0
+
+# ======================
+# Cycle + Factory Integration
+# ======================
+
+def test_cycle_logic_uses_factory_cycle_actions(cycle_logic, fake_controller, qtbot):
+    """
+    Verify that CycleLogic executes actions from a factory-loaded cycle.
+    """
+    # Load predefined cycle
+    cycle_logic.load_cycle_by_id("scan_1")
+
+    # Start cycle
+    cycle_logic.play()
+    fake_controller.started.emit()
+
+    # Wait enough time for at least first action
+    qtbot.wait(150)
+
+    # Verify controller received an action
+    assert len(fake_controller.executed_actions) > 0
+
+    first_action = fake_controller.executed_actions[0]
+
+    assert first_action.action_type.name == "LIGHT_ON"
+    assert first_action.timestamp_ms == 0

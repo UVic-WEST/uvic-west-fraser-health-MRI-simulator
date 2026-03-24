@@ -41,8 +41,9 @@ class SignOutButton(QWidget):
         self.sign_out_button.clicked.connect(self.sign_out_button_pressed)
     
     def sign_out_button_pressed(self):
-        '''
-        when sign out button is pressed, user is signed out and sent to sign in page.
-        '''
+        """
+        This function signs the user out and returns to the sign in page
+
+        """
         self.parent.signout()
 

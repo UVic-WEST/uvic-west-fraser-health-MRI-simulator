@@ -27,8 +27,8 @@ class SoundPlayer:
             subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
             subprocess.run(["aplay", self.current_sound.file_name], check=True, capture_output=True)
 
-        except subprocess.CalledProcessError as e:
-            error_msg = e.stderr.decode() if e.stderr else e
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
             return f"Failed to play sound, error: {error_msg}"
 
         return f"Playing sound {self.current_sound.file_name} at {self.current_volume}%"
@@ -45,8 +45,8 @@ class SoundPlayer:
         try:
             subprocess.run(["killall", "aplay"], check=True, capture_output=True)
 
-        except subprocess.CalledProcessError as e:
-            error_msg = e.stderr.decode() if e.stderr else e
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
             return f"Failed to stop sound, error: {error_msg}"
             
         return "Stopped current sound"
@@ -67,8 +67,8 @@ class SoundPlayer:
         try:
             subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
             
-        except subprocess.CalledProcessError as e:
-            error_msg = e.stderr.decode() if e.stderr else e
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
             return f"Failed to increment sound, error: {error_msg}"
         
         return f"Set volume to {self.current_volume}%"
@@ -89,8 +89,8 @@ class SoundPlayer:
         try:
             subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
             
-        except subprocess.CalledProcessError as e:
-            error_msg = e.stderr.decode() if e.stderr else e
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
             return f"Failed to decrement sound, error: {error_msg}"
         
 

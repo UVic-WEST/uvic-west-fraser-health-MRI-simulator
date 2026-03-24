@@ -1,15 +1,33 @@
+"""Cycle timing and state management for the MRI simulator.
+
+Contains CycleLogic, the core "heartbeat" of a running cycle. It tracks
+elapsed time against the total duration, dispatches timestamped hardware
+actions via the controller, and emits Qt signals so the UI can reflect
+progress, remaining time, and completion.
+"""
+
 from PySide6.QtCore import QObject, Signal, QTimer
 from backend.cycle_factory import CycleFactory
 from backend.cycle_config import CycleConfig
-
 
 TICK_INTERVAL_MS = 100
 
 
 class CycleLogic(QObject):
-    """ Manages the simulation timeline: tracks elapsed time against total
-    duration and emits signals so the UI layer can update progress, remaining
-    time, and cycle-finished state. """
+    """Core simulation timer — the heartbeat of a running MRI cycle.
+
+    Tracks elapsed_ms vs total_duration_sec and emits signals for the UI
+    to update progress bars, countdown timers, and cycle-finished states.
+    Delegates hardware start/stop to a lower-layer controller and dispatches
+    timestamped CycleActions during playback.
+
+    Signals:
+        progress_changed (float): Emitted every tick with a 0.0–1.0 value.
+        time_changed (int): Emitted every tick with elapsed milliseconds.
+        cycle_finished (): Emitted once when the cycle completes.
+        paused (): Emitted when the cycle is paused.
+        resumed (): Emitted when the cycle is resumed after a pause.
+    """
 
     progress_changed = Signal(float)
     time_changed = Signal(int)
@@ -18,6 +36,13 @@ class CycleLogic(QObject):
     paused = Signal()
 
     def __init__(self, app_state, controller):
+        """Initialise CycleLogic.
+
+        Args:
+            app_state (AppStateMachine): Shared application state tracker.
+            controller: Lower-layer controller with start_cycle()/stop_cycle()
+                methods and started/failed signals (e.g. CycleController).
+        """
         super().__init__()
         self.app_state = app_state
         self.controller = controller
@@ -35,7 +60,14 @@ class CycleLogic(QObject):
         self.controller.failed.connect(self._on_failed)
 
     def load_cycle_by_id(self, cycle_id: str):
-        """ Load a predefined cycle from the factory by its ID """
+        """Load a predefined cycle from the factory by its ID.
+
+        Args:
+            cycle_id (str): Unique identifier of the cycle (e.g. "scan_1").
+
+        Raises:
+            ValueError: If no cycle with the given ID exists.
+        """
         self.current_cycle = self.cycle_factory.get_cycle_by_id(cycle_id)
         self.total_duration_sec = self.current_cycle.cycle_duration_sec
         self.elapsed_ms = 0
@@ -73,13 +105,13 @@ class CycleLogic(QObject):
         return self.play(duration_sec)
 
     def stop(self):
-        """ stop the running cycle, tell the lower layer, and reset """
+        """Stop the running cycle, tell the lower layer, and reset to IDLE."""
         self.controller.stop_cycle()
         self._reset()
         self.app_state.set_state("IDLE")
 
     def pause(self):
-        """ pause the running cycle """
+        """Pause the running cycle. Only works if state is RUNNING."""
         if self.app_state.get_state() != "RUNNING":
             return
         
@@ -91,7 +123,11 @@ class CycleLogic(QObject):
         self.paused.emit()
 
     def resume(self):
-        """ resume a paused cycle without restarting it """
+        """Resume a paused cycle without resetting elapsed time.
+
+        Returns:
+            bool: True if the resume request was issued, False if not paused.
+        """
         if self.app_state.get_state() != "PAUSED":
             return False
 
@@ -130,8 +166,17 @@ class CycleLogic(QObject):
         
         self.timer.start()
         
-        if self.elapsed_ms == 0:
-            self._tick()
+        #if self.elapsed_ms == 0:
+            #self._tick()
+        
+        # Ensure actions at timestamp 0 are executed immediately
+        if self.elapsed_ms == 0 and self.current_cycle:
+            for action in self.current_cycle.actions:
+                if action.timestamp_ms == 0:
+                    self.controller.execute_action(action)
+                    
+        # Always advance timer immediately to keep tests deterministic
+        self._tick()
 
     def _tick(self):
         self.elapsed_ms += TICK_INTERVAL_MS

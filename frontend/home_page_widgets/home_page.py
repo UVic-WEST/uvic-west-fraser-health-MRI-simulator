@@ -116,4 +116,10 @@ class HomePage(QWidget):
         '''
         when sign out button is pressed, user is signed out and sent to sign in page.
         '''
-        self.parent.show_signin()
+        self.parent.signout()
+
+    def show_custom_cycle_warning(self):
+        """
+        This function routes to the warning page for custom cycle creation
+        """
+        self.parent.show_warning()
