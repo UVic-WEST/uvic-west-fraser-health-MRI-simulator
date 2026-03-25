@@ -1,0 +1,33 @@
+[
+  {
+    "id": 1,
+    "name": "Preset Cycle 1",
+    "duration_ms": 10000,
+    "actions": [
+      {"timestamp": 0, "type": "LIGHT_ON", "params": {"intensity": 70}},
+      {"timestamp": 1000, "type": "SOUND_START", "params": {"volume": 50}},
+      {"timestamp": 4000, "type": "LIGHT_OFF", "params": {}},
+      {"timestamp": 4500, "type": "SOUND_STOP", "params": {}}
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Preset Cycle 2",
+    "duration_ms": 5000,
+    "actions": [
+      {"timestamp": 0, "type": "LIGHT_ON", "params": {"intensity": 70}},
+      {"timestamp": 500, "type": "SOUND_START", "params": {"volume": 50}},
+      {"timestamp": 2000, "type": "SOUND_STOP", "params": {}}
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Preset Cycle 3",
+    "duration_ms": 5000,
+    "actions": [
+      {"timestamp": 0, "type": "LIGHT_ON", "params": {"intensity": 70}},
+      {"timestamp": 500, "type": "SOUND_START", "params": {"volume": 50}},
+      {"timestamp": 2000, "type": "SOUND_STOP", "params": {}}
+    ]
+  }
+]
