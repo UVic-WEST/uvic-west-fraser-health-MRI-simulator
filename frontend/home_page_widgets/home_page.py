@@ -13,6 +13,11 @@ from frontend.home_page_widgets.sound_controls_widget import SoundControlsWidget
 from frontend.home_page_widgets.light_controls_widget import LightControlsWidget
 from frontend.home_page_widgets.sign_out_button import SignOutButton
 
+from backend.manual_light_controller import ManualLightController
+from backend.manual_sound_controller import ManualSoundController
+
+
+
 class HomePage(QWidget):
     def __init__(self, controller, parent=None):
         """
@@ -31,10 +36,14 @@ class HomePage(QWidget):
         self.main_layout.setContentsMargins(40, 110, 40, 40)
         self.cur_cycle = None
 
+        #setting up controllers for manual sound and light drop down
+        self.man_light_controller = ManualLightController()
+        self.man_sound_controller = ManualSoundController()
+
         #setting up and organizing widgets
         self.play_widget = CyclePlayerWidget(self)
-        self.sound_controls_widget = SoundControlsWidget(self)
-        self.light_controls_widget = LightControlsWidget(self)
+        self.sound_controls_widget = SoundControlsWidget(self.man_sound_controller,self)
+        self.light_controls_widget = LightControlsWidget(self.man_light_controller,self)
 
         #right column: sound controls stacked above light controls
         right_col = QVBoxLayout()

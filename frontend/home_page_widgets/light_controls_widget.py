@@ -16,17 +16,19 @@ class LightControlsWidget(QWidget):
     brightness_changed = Signal(int)
     light_power_changed = Signal(bool)
 
-    def __init__(self, parent=None):
+    def __init__(self, controller, parent=None):
         """
         This function builds the Light Controls widget and initializes its state
 
         Args:
-            parent: the parent widget for this controls container
+            controller (ManualLightController): controller for manual light logic
+            parent (QWidget): the parent widget for this controls container
         """
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._expanded = False
         self._light_is_on = False
+        self.controller = controller
 
         # outer layout - header on top, collapsible brightness controls below
         main_layout = QVBoxLayout(self)

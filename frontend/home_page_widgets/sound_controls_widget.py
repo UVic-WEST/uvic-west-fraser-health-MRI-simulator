@@ -23,18 +23,21 @@ class SoundControlsWidget(QWidget):
     # Emitted when volume changes in 10-point increments.
     volume_changed = Signal(int)
 
-    def __init__(self, parent=None):
+    def __init__(self, controller, parent=None):
         """
         This function builds the sound controls widget
 
         Args:
-            parent: the parent widget for this container
+            controller (ManualSoundController): controller for playing sounds manually
+            parent (Qwidget): the parent widget for this container
         """
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._expanded = False
         self._selected_sound = None
         self._sound_buttons = {}
+        self.controller = controller
+        self.sound_catalog = controller.get_sounds()
 
         # outer layout — header on top, collapsible buttons below
         main_layout = QVBoxLayout(self)
@@ -73,7 +76,7 @@ class SoundControlsWidget(QWidget):
         buttons_layout = QGridLayout()
         buttons_layout.setSpacing(10)
 
-        for i, name in enumerate(SOUND_NAMES):
+        for i, (_,name) in enumerate(self.sound_catalog):
             btn = QPushButton(name)
             btn.setFont(QFont("Ubuntu", 14))
             btn.setStyleSheet(self._sound_button_stylesheet(is_selected=False))
