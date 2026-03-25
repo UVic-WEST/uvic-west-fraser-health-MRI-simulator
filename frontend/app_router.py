@@ -22,6 +22,8 @@ from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
 from backend.cycle_controller import CycleController
+from backend.manual_light_controller import ManualLightController
+from backend.manual_sound_controller import ManualSoundController
 
 #PASSWORD 
 PASS = '2026'
@@ -41,6 +43,12 @@ class AppRouter(QMainWindow):
         self.sound_player = SoundPlayer()
         self.cycle_controller = CycleController(
             self.light_controller, self.sound_player, parent=self
+        )
+        self.manual_light_controller = ManualLightController(
+            self.light_controller, parent=self
+        )
+        self.manual_sound_controller = ManualSoundController(
+            self.sound_player, parent=self
         )
 
         #create window
