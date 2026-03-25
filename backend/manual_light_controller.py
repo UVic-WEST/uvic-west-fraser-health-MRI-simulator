@@ -9,7 +9,6 @@ from PySide6.QtCore import QObject
 
 DEFAULT_BRIGHTNESS = 50
 
-
 class ManualLightController(QObject):
     """Backend logic for manual light control on the home page.
 
@@ -75,7 +74,6 @@ class ManualLightController(QObject):
         Returns:
             bool: True if the operation succeeded.
         """
-        print("light is on:" + str(on))
         if not self.is_active:
             return False
 
@@ -101,8 +99,6 @@ class ManualLightController(QObject):
             bool: True if the operation succeeded, False if inactive or
                 light_level is out of range.
         """
-        print("brightness has been updated to" + str(light_level))
-
         if not self.is_active:
             return False
 

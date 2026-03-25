@@ -248,7 +248,6 @@ class LightControlsWidget(QWidget):
         """
         self._light_is_on = is_on
         self._update_light_power_button_style()
-        print("Light power changed:", "ON" if self._light_is_on else "OFF")
         self.controller.toggle_lights(self._light_is_on)
 
     def _toggle_light_power(self):
@@ -256,7 +255,6 @@ class LightControlsWidget(QWidget):
         This function toggles the current light power state
         """
         self._set_light_power(not self._light_is_on)
-
 
     def _on_brightness_changed(self, value: int):
         """
@@ -270,8 +268,6 @@ class LightControlsWidget(QWidget):
             self.brightness_slider.blockSignals(True)
             self.brightness_slider.setValue(snapped)
             self.brightness_slider.blockSignals(False)
-        print("Light brightness changed:", snapped)
-
         self.current_brightness = snapped
         self.update_brightness()
 
