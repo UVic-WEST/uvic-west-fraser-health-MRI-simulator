@@ -30,7 +30,7 @@ class SignInPage(QWidget):
         self.password_attempts = 0
 
         #fraser logo
-        fraser_logo_path = 'resources/frontend_common_assets/west_logo.png'
+        fraser_logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
         fraser_logo_pix = QPixmap(fraser_logo_path)
         self.fraser_logo = QLabel(self)
         self.fraser_logo.setFixedSize(94, 77)
