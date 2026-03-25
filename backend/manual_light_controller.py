@@ -75,6 +75,7 @@ class ManualLightController(QObject):
         Returns:
             bool: True if the operation succeeded.
         """
+        print("light is on:" + str(on))
         if not self.is_active:
             return False
 
@@ -100,6 +101,8 @@ class ManualLightController(QObject):
             bool: True if the operation succeeded, False if inactive or
                 light_level is out of range.
         """
+        print("brightness has been updated to" + str(light_level))
+
         if not self.is_active:
             return False
 

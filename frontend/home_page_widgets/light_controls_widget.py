@@ -13,8 +13,6 @@ from frontend.helpers import ReadOnlySlider
 LIGHT_DROPDOWN_COLOUR = "#FAF5F5"
 
 class LightControlsWidget(QWidget):
-    brightness_changed = Signal(int)
-    light_power_changed = Signal(bool)
 
     def __init__(self, controller, parent=None):
         """
@@ -27,7 +25,8 @@ class LightControlsWidget(QWidget):
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._expanded = False
-        self._light_is_on = False
+        self._light_is_on = True
+        self.current_brightness = 50
         self.controller = controller
 
         # outer layout - header on top, collapsible brightness controls below
@@ -113,7 +112,7 @@ class LightControlsWidget(QWidget):
         self.brightness_slider.setPageStep(10)
         self.brightness_slider.setTickInterval(10)
         self.brightness_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.brightness_slider.setValue(50)
+        self.brightness_slider.setValue(self.current_brightness)
 
         self.decrease_brightness_button.clicked.connect(self._decrease_brightness)
         self.increase_brightness_button.clicked.connect(self._increase_brightness)
@@ -176,6 +175,18 @@ class LightControlsWidget(QWidget):
         self._controls_widget.setVisible(self._expanded)
         self.header_button.setIcon(self._close_icon if self._expanded else self._arrow_icon)
 
+        self._reset_panel()
+        self.controller.set_manual_light_controller_status(self._expanded)
+
+    def _reset_panel(self):
+        """
+        resets the panel defaults if it is not expanded
+        """
+        if not self._expanded:
+            self._light_is_on = True
+            self._set_light_power(self._light_is_on)
+            self.brightness_slider.setValue(50)
+            
     def _build_close_icon(self) -> QIcon:
         """
         This function creates and returns the close (x) icon
@@ -200,10 +211,10 @@ class LightControlsWidget(QWidget):
         This function updates the light power button text and style
         """
         if self._light_is_on:
-            self.light_power_button.setText("OFF")
+            self.light_power_button.setText("ON")
             self.light_power_button.setStyleSheet("""
                 QPushButton {
-                    background-color: #D9534F;
+                    background-color: #2E9B41;
                     color: white;
                     border: none;
                     border-radius: 8px;
@@ -214,10 +225,10 @@ class LightControlsWidget(QWidget):
                 }
             """)
         else:
-            self.light_power_button.setText("ON")
+            self.light_power_button.setText("OFF")
             self.light_power_button.setStyleSheet("""
                 QPushButton {
-                    background-color: #2E9B41;
+                    background-color: #D9534F;
                     color: white;
                     border: none;
                     border-radius: 8px;
@@ -230,7 +241,7 @@ class LightControlsWidget(QWidget):
 
     def _set_light_power(self, is_on: bool):
         """
-        This function sets the light power state and emits its signal
+        This function sets the light power state
 
         Args:
             is_on: True to set lights on, False to set lights off
@@ -238,13 +249,14 @@ class LightControlsWidget(QWidget):
         self._light_is_on = is_on
         self._update_light_power_button_style()
         print("Light power changed:", "ON" if self._light_is_on else "OFF")
-        self.light_power_changed.emit(self._light_is_on)
+        self.controller.toggle_lights(self._light_is_on)
 
     def _toggle_light_power(self):
         """
         This function toggles the current light power state
         """
         self._set_light_power(not self._light_is_on)
+
 
     def _on_brightness_changed(self, value: int):
         """
@@ -259,7 +271,9 @@ class LightControlsWidget(QWidget):
             self.brightness_slider.setValue(snapped)
             self.brightness_slider.blockSignals(False)
         print("Light brightness changed:", snapped)
-        self.brightness_changed.emit(snapped)
+
+        self.current_brightness = snapped
+        self.update_brightness()
 
     def _decrease_brightness(self):
         """
@@ -272,3 +286,10 @@ class LightControlsWidget(QWidget):
         This function increases brightness by 10
         """
         self.brightness_slider.setValue(min(100, self.brightness_slider.value() + 10))
+
+    def update_brightness(self):
+        """
+        inform the controller that the brightness level has updated
+        """
+
+        self.controller.update_brightness(self.current_brightness)

@@ -119,8 +119,13 @@ class HomePage(QWidget):
         This function requests playback of the currently selected cycle
         """
         print("Current cycle confirmed to play:", self.cur_cycle)
+
         if self.sound_controls_widget._expanded:
             self.sound_controls_widget._toggle_panel()
+
+        if self.light_controls_widget._expanded:
+            self.light_controls_widget._toggle_panel()
+
         self.parent.play_cycle(self.cur_cycle)
     
     def signout(self):

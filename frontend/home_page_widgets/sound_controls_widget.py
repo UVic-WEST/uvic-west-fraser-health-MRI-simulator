@@ -193,8 +193,8 @@ class SoundControlsWidget(QWidget):
         self.header_button.setIcon(self._close_icon if self._expanded else self._arrow_icon)
 
         #prep controller for connection to L3
-        self.controller.set_manual_sound_controller_status(self._expanded)
         self._reset_panel()
+        self.controller.set_manual_sound_controller_status(self._expanded)
 
     def _reset_panel(self):
         """
