@@ -37,8 +37,8 @@ class HomePage(QWidget):
         self.cur_cycle = None
 
         #setting up controllers for manual sound and light drop down
-        self.man_light_controller = ManualLightController()
-        self.man_sound_controller = ManualSoundController()
+        self.man_light_controller = ManualLightController(parent.get_embedded_light_controller())
+        self.man_sound_controller = ManualSoundController(parent.get_embedded_sound_controller())
 
         #setting up and organizing widgets
         self.play_widget = CyclePlayerWidget(self)
@@ -119,6 +119,8 @@ class HomePage(QWidget):
         This function requests playback of the currently selected cycle
         """
         print("Current cycle confirmed to play:", self.cur_cycle)
+        if self.sound_controls_widget._expanded:
+            self.sound_controls_widget._toggle_panel()
         self.parent.play_cycle(self.cur_cycle)
     
     def signout(self):

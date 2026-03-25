@@ -165,3 +165,15 @@ class AppRouter(QMainWindow):
         """
         self.create_cycle_router.create_new_cycle()
         self.main_layout.setCurrentWidget(self.create_cycle_router)
+
+    def get_embedded_light_controller(self):
+        """
+        returns the light control resource
+        """
+        return self.light_controller
+    
+    def get_embedded_sound_controller(self):
+        """
+        returns the sound control resource
+        """
+        return self.sound_player

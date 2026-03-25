@@ -15,13 +15,9 @@ SOUND_DROPDOWN_COLOUR = "#FAF5F5"
 SOUND_PANEL_BUTTON_COLOUR = SOUND_DROPDOWN_COLOUR
 SOUND_SELECTED_BUTTON_COLOUR = "#2E9B41"
 SOUND_PANEL_COLS = 4
-SOUND_NAMES = ["Sound 1", "Sound 2", "Sound 3", "Sound 4", "Sound 5", "Sound 6", "Sound 7", "Sound 8"]
+MAX_SOUNDS_PLAYING = 3
 
 class SoundControlsWidget(QWidget):
-    # Emitted when a sound is selected (or cleared with an empty string).
-    sound_selected = Signal(str)
-    # Emitted when volume changes in 10-point increments.
-    volume_changed = Signal(int)
 
     def __init__(self, controller, parent=None):
         """
@@ -34,10 +30,11 @@ class SoundControlsWidget(QWidget):
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._expanded = False
-        self._selected_sound = None
         self._sound_buttons = {}
         self.controller = controller
         self.sound_catalog = controller.get_sounds()
+        self.sounds_playing = []
+        self.current_volume = 50
 
         # outer layout — header on top, collapsible buttons below
         main_layout = QVBoxLayout(self)
@@ -76,12 +73,12 @@ class SoundControlsWidget(QWidget):
         buttons_layout = QGridLayout()
         buttons_layout.setSpacing(10)
 
-        for i, (_,name) in enumerate(self.sound_catalog):
+        for i, (id,name) in enumerate(self.sound_catalog):
             btn = QPushButton(name)
             btn.setFont(QFont("Ubuntu", 14))
             btn.setStyleSheet(self._sound_button_stylesheet(is_selected=False))
-            btn.clicked.connect(lambda checked, n=name: self._on_sound_button_clicked(n))
-            self._sound_buttons[name] = btn
+            btn.clicked.connect(lambda checked, n=id: self._on_sound_button_clicked(n))
+            self._sound_buttons[id] = (btn, name)
             buttons_layout.addWidget(btn, i // SOUND_PANEL_COLS, i % SOUND_PANEL_COLS)
 
         panel_layout.addLayout(buttons_layout)
@@ -127,7 +124,7 @@ class SoundControlsWidget(QWidget):
         self.volume_slider.setPageStep(10)
         self.volume_slider.setTickInterval(10)
         self.volume_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.volume_slider.setValue(50)
+        self.volume_slider.setValue(self.current_volume)
         self.volume_slider.valueChanged.connect(self._on_volume_changed)
 
         self.decrease_volume_button.clicked.connect(self._decrease_volume)
@@ -190,9 +187,24 @@ class SoundControlsWidget(QWidget):
         """
         # Keep visual state and panel visibility in sync.
         self._expanded = not self._expanded
+
         self._apply_header_style(expanded=self._expanded)
         self._buttons_widget.setVisible(self._expanded)
         self.header_button.setIcon(self._close_icon if self._expanded else self._arrow_icon)
+
+        #prep controller for connection to L3
+        self.controller.set_manual_sound_controller_status(self._expanded)
+        self._reset_panel()
+
+    def _reset_panel(self):
+        """
+        resets the panel defaults if it is not expanded
+        """
+        if not self._expanded:
+            self.current_volume = 50
+            self.volume_slider.setValue(self.current_volume)
+            self.sounds_playing = []
+            self._refresh_sound_button_styles()
 
     def _build_close_icon(self) -> QIcon:
         """
@@ -241,28 +253,34 @@ class SoundControlsWidget(QWidget):
             None
         """
         # Repaint all buttons so only the active selection is highlighted.
-        for name, btn in self._sound_buttons.items():
-            btn.setStyleSheet(self._sound_button_stylesheet(is_selected=(name == self._selected_sound)))
+        for sound_id, (btn, name) in self._sound_buttons.items():
+            btn.setStyleSheet(self._sound_button_stylesheet(is_selected=(sound_id in self.sounds_playing)))
 
-    def _on_sound_button_clicked(self, sound_name):
+    def _on_sound_button_clicked(self, sound_id):
         """
         This function handles sound button selection and deselection
 
         Args:
-            sound_name: the sound name for the button that was clicked
+            sound_id: the sound is for the button that was clicked
         """
-        if self._selected_sound == sound_name:
+        can_add_sound = len(self.sounds_playing) < MAX_SOUNDS_PLAYING
+        
+        if sound_id in self.sounds_playing:
             # Clicking the active sound turns it off.
-            self._selected_sound = None
+            #remove from sounds to play
+            self.sounds_playing.remove(sound_id)
             self._refresh_sound_button_styles()
-            print("Sound turned off:", sound_name)
-            self.sound_selected.emit("")
-            return
+            print("Sound turned off:", sound_id)
 
-        self._selected_sound = sound_name
-        self._refresh_sound_button_styles()
-        print("Sound selected:", sound_name)
-        self.sound_selected.emit(sound_name)
+        elif not can_add_sound:
+            return
+        else:
+            self.add_playing_sound(sound_id)
+            self._refresh_sound_button_styles()
+            print("Sound selected:", sound_id)
+
+        #tell controller to play sounds
+        self.play_sounds()
 
     def _on_volume_changed(self, value: int):
         """
@@ -278,7 +296,9 @@ class SoundControlsWidget(QWidget):
             self.volume_slider.setValue(snapped)
             self.volume_slider.blockSignals(False)
         print("Sound volume changed:", snapped)
-        self.volume_changed.emit(snapped)
+
+        self.current_volume = snapped
+        self.play_sounds()
 
     def _decrease_volume(self):
         """
@@ -299,3 +319,22 @@ class SoundControlsWidget(QWidget):
         """
         # Step volume up by one increment.
         self.volume_slider.setValue(min(100, self.volume_slider.value() + 10))
+
+    def play_sounds(self):
+        """
+        sends the current value of self.sounds playing and the volume to the controller to play
+        """
+        self.controller.play_sounds(self.sounds_playing, self.current_volume)
+        print("playing:" +str(self.sounds_playing)+ " volume:" +str(self.current_volume))
+
+    def add_playing_sound(self, sound_id:int):
+        """
+        adds a sounds to the list of sounds to play
+        Args:
+            sound_id(int): id of sound to add
+        """
+        if sound_id in self.sounds_playing or len(self.sounds_playing) == MAX_SOUNDS_PLAYING:
+            return False
+        
+        self.sounds_playing.append(sound_id)
+        self.sounds_playing.sort()
