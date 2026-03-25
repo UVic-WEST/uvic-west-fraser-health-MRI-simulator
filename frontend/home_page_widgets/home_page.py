@@ -19,7 +19,7 @@ from backend.manual_sound_controller import ManualSoundController
 
 
 class HomePage(QWidget):
-    def __init__(self, controller, parent=None):
+    def __init__(self, controller, light_controller, sound_controller, parent=None):
         """
         This function builds the HomePage UI and initializes page-level state
 
@@ -32,18 +32,16 @@ class HomePage(QWidget):
         super().__init__(parent)
         self.parent = parent
         self.controller = controller
+        self.light_controller = light_controller
+        self.sound_controller = sound_controller
         self.main_layout = QGridLayout()
         self.main_layout.setContentsMargins(40, 110, 40, 40)
         self.cur_cycle = None
 
-        #setting up controllers for manual sound and light drop down
-        self.man_light_controller = ManualLightController(parent.get_embedded_light_controller())
-        self.man_sound_controller = ManualSoundController(parent.get_embedded_sound_controller())
-
         #setting up and organizing widgets
         self.play_widget = CyclePlayerWidget(self)
-        self.sound_controls_widget = SoundControlsWidget(self.man_sound_controller,self)
-        self.light_controls_widget = LightControlsWidget(self.man_light_controller,self)
+        self.sound_controls_widget = SoundControlsWidget(self.sound_controller,self)
+        self.light_controls_widget = LightControlsWidget(self.light_controller,self)
 
         #right column: sound controls stacked above light controls
         right_col = QVBoxLayout()
@@ -120,22 +118,31 @@ class HomePage(QWidget):
         """
         print("Current cycle confirmed to play:", self.cur_cycle)
 
-        if self.sound_controls_widget._expanded:
-            self.sound_controls_widget._toggle_panel()
-
-        if self.light_controls_widget._expanded:
-            self.light_controls_widget._toggle_panel()
-
         self.parent.play_cycle(self.cur_cycle)
+        self.close_manual_controllers()
+
     
     def signout(self):
         '''
         when sign out button is pressed, user is signed out and sent to sign in page.
         '''
         self.parent.signout()
+        self.close_manual_controllers()
+
 
     def show_custom_cycle_warning(self):
         """
         This function routes to the warning page for custom cycle creation
         """
         self.parent.show_warning()
+        self.close_manual_controllers()
+
+    def close_manual_controllers(self):
+        """
+        close and reset the manual controllers
+        """
+        if self.sound_controls_widget._expanded:
+            self.sound_controls_widget._toggle_panel()
+
+        if self.light_controls_widget._expanded:
+            self.light_controls_widget._toggle_panel()
