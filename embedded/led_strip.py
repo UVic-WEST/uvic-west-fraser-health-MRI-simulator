@@ -1,5 +1,14 @@
 import time
-from pi5neo import Pi5Neo
+
+try:
+    from pi5neo import Pi5Neo
+except ImportError:
+    class Pi5Neo:  # Mock library for running app on non-Raspberry pi OS 
+        def __init__(self, *args, **kwargs):
+            self.num_leds = 120
+        def set_led_color(self, *args, **kwargs): pass
+        def clear_strip(self): print("LEDs off")
+        def update_strip(self): print("LEDs updated")
 
 class LEDStrip:
     """
@@ -41,7 +50,7 @@ class LEDStrip:
         self.strip.update_strip()
 
 
-if __name__ == '__main__': # Running `python led_strip.py` to test for now 
+if __name__ == '__main__': # Running `python led_strip.py` to test
 
     led = LEDStrip()
 
