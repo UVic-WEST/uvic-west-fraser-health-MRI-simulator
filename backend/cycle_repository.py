@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 from backend.cycle_config import CycleConfig
 
-CYCLE_FILE = Path("data/cycles.json")
+CYCLE_FILE = Path("cycles.json")
 
 
 class CycleRepository:
