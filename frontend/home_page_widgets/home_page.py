@@ -122,4 +122,4 @@ class HomePage(QWidget):
         """
         This function routes to the warning page for custom cycle creation
         """
-        self.parent.show_warning()
+        self.parent.show_custom_cycle_warning()
