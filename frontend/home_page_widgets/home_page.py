@@ -13,10 +13,6 @@ from frontend.home_page_widgets.sound_controls_widget import SoundControlsWidget
 from frontend.home_page_widgets.light_controls_widget import LightControlsWidget
 from frontend.home_page_widgets.sign_out_button import SignOutButton
 
-from backend.manual_light_controller import ManualLightController
-from backend.manual_sound_controller import ManualSoundController
-
-
 
 class HomePage(QWidget):
     def __init__(self, controller, light_controller, sound_controller, parent=None):
@@ -25,6 +21,8 @@ class HomePage(QWidget):
 
         Args:
             controller: the page/controller reference used by HomePage
+            light_controller: the manual light panel controller reference
+            sound_controller: the manual sound panel controller reference
             parent: the parent widget for this page
         """
 
