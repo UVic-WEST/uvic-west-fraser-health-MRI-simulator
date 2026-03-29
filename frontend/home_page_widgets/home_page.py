@@ -115,9 +115,8 @@ class HomePage(QWidget):
         This function requests playback of the currently selected cycle
         """
         print("Current cycle confirmed to play:", self.cur_cycle)
-
-        self.parent.play_cycle(self.cur_cycle)
         self.close_manual_controllers()
+        self.parent.play_cycle(self.cur_cycle)
 
     
     def signout(self):
@@ -132,8 +131,8 @@ class HomePage(QWidget):
         """
         This function routes to the warning page for custom cycle creation
         """
-        self.parent.show_warning()
         self.close_manual_controllers()
+        self.parent.show_custom_cycle_warning()
 
     def close_manual_controllers(self):
         """
@@ -144,5 +143,3 @@ class HomePage(QWidget):
 
         if self.light_controls_widget._expanded:
             self.light_controls_widget._toggle_panel()
-            
-        self.parent.show_custom_cycle_warning()

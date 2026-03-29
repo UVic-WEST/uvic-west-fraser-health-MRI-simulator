@@ -8,7 +8,7 @@ from PySide6.QtGui import (
     QPixmap, 
     QFont
 )
-from typing import Callable
+from typing import Callable, Literal
 from frontend.warning_page_widgets.confirmation_buttons import WarningButtons
 
 class WarningPage(QWidget):
@@ -21,6 +21,9 @@ class WarningPage(QWidget):
         warning_message: str | None = None,
         on_confirm: Callable[[], None] | None = None,
         on_cancel: Callable[[], None] | None = None,
+        button_mode: Literal["green", "red", "both"] = "both",
+        green_button_text: str = "CONTINUE",
+        red_button_text: str = "CANCEL",
     ):
         """
         This function builds the warning page shown before custom cycle creation
@@ -30,6 +33,9 @@ class WarningPage(QWidget):
             warning_message (str | None): optional warning text to display
             on_confirm (Callable[[], None] | None): optional callback when confirm is clicked
             on_cancel (Callable[[], None] | None): optional callback when cancel is clicked
+            button_mode: which warning buttons to display ("green", "red", or "both")
+            green_button_text: label for green button
+            red_button_text: label for red button
         """
         super().__init__(parent)
         self.parent = parent
@@ -66,12 +72,17 @@ class WarningPage(QWidget):
         cycle_status_font = QFont("Ubuntu", 24)
         cycle_status_font.setBold(True)
         self.warning_status.setFont(cycle_status_font)
-        self.warning_status.setStyleSheet("color: #000000;")
+        self.warning_status.setStyleSheet("color: #0474BA;")
         self.warning_status.setAlignment(Qt.AlignCenter)
         content_layout.addWidget(self.warning_status)
 
         #setup for control buttons
-        self.warning_buttons = WarningButtons(self)
+        self.warning_buttons = WarningButtons(
+            self,
+            green_text=green_button_text,
+            red_text=red_button_text,
+            button_mode=button_mode,
+        )
         self.warning_buttons.confirm_clicked.connect(self.warning_confirmed)
         self.warning_buttons.cancel_clicked.connect(self.warning_cancelled)
         content_layout.addWidget(self.warning_buttons)
@@ -102,6 +113,26 @@ class WarningPage(QWidget):
         """
         self.on_confirm = on_confirm
         self.on_cancel = on_cancel
+
+    def set_button_config(
+        self,
+        button_mode: Literal["green", "red", "both"] = "both",
+        green_button_text: str | None = None,
+        red_button_text: str | None = None,
+    ):
+        """
+        Update warning button visibility and labels.
+
+        Args:
+            button_mode: which warning buttons to display ("green", "red", or "both")
+            green_button_text: optional label for green button
+            red_button_text: optional label for red button
+        """
+        self.warning_buttons.set_button_config(
+            button_mode=button_mode,
+            green_text=green_button_text,
+            red_text=red_button_text,
+        )
 
     def set_background(self, image_path):
         """

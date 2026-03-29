@@ -123,6 +123,9 @@ class AppRouter(QMainWindow):
         warning_message: str | None = None,
         on_confirm=None,
         on_cancel=None,
+        button_mode: str = "both",
+        green_button_text: str = "CONTINUE",
+        red_button_text: str = "CANCEL",
     ):
         """
         Show warning page with optional message and button handlers.
@@ -131,6 +134,9 @@ class AppRouter(QMainWindow):
             warning_message (str | None): warning text to display
             on_confirm: callback for confirm button; uses warning page fallback if None
             on_cancel: callback for cancel button; uses warning page fallback if None
+            button_mode: which warning buttons to show ("green", "red", "both")
+            green_button_text: label for green warning button
+            red_button_text: label for red warning button
         """
         if warning_message is not None:
             self.warning_page.set_warning_message(warning_message)
@@ -138,6 +144,11 @@ class AppRouter(QMainWindow):
             self.warning_page.set_warning_message(self.warning_page.DEFAULT_WARNING_MESSAGE)
 
         self.warning_page.set_callbacks(on_confirm=on_confirm, on_cancel=on_cancel)
+        self.warning_page.set_button_config(
+            button_mode=button_mode,
+            green_button_text=green_button_text,
+            red_button_text=red_button_text,
+        )
         self.main_layout.setCurrentWidget(self.warning_page)
 
     def show_custom_cycle_warning(self):
