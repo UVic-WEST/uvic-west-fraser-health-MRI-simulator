@@ -121,7 +121,7 @@ class WarningPage(QWidget):
         red_button_text: str | None = None,
     ):
         """
-        Update warning button visibility and labels.
+        This function updates warning button visibility and labels.
 
         Args:
             button_mode: which warning buttons to display ("green", "red", or "both")

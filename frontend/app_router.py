@@ -128,7 +128,7 @@ class AppRouter(QMainWindow):
         red_button_text: str = "CANCEL",
     ):
         """
-        Show warning page with optional message and button handlers.
+        This function shows the warning page with optional message and button handlers.
 
         Args:
             warning_message (str | None): warning text to display

@@ -80,7 +80,7 @@ class WarningButtons(QWidget):
         red_text: str | None = None,
     ):
         """
-        Configure button visibility and optional labels.
+        This function configures warning button visibility and optional labels.
 
         Args:
             button_mode: "green", "red", or "both"
@@ -104,9 +104,21 @@ class WarningButtons(QWidget):
         self.button_layout.setSpacing(40 if button_mode == "both" else 0)
 
     def on_yes_clicked(self):
+        """
+        This function handles clicks for the green warning button.
+
+        Args:
+            None
+        """
         print("Warning continue")
         self.confirm_clicked.emit()
 
     def on_no_clicked(self):
+        """
+        This function handles clicks for the red warning button.
+
+        Args:
+            None
+        """
         print("Warning cancel")
         self.cancel_clicked.emit()

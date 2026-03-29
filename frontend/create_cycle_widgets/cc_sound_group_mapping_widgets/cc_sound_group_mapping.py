@@ -415,7 +415,10 @@ class CCSoundGroupMappingPage(QWidget):
 
     def mapping_confirmed(self):
         """
-        Move to next create-cycle page when mapping is confirmed.
+        This function moves to the next create-cycle page when mapping is confirmed.
+
+        Args:
+            None
         """
         if any(len(self.group_to_sounds.get(group, [])) == 0 for group in GROUP_OPTIONS):
             self._show_incomplete_input_warning()
@@ -427,7 +430,10 @@ class CCSoundGroupMappingPage(QWidget):
 
     def _show_incomplete_input_warning(self):
         """
-        Show warning when one or more groups have no selected sounds.
+        This function shows a warning when one or more groups have no selected sounds.
+
+        Args:
+            None
         """
         warning_message = (
             "Unfinished Input Warning\n\n"
@@ -452,7 +458,10 @@ class CCSoundGroupMappingPage(QWidget):
 
     def _return_to_sound_mapping_page(self):
         """
-        Return from warning page back to the sound-group mapping step.
+        This function returns from the warning page back to the sound-group mapping step.
+
+        Args:
+            None
         """
         current = self.parent
         while current is not None:
@@ -492,7 +501,10 @@ class CCSoundGroupMappingPage(QWidget):
 
     def play_sample_pressed(self):
         """
-        Play sample action for the active group's selected sounds.
+        This function handles the Play Sample action for the active group's selected sounds.
+
+        Args:
+            None
         """
         current_group = self.group_dropdown.currentText()
         selected_for_group = self.group_to_sounds.get(current_group, [])
@@ -502,7 +514,10 @@ class CCSoundGroupMappingPage(QWidget):
 
     def _update_play_sample_button_state(self, group_name):
         """
-        Toggle play button style based on whether current group has sounds.
+        This function updates Play Sample button style based on whether the current group has sounds.
+
+        Args:
+            group_name: name of the currently selected group
         """
         has_sounds = bool(self.group_to_sounds.get(group_name, []))
         if has_sounds:
