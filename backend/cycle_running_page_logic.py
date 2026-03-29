@@ -3,82 +3,209 @@ from PySide6.QtCore import (
     Signal,
     QObject
 )
-
+from backend.cycle_factory import CycleFactory
+from backend.cycle_action import ActionType
+from backend.sound_config import SoundConfig
+from embedded.sound_player import SoundPlayer
+from embedded.light_controller import LightController
 
 class CycleRunningPageLogic(QObject):
     """Manages the running-cycle page: countdown timer for the UI and
     delegates hardware actions (lights, sounds) to CycleController."""
 
     time_signal_in_s = Signal(int)
+    error_signal = Signal(bool)
+    cycle_factory = CycleFactory()
 
-    def __init__(self, cycle_controller=None, parent=None):
+    def __init__(self, sound_player: SoundPlayer, light_controller: LightController, parent=None):
+        """
+        This function initializes the CycleRunningPageLogic class, which contains the main logic
+        for running cycles. This class is in charge of receiving requests from the frontend and forwarding
+        the corresponding instructions to the hardware layer.
+
+        Args:
+            sound_player(SoundPlayer):
+            light_controller(LightController):
+            parent:
+
+        Returns:
+            None
+        """
         super().__init__(parent)
         self.parent = parent
-        self.cycle_controller = cycle_controller
-        self.cur_cycle = None
-        self.rem_time_ms = None
-        self.timer = None
 
-    def start_cycle(self, cycle_id: int, rem_time_s: int):
-        self.rem_time_ms = rem_time_s * 1000
+        # lower layer controllers
+        self.sound_player = sound_player
+        self.light_controller = light_controller
 
-        if self.cycle_controller is not None:
-            self.cycle_controller.start_cycle()
-
-        if self.timer:
-            self.timer.stop()
-
+        # internal state
+        self.current_cycle = None
+        self.rem_time_ms = 0
         self.timer = QTimer(self)
+        self.timer.setInterval(100)
         self.timer.timeout.connect(self._update_timer)
-        self.timer.start(1000)
+        self._last_emitted_s = None
 
-        self.time_signal_in_s.emit(rem_time_s)
+    @property
+    def _ms_elapsed(self):
+        """Number of ms elapsed in the current cycle"""
+        if (self.current_cycle):
+            return self.current_cycle.cycle_duration_ms - self.rem_time_ms
+        else:
+            return 0
+
+    @property
+    def _rem_time_in_sec(self):
+        """Number of seconds elapsed in the current cycle."""
+        return self.rem_time_ms // 1000
+
+    @property
+    def _active_cycle(self):
+        """Whether there class has a cycle."""
+        return self.current_cycle != None
+    
+    @property
+    def _active_timer(self):
+        """Whether the class timer is currently active."""
+        return self.timer.isActive()
+
+    #### Public API ####
+    def start_cycle(self, cycle_id: int):
+        """
+        This function
+        - Gets the cycle configuration based on the cycle_id passed
+        - Passes corresponding instructions to SoundPlayer and LightController
+        - Starts a timer for the current cycle
+
+        Args:
+            cycle_id (int): the id of the cycle to find the configuration of
+
+        Returns:
+            None
+        """
+        if self._active_cycle:
+            return
+        
+        self.current_cycle = self.cycle_factory.get_cycle_by_id(cycle_id=cycle_id)
+        self.rem_time_ms = self.current_cycle.cycle_duration_ms
+        
+        print("Starting cycle with duration", self.rem_time_ms)
+        self._set_light_intensity()
+        self.time_signal_in_s.emit(self._rem_time_in_sec)
+        self.timer.start()
 
     def pause_cycle(self):
-        if self.timer:
-            self.timer.stop()
-
-        if self.cycle_controller is not None:
-            self.cycle_controller.stop_cycle()
-
-        self.time_signal_in_s.emit(-1)
-        return True
+        """This function pauses the current cycle. It stops the timer and signals to lower layer that the
+        cycle should be stopped, but does not reset internal state."""
+        if not self._active_timer:
+            return
+    
+        self.timer.stop()
+        self._lower_layer_stop_cycle()
 
     def resume_cycle(self):
-        if not self.rem_time_ms or self.rem_time_ms <= 0:
+        """This functions resumes the current cycle."""
+        if self._active_timer:
             return
-
-        if self.cycle_controller is not None:
-            self.cycle_controller.start_cycle()
-
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self._update_timer)
-        self.timer.start(1000)
+        
+        self._set_light_intensity()
+        self.timer.start()
 
     def stop_cycle(self):
-        if self.timer:
-            self.timer.stop()
-            self.timer = None
+        """This function stops the current cycle."""
+        if not self._active_cycle:
+            return
+        
+        print("Stoping cycle...")
+        self._finish_cycle()
 
-        if self.cycle_controller is not None:
-            self.cycle_controller.stop_cycle()
-
-        self.rem_time_ms = None
-        self.time_signal_in_s.emit(-1)
+    ### END PUBLIC API ###
 
     def _update_timer(self):
-        if self.rem_time_ms > 0:
-            self.rem_time_ms -= 1000
-            self.time_signal_in_s.emit(self.rem_time_ms // 1000)
+        """
+        This function handles the timer logic within the class; it is called by the timer each 100ms.
+        Updates internal timing variables and communicates each ellapsed second to the upper layer.
 
-            if self.rem_time_ms <= 0:
-                self._finish_cycle()
-        else:
+        Triggers _finish_cycle() when remaining time reaches 0.
+        """
+        if self.rem_time_ms > 0:
+            self._dispatch_actions()
+            self.rem_time_ms -= 100
+
+            if self._rem_time_in_sec != self._last_emitted_s:
+                self.time_signal_in_s.emit(self._rem_time_in_sec)
+                self._last_emitted_s = self._rem_time_in_sec
+        
+        if self.rem_time_ms <= 0:
             self._finish_cycle()
 
     def _finish_cycle(self):
-        if self.timer:
-            self.timer.stop()
-        if self.cycle_controller is not None:
-            self.cycle_controller.stop_cycle()
+        """
+        This function is called when the total time for the current cycle elapses.
+        It emits signal that cycle has finished, forwards instructions to the lower layer, and resets internal state.
+        """
         self.time_signal_in_s.emit(0)
+        self._lower_layer_stop_cycle()
+        self._reset()
+        
+    def _dispatch_actions(self):
+        """
+        This function determines which actions should be dispatched at a given moment.
+        Communicates each action that should be dispatched within the current window to the lower layer controllers.
+        """
+        actions_to_dispatch = self.current_cycle.get_actions_at(self._ms_elapsed)
+        for action in actions_to_dispatch: self._lower_layer_dispatch_sounds(action)
+    
+    def _reset(self):
+        """
+        This functions resets internal state when there is no active cycle.
+        """
+        self.current_cycle = None
+        
+        print("stopping timer...")
+        self.timer.stop()
+
+        self.rem_time_ms = 0
+
+    #### lower layer communication functions ###
+
+    def _set_light_intensity(self):
+        """
+        Passes instruction to lower-layer light controller to set the light brightness to the level specified
+        by the cycle configuration.
+        """
+        self.light_controller.change_lights(self.current_cycle.light_configuration)
+
+    def _lower_layer_stop_cycle(self):
+        """Ensures that lights are set back to idle and sound stops."""
+        self.light_controller.system_idle()
+        self.sound_player.stop()
+
+    def _lower_layer_dispatch_sounds(self, action):
+        """Execute a single CycleAction against the hardware layer.
+
+        Called by CycleLogic on each tick for actions whose timestamp
+        falls within the current tick window.
+        """
+        if not self._active_cycle:
+            return
+        
+        print("Dispatching action", action)
+        
+        action_type = action.action_type
+        params = action.parameters
+
+        if action_type == ActionType.SOUND_START:
+            sound = SoundConfig(
+                file_name=params.get("file_name", ""),
+                duration=params.get("duration", 0),
+                volume=params.get("volume", 50),
+            )
+            success, _ = self.sound_player.play(sound)
+            
+            if not success:
+                self.error_signal.emit(True)
+                self._reset()
+
+        elif action_type == ActionType.SOUND_STOP or action_type == ActionType.SOUND_RESET:
+            self.sound_player.stop()

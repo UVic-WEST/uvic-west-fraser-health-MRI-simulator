@@ -70,7 +70,7 @@ class AppRouter(QMainWindow):
 
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningPageLogic(
-            cycle_controller=self.cycle_controller, parent=self
+            sound_player=self.sound_player, light_controller=self.light_controller, parent=self
         )
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
@@ -122,7 +122,8 @@ class AppRouter(QMainWindow):
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         #REMOVE LATER
         dummytime = 30
-        self.cycle_running_page.play_cycle(dummytime)
+        # hard-coding cycle by id for now
+        self.cycle_running_page.play_cycle(1)
 
     def show_home(self):
         """

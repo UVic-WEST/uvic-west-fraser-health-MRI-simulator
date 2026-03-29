@@ -13,15 +13,11 @@ class ActionType(Enum):
     SOUND_START = "sound_start"
     SOUND_STOP = "sound_stop"
     SOUND_RESET = "sound_reset"
-    LIGHT_ON = "light_on"
-    LIGHT_OFF = "light_off"
-    LIGHT_RESET = "light_reset"
 
 @dataclass
 class CycleAction:
   """configures single timestamped (in milliseconds) action with a cycle"""
   timestamp_ms: int  #when to execute action in relation to cycle start (in milliseconds)
-  #action_type: str  #strings such as "sound_start", "light_stop", "light_reset", etc.
   action_type: ActionType
   parameters: Dict[str, Any]  #parameters specific to action (if any)
 

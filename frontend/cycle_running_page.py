@@ -48,7 +48,8 @@ class CycleRunningPage(QWidget):
         self.main_layout.addWidget(self.controlling_buttons)
         
     def play_cycle(self, cycle_dur_s:int):
-        self.controller.start_cycle(1,cycle_dur_s)
+        # hardcoding cycle by id for now
+        self.controller.start_cycle(1)
 
     def pause_cycle(self):
         self.controller.pause_cycle()

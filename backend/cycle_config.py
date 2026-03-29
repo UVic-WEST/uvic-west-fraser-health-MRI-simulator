@@ -19,8 +19,8 @@ class CycleConfig:
     cycle_id: str
     cycle_name: str
     cycle_duration_ms: int
+    light_configuration: int
     actions: List[CycleAction] = field(default_factory=list)
-    
 
     def __post_init__(self):
         """verify duration and that action durations fit within cycle."""
@@ -73,7 +73,7 @@ class CycleConfig:
         """
         return [
             action for action in self.actions
-            if abs(action.timestamp_ms - timestamp_ms) <= window_ms
+            if abs(action.timestamp_ms - timestamp_ms) < window_ms
         ]
 
     def to_json(self, filepath: str):

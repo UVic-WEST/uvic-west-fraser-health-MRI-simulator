@@ -1,48 +1,52 @@
 import pytest
-from PySide6.QtCore import QObject, Signal
-from backend.cycle_logic import CycleLogic
 from backend.auth import Auth
-from state import AppStateMachine
-
-# -------------------------
-# Fake lower-layer controller
-# TODO: change this to match actual signatures once lower layer controller class is finalized
-# -------------------------
-class FakeController(QObject):
-    started = Signal()
-    failed = Signal()
-
-    def __init__(self):
-        super().__init__()
-        self.start_called = False
-        self.stop_called = False
-        self.executed_actions = []
-
-    def start_cycle(self):
-        self.start_called = True
-        self.stop_called = False
-
-    def stop_cycle(self):
-        self.stop_called = True
-        self.start_called = False
-
-    def execute_action(self, action):
-        self.executed_actions.append(action)
+from backend.cycle_running_page_logic import CycleRunningPageLogic
+from backend.cycle_config import CycleConfig
+from embedded.sound_player import SoundPlayer
+from embedded.light_controller import LightController
+from PySide6.QtCore import Signal
 
 # -------------------------
 # Fixtures
 # -------------------------
 @pytest.fixture
-def fake_controller(qtbot):
-    return FakeController()
+def mock_sound_player(mocker):
+    mock = mocker.Mock(spec=SoundPlayer)
+    mock.play.return_value = True, "Playing mock sound"
+    return mock
 
 @pytest.fixture
-def app_state():
-    return AppStateMachine()
+def mock_light_controller(mocker):
+    return mocker.Mock(spec=LightController)
 
 @pytest.fixture
-def cycle_logic(app_state, fake_controller):
-    logic = CycleLogic(app_state=app_state, controller=fake_controller)
+def mock_cycle_factory(mocker):
+    """Sets up the cycle factory mock for testing test_cycle_running_page_logic"""
+    mock = mocker.patch('backend.cycle_running_page_logic.CycleRunningPageLogic.cycle_factory')
+    mock.get_cycle_by_id.return_value = CycleConfig(1, "test cycle", 3000, 70, [])
+    return mock
+
+@pytest.fixture
+def cycle_running_logic(mocker, mock_sound_player, mock_light_controller, mock_cycle_factory):
+    """Instantiates the CycleRunningPageLogic object for each test. Injects mocks automatically."""
+    mocker.patch('backend.cycle_running_page_logic.QTimer')
+    
+    logic = CycleRunningPageLogic(
+        sound_player=mock_sound_player, 
+        light_controller=mock_light_controller
+    )
+    
+    logic.timer.isActive.return_value = False
+    
+    def mock_start():
+        logic.timer.isActive.return_value = True
+
+    def mock_stop():
+        logic.timer.isActive.return_value = False
+        
+    logic.timer.start.side_effect = mock_start
+    logic.timer.stop.side_effect = mock_stop
+    
     return logic
 
 @pytest.fixture

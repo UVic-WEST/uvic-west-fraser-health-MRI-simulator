@@ -55,24 +55,23 @@ class CycleFactory:
 
     def _create_cycle1(self):
         return CycleConfig(
-            cycle_id="scan_1",
+            cycle_id=1,
             cycle_name="Standard MRI",
             cycle_duration_ms=10000,
+            light_configuration=50,
             actions=[
-                CycleAction(0, ActionType.LIGHT_ON, {"intensity": 70}),
-                CycleAction(1000, ActionType.SOUND_START, {"volume": 50}),
-                CycleAction(4000, ActionType.LIGHT_OFF, {}),
+                CycleAction(1000, ActionType.SOUND_START, {"file_name": "Default", "duration": 2000, "volume": 50}),
                 CycleAction(4500, ActionType.SOUND_STOP, {})
             ]
         )
 
     def _create_cycle2(self):
         return CycleConfig(
-            cycle_id="scan_2",
+            cycle_id=2,
             cycle_name="Fast MRI",
             cycle_duration_ms=5000,
+            light_configuration=50,
             actions=[
-                CycleAction(0, ActionType.LIGHT_ON, {"intensity": 70}),
                 CycleAction(500, ActionType.SOUND_START, {"volume": 50}),
                 CycleAction(2000, ActionType.SOUND_STOP, {}),
             ]
