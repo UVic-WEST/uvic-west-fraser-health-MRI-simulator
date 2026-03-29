@@ -144,3 +144,5 @@ class HomePage(QWidget):
 
         if self.light_controls_widget._expanded:
             self.light_controls_widget._toggle_panel()
+            
+        self.parent.show_custom_cycle_warning()
