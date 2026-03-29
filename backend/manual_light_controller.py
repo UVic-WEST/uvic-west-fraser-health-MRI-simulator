@@ -9,7 +9,6 @@ from PySide6.QtCore import QObject
 
 DEFAULT_BRIGHTNESS = 50
 
-
 class ManualLightController(QObject):
     """Backend logic for manual light control on the home page.
 

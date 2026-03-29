@@ -67,7 +67,7 @@ class AppRouter(QMainWindow):
 
         #code for homepage
         self.home_page_controller = HomePageLogic()
-        self.home_page = HomePage(self.home_page_controller,self)
+        self.home_page = HomePage(self.home_page_controller, self.manual_light_controller, self.manual_sound_controller, self)
         self.main_layout.addWidget(self.home_page)
 
         #Code for confirmation page
