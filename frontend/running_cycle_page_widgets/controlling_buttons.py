@@ -18,10 +18,11 @@ class ControllingButtons(QWidget):
         #if this is set to false, then PAUSE button is currently being displayed
         self.cycle_paused = False 
 
+
         # # **IMPORTANT:** set layout to this widget
         self.pause_button_asset_path = 'resources/cycle_running_page_assets/pause_button.png'
         self.stop_button_asset_path = 'resources/cycle_running_page_assets/stop_button.png'
-        self.resume_button_asset_path = 'resources/cycle_running_page_assets/resume_button'
+        self.resume_button_asset_path = 'resources/cycle_running_page_assets/Resume_Button.png'
         
         #setting up widgets
         #pause button

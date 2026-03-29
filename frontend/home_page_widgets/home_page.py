@@ -61,7 +61,7 @@ class HomePage(QWidget):
         self.sign_out_button.raise_()  # Bring to front
 
         #setting up logo (positioned absolutely so it doesn't affect layout)
-        logo_path = 'resources/frontend_common_assets/west_logo.png'
+        logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
         logo_pixmap = QPixmap(logo_path)
         self.logo_label = QLabel(self)
         self.logo_label.setPixmap(logo_pixmap)
@@ -116,7 +116,7 @@ class HomePage(QWidget):
         '''
         when sign out button is pressed, user is signed out and sent to sign in page.
         '''
-        self.parent.show_signin()
+        self.parent.signout()
 
     def show_custom_cycle_warning(self):
         """

@@ -1,4 +1,9 @@
-# The CycleConfig class stores the total duration, global light settings, and list of SoundConfig objects for a single cycle
+"""Data model for a single MRI simulation cycle.
+
+A CycleConfig holds the cycle metadata (id, name, duration) and an ordered
+list of CycleActions that define when lights and sounds should trigger
+during playback. Supports JSON serialisation for saving/loading cycles.
+"""
 
 from dataclasses import dataclass, field
 from typing import List
@@ -32,8 +37,8 @@ class CycleConfig:
         for action in self.actions:
             if action.timestamp_ms > self.cycle_duration_ms:
                 raise ValueError(
-                    f"action at {self.timestamp_ms}ms exceeds cycle duration "
-                    f"of {self.cycle_duration}ms"
+                    f"action at {action.timestamp_ms}ms exceeds cycle duration "
+                    f"of {self.cycle_duration_ms}ms"
                 )
 
         # sort actions by timestamp_ms

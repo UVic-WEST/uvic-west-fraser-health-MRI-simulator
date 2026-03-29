@@ -51,5 +51,5 @@ def cycle_running_logic(mocker, mock_sound_player, mock_light_controller, mock_c
 
 @pytest.fixture
 def auth():
-    auth = Auth(correct_pin='1234')
+    auth = Auth(correct_pin='1234', parent=None)
     return auth

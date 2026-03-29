@@ -1,3 +1,10 @@
+"""Running-cycle page controller.
+
+Provides a 1-second countdown timer that emits time_signal_in_s for the
+frontend TimerWidget, and delegates hardware start/stop to CycleController
+on each lifecycle event (start, pause, resume, stop, completion).
+"""
+
 from PySide6.QtCore import (
     QTimer,
     Signal,
@@ -10,8 +17,15 @@ from embedded.sound_player import SoundPlayer
 from embedded.light_controller import LightController
 
 class CycleRunningPageLogic(QObject):
-    """Manages the running-cycle page: countdown timer for the UI and
-    delegates hardware actions (lights, sounds) to CycleController."""
+    """Backend logic for the cycle-running page.
+
+    Owns a 1-second QTimer for the UI countdown and calls CycleController
+    to trigger hardware (lights/sounds) at the appropriate moments.
+
+    Signals:
+        time_signal_in_s (int): Remaining seconds (>0), -1 for cancelled,
+            0 for completed.
+    """
 
     time_signal_in_s = Signal(int)
     error_signal = Signal(bool)
@@ -24,9 +38,9 @@ class CycleRunningPageLogic(QObject):
         the corresponding instructions to the hardware layer.
 
         Args:
-            sound_player(SoundPlayer):
-            light_controller(LightController):
-            parent:
+            sound_player(SoundPlayer): lower-layer sound controller
+            light_controller(LightController): lower-layer light controller
+            parent (QObject, optional): Qt parent for ownership.
 
         Returns:
             None
