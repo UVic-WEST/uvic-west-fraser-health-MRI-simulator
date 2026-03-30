@@ -6,15 +6,21 @@ class CreateCycleLogic:
     def __init__(self, cycle_duration: int = 300, light_level: int = 50):
         self.cycle_duration = cycle_duration # seconds
         self.light_level = light_level
-            
+    
     # --------------------------------------------------
     # DURATION
     # --------------------------------------------------
     def get_duration(self):
+        """Return current duration in seconds."""
         return self.cycle_duration
 
     def set_duration(self, value):
-        # check if value is between 1 second and 15 minutes (900 seconds)
+        """
+        Set cycle duration.
+
+        Constraints:
+        - 1 to 15 minutes (60-900 seconds)
+        """
         if 1 <= value <= 15 * 60:
             self.cycle_duration = value
             return True
@@ -23,39 +29,76 @@ class CreateCycleLogic:
     # --------------------------------------------------
     # LIGHT LEVEL
     # --------------------------------------------------
-    def set_light_level(self, value):
-        if 0 <= value <= 100:
-            self.light_level = value
-            return True
-        return False
-    
     def get_light_level(self):
+        """Return current light level."""
         return self.light_level
     
+    def set_light_level(self, value: int):
+        """
+        Set light level.
+
+        Constraints:
+        - 0-100
+        - increments of 10
+        """
+        if not isinstance(value, int):
+            raise ValueError("Light level must be int")  # internal error
+
+        if 0 <= value <= 100 and value % 10 == 0:
+            self.light_level = value
+            return True
+
+        return False  # user input validation
+    
     def display_light_level(self, light_level):
-        # asks the backend to turn on the lights so need to communicate to embedded to turn light on at that level
-        # placeholder (later connect to hardware)
-        # look at code at for how it being done manually???
-        return light_level
+        # validate type
+        if not isinstance(light_level, int):
+            raise ValueError("Light level must be an integer")
+
+        # validate range + increments
+        if not (0 <= light_level <= 100 and light_level % 10 == 0):
+            return False
+
+        # convert 0-100 to 0.0-1.0
+        brightness = light_level / 100.0
+
+        # send to hardware (L3 via controller)
+        if self.cycle_controller:
+            self.cycle_controller.light_controller.change_lights(brightness)
+
+        return True
 
     # --------------------------------------------------
     # VALIDATION
     # --------------------------------------------------
     def validate_cycle(self) -> bool:
-        return True  # Placeholder for actual validation logic (e.g., check if duration is set, groups are configured, etc.)
+        """Ensure all required fields are valid before saving."""
+        return (
+            isinstance(self.cycle_duration, int)
+            and 60 <= self.cycle_duration <= 900
+            and isinstance(self.light_level, int)
+            and 0 <= self.light_level <= 100
+            and self.light_level % 10 == 0
+        )
     
     # --------------------------------------------------
     # FINALIZE + SAVE CYCLE
     # --------------------------------------------------
     def save(self):
-        """ Build and save the cycle """
+        """
+        Build and persist the cycle.
+
+        Returns:
+            CycleConfig if successful, None otherwise
+        """
         if not self.validate_cycle():
             return None
 
-        # create cycle object
+        # generate ID + name
         new_id = CycleRepository.get_next_id()
         new_name = self._generate_cycle_name(new_id)
 
+        # build cycle config
         cycle = CycleConfig(
             cycle_id=new_id,
             cycle_name=new_name,
@@ -70,8 +113,11 @@ class CreateCycleLogic:
 
         return cycle
     
-    # helper function to generate a cycle name based on the cycle ID
+    # --------------------------------------------------
+    # HELPERS
+    # --------------------------------------------------
     def _generate_cycle_name(self, cycle_id: int) -> str:
+        """Generate default cycle name based on ID."""
         return f"Cycle {cycle_id}"
     
     
