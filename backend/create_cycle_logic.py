@@ -6,7 +6,7 @@ import json
 DEFAULT_LIGHT_LEVEL = 50
 DEFAULT_SOUND_LEVEL = 50
 DEFAULT_NUM_GROUPS = 4
-DEFAULT_CYCLE_DURATION_s = 300 # default duration of custom cycle is 300s (5 min)
+DEFAULT_CYCLE_DURATION_S = 300 # default duration (in seconds) of custom cycle is 300s (5 min)
 
 
 class CreateCycleLogic(QObject):
