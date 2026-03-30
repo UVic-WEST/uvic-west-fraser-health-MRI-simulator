@@ -22,6 +22,8 @@ from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
 from backend.cycle_controller import CycleController
+from backend.manual_light_controller import ManualLightController
+from backend.manual_sound_controller import ManualSoundController
 
 #PASSWORD 
 PASS = '2026'
@@ -42,6 +44,12 @@ class AppRouter(QMainWindow):
         self.cycle_controller = CycleController(
             self.light_controller, self.sound_player, parent=self
         )
+        self.manual_light_controller = ManualLightController(
+            self.light_controller, parent=self
+        )
+        self.manual_sound_controller = ManualSoundController(
+            self.sound_player, parent=self
+        )
 
         #create window
         self.setFixedSize(1024, 600)
@@ -59,7 +67,7 @@ class AppRouter(QMainWindow):
 
         #code for homepage
         self.home_page_controller = HomePageLogic()
-        self.home_page = HomePage(self.home_page_controller,self)
+        self.home_page = HomePage(self.home_page_controller, self.manual_light_controller, self.manual_sound_controller, self)
         self.main_layout.addWidget(self.home_page)
 
         #Code for confirmation page
@@ -110,11 +118,37 @@ class AppRouter(QMainWindow):
         """
         self.main_layout.setCurrentWidget(self.confirmation_page)
 
-    def show_warning(self):
+    def show_warning(
+        self,
+        warning_message: str | None = None,
+        on_confirm=None,
+        on_cancel=None,
+    ):
         """
-        This function shows the warning page before custom cycle creation
+        Show warning page with optional message and button handlers.
+
+        Args:
+            warning_message (str | None): warning text to display
+            on_confirm: callback for confirm button; uses warning page fallback if None
+            on_cancel: callback for cancel button; uses warning page fallback if None
         """
+        if warning_message is not None:
+            self.warning_page.set_warning_message(warning_message)
+        else:
+            self.warning_page.set_warning_message(self.warning_page.DEFAULT_WARNING_MESSAGE)
+
+        self.warning_page.set_callbacks(on_confirm=on_confirm, on_cancel=on_cancel)
         self.main_layout.setCurrentWidget(self.warning_page)
+
+    def show_custom_cycle_warning(self):
+        """
+        Show warning page for custom cycle creation with custom-cycle navigation.
+        """
+        self.show_warning(
+            warning_message="WARNING!\n REMOVE CHILD FROM MRI\n BEFORE PROCEEDING",
+            on_confirm=self.show_create_cycle_pages,
+            on_cancel=self.show_home,
+        )
 
     def play_cycle_confirmed(self):
         """
