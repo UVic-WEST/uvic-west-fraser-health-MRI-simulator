@@ -50,7 +50,7 @@ class CreateCycleLogic(QObject):
   groups_changed = Signal(int)
 
 
-  def __init__(self, cycle_id: int, cycle_name: str, cycle_dur_s: int = DEFAULT_CYCLE_DURATION_s, light_level: int = DEFAULT_LIGHT_LEVEL, sound_set: bool = False, group_list: List["CreateCycleLogic.SoundGroup"] | None = None):
+  def __init__(self, cycle_id: int, cycle_name: str, cycle_dur_s: int = DEFAULT_CYCLE_DURATION_S, light_level: int = DEFAULT_LIGHT_LEVEL, sound_set: bool = False, group_list: List["CreateCycleLogic.SoundGroup"] | None = None):
     super().__init__()
     
     self.cycle_id = cycle_id
