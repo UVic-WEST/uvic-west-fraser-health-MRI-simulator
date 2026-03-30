@@ -3,12 +3,10 @@ from pathlib import Path
 from typing import List
 from backend.cycle_config import CycleConfig
 
-CYCLE_FILE = Path("cycles.json")
+CYCLE_FILE = Path("cycles.json") 
 
 
 class CycleRepository:
-    """Handles all persistence for CycleConfig objects."""
-
     # ---------------------------------------------------------
     # LOAD ALL CYCLES
     # ---------------------------------------------------------
@@ -17,11 +15,11 @@ class CycleRepository:
         if not CYCLE_FILE.exists():
             return []
 
-        with open(CYCLE_FILE, "r") as f:
-            try:
+        try:
+            with open(CYCLE_FILE, "r") as f:
                 data = json.load(f)
-            except json.JSONDecodeError:
-                return []
+        except json.JSONDecodeError:
+            return []
 
         return [CycleConfig.from_dict(item) for item in data]
 
@@ -30,6 +28,9 @@ class CycleRepository:
     # ---------------------------------------------------------
     @staticmethod
     def save_all(cycles: List[CycleConfig]) -> None:
+        # ensure folder exists
+        CYCLE_FILE.parent.mkdir(parents=True, exist_ok=True)
+
         with open(CYCLE_FILE, "w") as f:
             json.dump([c.to_dict() for c in cycles], f, indent=2)
 
@@ -44,3 +45,12 @@ class CycleRepository:
             return 1
 
         return max(c.cycle_id for c in cycles) + 1
+
+    # ---------------------------------------------------------
+    # ADD ONE CYCLE (helper)
+    # ---------------------------------------------------------
+    @staticmethod
+    def add_cycle(cycle: CycleConfig) -> None:
+        cycles = CycleRepository.load_all()
+        cycles.append(cycle)
+        CycleRepository.save_all(cycles)
