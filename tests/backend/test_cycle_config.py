@@ -8,6 +8,7 @@ def test_invalid_cycle_duration():
             cycle_id="bad",
             cycle_name="Invalid",
             cycle_duration_ms=0,
+            light_configuration=50,
             actions=[]
         )
 
@@ -19,8 +20,9 @@ def test_action_exceeds_duration():
             cycle_id="bad",
             cycle_name="Invalid",
             cycle_duration_ms=1000,
+            light_configuration=50,
             actions=[
-                CycleAction(2000, ActionType.LIGHT_ON, {})
+                CycleAction(2000, ActionType.SOUND_START, {})
             ]
         )
 
@@ -31,8 +33,9 @@ def test_to_json_writes_file(tmp_path):
         cycle_id="test",
         cycle_name="Test Cycle",
         cycle_duration_ms=1000,
+        light_configuration=50,
         actions=[
-            CycleAction(0, ActionType.LIGHT_ON, {"intensity": 50})
+            CycleAction(0, ActionType.SOUND_START, {})
         ]
     )
 
@@ -50,8 +53,9 @@ def test_to_json_format(tmp_path):
         cycle_id="test",
         cycle_name="Test Cycle",
         cycle_duration_ms=1000,
+        light_configuration=50,
         actions=[
-            CycleAction(0, ActionType.LIGHT_ON, {"intensity": 50})
+            CycleAction(0, ActionType.SOUND_START, {})
         ]
     )
 
@@ -64,11 +68,12 @@ def test_to_json_format(tmp_path):
         "id": "test",
         "name": "Test Cycle",
         "duration_ms": 1000,
+        "light_configuration": 50, 
         "actions": [
             {
                 "timestamp_ms": 0,
-                "type": ActionType.LIGHT_ON.value,
-                "params": {"intensity": 50}
+                "type": ActionType.SOUND_START.value,
+                "params": {}
             }
         ]
     }
@@ -77,11 +82,12 @@ def test_from_json_round_trip(tmp_path):
     from backend.cycle_action import CycleAction, ActionType
 
     cycle = CycleConfig(
-        cycle_id="test",
+        cycle_id=1,
         cycle_name="Test Cycle",
         cycle_duration_ms=1000,
+        light_configuration=50,
         actions=[
-            CycleAction(0, ActionType.LIGHT_ON, {"intensity": 50})
+            CycleAction(0, ActionType.SOUND_START, {})
         ]
     )
 
@@ -102,9 +108,10 @@ def test_actions_are_sorted():
         cycle_id="test",
         cycle_name="Test",
         cycle_duration_ms=1000,
+        light_configuration=50,
         actions=[
-            CycleAction(500, ActionType.LIGHT_ON, {}),
-            CycleAction(100, ActionType.LIGHT_OFF, {})
+            CycleAction(500, ActionType.SOUND_START, {}),
+            CycleAction(100, ActionType.SOUND_START, {})
         ]
     )
 
@@ -113,7 +120,7 @@ def test_actions_are_sorted():
 def test_add_action_invalid():
     from backend.cycle_action import CycleAction, ActionType
 
-    cycle = CycleConfig("id", "name", 1000)
+    cycle = CycleConfig("id", "name", 1000, 50)
 
     with pytest.raises(ValueError):
-        cycle.add_action(CycleAction(2000, ActionType.LIGHT_ON, {}))
+        cycle.add_action(CycleAction(2000, ActionType.SOUND_START, {}))
