@@ -1,10 +1,8 @@
 from PySide6.QtWidgets import (
     QWidget, QLabel, QPushButton, QSlider,
-    QVBoxLayout,
-    QLabel,
-    QPushButton,
+    QVBoxLayout
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import (
     QPixmap,
     QFont,
@@ -21,8 +19,6 @@ from PySide6.QtGui import (
 from frontend.helpers import ReadOnlySlider
 
 
-# import os  
-# BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  
 
 class CCBrightnessPage(QWidget):
     def __init__(self, controller, parent=None):
@@ -144,6 +140,7 @@ class CCBrightnessPage(QWidget):
 
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
+        self.setup_BrightnessScreen()
 
     def set_background(self, image_path):
         self.bg_label = QLabel(self)
@@ -180,138 +177,12 @@ class CCBrightnessPage(QWidget):
                 current = None
 
     def default_button_pressed(self):
+        """
+        This function resets brightness to default value when default button is pressed
+        """
         print("default button was pressed")
-        self.parent = parent 
-        self.controller = controller 
-
-
-        self.brightness = 0
-        self.setFixedSize(1024,600)
-        self.setStyleSheet("background-color: white;") 
-        self.set_background()
-        self.set_logicbuttons()
-        self.setup_BrightnessScreen()
         self.reset_light_default()
-
-
-    def set_background(self):
-        """
-        This functions sets the background and layout of screen
-        
-        """
-        self.bg_label = QLabel(self)
-        self.bg_pixmap = QPixmap("resources/custom_brightness_assets/brightnesspagetemplate.png")
-
-        self.bg_label.setPixmap(self.bg_pixmap.scaled(
-            self.size(),
-            Qt.IgnoreAspectRatio,
-            Qt.SmoothTransformation
-        ))
-        
-        self.bg_label.setGeometry(0,0,self.width(),self.height())
-        self.bg_label.lower()
-
-    
-    def set_logicbuttons(self):
-        """
-        This function handles logic for making all control buttons clickable ad setting their positions
-        """
-        # # next button
-        self.next_btn = QPushButton("",self)
-        self.next_btn.setGeometry(860,532.3,131,46.37) 
-        self.next_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                border: none;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 30);
-                border-radius: 25px;
-            }
-            QPushButton:pressed {
-                background: rgba(255, 255, 255, 60);
-                border-radius: 25px;
-            }
-        """)
-        self.next_btn.clicked.connect(self.go_next)
-        
-        #default button
-        self.default_btn = QPushButton("",self)
-        self.default_btn.setGeometry(714,532.3,131,46.37)
-        self.default_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                border: none;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 30);
-                border-radius: 25px;
-            }
-            QPushButton:pressed {
-                background: rgba(255, 255, 255, 60);
-                border-radius: 25px;
-            }
-        """)
-        self.default_btn.clicked.connect(self.set_default)
-
-        #cancel button
-        self.cancel_btn = QPushButton("",self)
-        self.cancel_btn.setGeometry(20,22.26,131,46.37)
-        self.cancel_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                border: none;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 30);
-                border-radius: 25px;
-            }
-            QPushButton:pressed {
-                background: rgba(255, 255, 255, 60);
-                border-radius: 25px;
-            }
-        """)
-        self.cancel_btn.clicked.connect(self.reset_customization)
-
-        #help button
-        self.help_btn = QPushButton("",self)
-        self.help_btn.setGeometry(164,23.18,49,45.44)
-        self.help_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                border: none;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 30);
-                border-radius: 25px;
-            }
-            QPushButton:pressed {
-                background: rgba(255, 255, 255, 60);
-                border-radius: 25px;
-            }
-        """)
-        self.help_btn.clicked.connect(self.go_help)
-
-        #back button
-
-        self.back_btn = QPushButton("",self)
-        self.back_btn.setGeometry(40, 532, 131, 46.37)
-        self.back_btn.setStyleSheet("""
-                QPushButton{
-                    background: transparent;
-                    border: none;
-                }
-                QPushButton:hover{
-                    background: rgba(255, 255, 255, 30);
-                    border-radius: 25px;
-                }
-                QPushButton:pressed{
-                    background: rgba(255, 255, 255, 60);
-                    border-radius: 25px;
-                }
-                
-        """)
-        self.back_btn.clicked.connect(self.go_back)
+        self.update_button_states()
 
 
     def setup_BrightnessScreen(self):
@@ -425,38 +296,7 @@ class CCBrightnessPage(QWidget):
 
     
 
-    def go_next(self):
-        """
-        This function handles the logic to land on next page
-        """
-        self.parent.next_pressed()
-
-    def set_default(self):
-        """
-        This function sets default cycle time to system default
-        """
-        self.brightness=50 #UPDATE TO USE L2 FUNCTION CALL
-        self.reset_light_default()
-        self.update_button_states()
-        print("default clicked")
-
-    def reset_customization(self):
-        """
-        This function cancels the customization and reset to default
-        """
-        print("reset")
-
-    def go_help(self):
-        """
-        This function handle when help button is clicked user is taken to the help screen
-        """
-        print("help")
-
-    def go_back(self):
-        """
-        This function handles the logic to land on back page
-        """
-        self.parent.back_pressed()
+  
 
     def brightness_changed(self, value: int):
         """
@@ -472,7 +312,8 @@ class CCBrightnessPage(QWidget):
             self.brightness_slider.blockSignals(True)
             self.brightness_slider.setValue(val)
             self.brightness_slider.blockSignals(False)
-        self.controller.set_brightness(val)
+        if self.controller:
+            self.controller.set_brightness(val)
 
 
     def dec_brightness(self):
@@ -522,25 +363,3 @@ class CCBrightnessPage(QWidget):
         self.minus_btn.setEnabled(val > 0)    # grey out minus at 0
         self.plus_btn.setEnabled(val < 100)   # grey out plus at 100
 
-# """
-# added only for testing my testing
-
-# """
-# if __name__ == "__main__":
-#     import sys
-#     from PySide6.QtWidgets import QApplication
-
-    
-#     class MockController:
-#         def set_brightness(self, val):
-#             print(f"Brightness: {val}")
-
-#     class MockParent:
-#         def next_pressed(self): print("Next")
-#         def back_pressed(self): print("Back")
-    
-#     app = QApplication(sys.argv)
-#     window = CCBrightnessPage(MockController(), None)
-#     window.parent = MockParent()
-#     window.show()
-#     sys.exit(app.exec())
