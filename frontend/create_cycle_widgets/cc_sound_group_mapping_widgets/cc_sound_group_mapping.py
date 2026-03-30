@@ -62,6 +62,11 @@ class CCSoundGroupMappingPage(QWidget):
         self.controller = controller
         self.setFixedSize(1024, 600)
 
+        self.manual_sound_controller = self._resolve_manual_sound_controller()
+        self.sound_catalog = self._load_sound_catalog()
+        self.sound_option_labels = [label for _, label in self.sound_catalog]
+        self.sound_label_to_id = {label: sound_id for sound_id, label in self.sound_catalog}
+
         # Create main layout
         self.set_background("resources/cycle_running_page_assets/running_cycle.png")
         self.main_layout = QVBoxLayout()
@@ -387,6 +392,53 @@ class CCSoundGroupMappingPage(QWidget):
         self.sound_dropdown.currentTextChanged.connect(self.on_sound_selected)
         self.on_group_changed(self.group_dropdown.currentText())
 
+    def _resolve_manual_sound_controller(self):
+        """
+        This function finds the app-level manual sound controller from parent widgets.
+
+        Args:
+            None
+
+        Returns:
+            controller: ManualSoundController instance if available, otherwise None
+        """
+        current = self.parent
+        while current is not None:
+            if hasattr(current, "manual_sound_controller"):
+                return current.manual_sound_controller
+
+            if hasattr(current, "parent"):
+                parent_ref = current.parent
+                current = parent_ref() if callable(parent_ref) else parent_ref
+            else:
+                current = None
+
+        return None
+
+    def _load_sound_catalog(self):
+        """
+        This function loads sound options from backend and falls back to local defaults.
+
+        Args:
+            None
+
+        Returns:
+            catalog: list of tuples in the form (sound_id, sound_label)
+        """
+        if self.manual_sound_controller is not None:
+            try:
+                backend_sounds = self.manual_sound_controller.get_sounds()
+                catalog = []
+                for sound_id, sound_name in backend_sounds:
+                    sound_label = str(sound_name).replace("_", " ").upper()
+                    catalog.append((int(sound_id), sound_label))
+                if catalog:
+                    return catalog
+            except Exception:
+                pass
+
+        return [(index + 1, label) for index, label in enumerate(SOUND_OPTIONS)]
+
     def set_background(self, image_path):
         """
         Set the background image for this page.
@@ -409,6 +461,7 @@ class CCSoundGroupMappingPage(QWidget):
         """
         Move to previous create-cycle page when mapping is cancelled.
         """
+        self._stop_sample_playback()
         print("back was pressed")
         if self.parent and hasattr(self.parent, "back_pressed"):
             self.parent.back_pressed()
@@ -424,6 +477,7 @@ class CCSoundGroupMappingPage(QWidget):
             self._show_incomplete_input_warning()
             return
 
+        self._stop_sample_playback()
         print("next was pressed")
         if self.parent and hasattr(self.parent, "next_pressed"):
             self.parent.next_pressed()
@@ -480,6 +534,7 @@ class CCSoundGroupMappingPage(QWidget):
         """
         Return the user to the home page from this step.
         """
+        self._stop_sample_playback()
         print("cancel was pressed")
         current = self.parent
         while current is not None:
@@ -507,10 +562,36 @@ class CCSoundGroupMappingPage(QWidget):
             None
         """
         current_group = self.group_dropdown.currentText()
-        selected_for_group = self.group_to_sounds.get(current_group, [])
-        if not selected_for_group:
+        selected_labels = self.group_to_sounds.get(current_group, [])
+        if not selected_labels:
             return
-        print(f"play sample pressed for {current_group}: {selected_for_group}")
+
+        selected_sound_ids = [
+            self.sound_label_to_id[label]
+            for label in selected_labels
+            if label in self.sound_label_to_id
+        ]
+        if not selected_sound_ids:
+            return
+
+        volume = int(self.volume_slider.value())
+        if self.manual_sound_controller is None:
+            print("manual sound controller unavailable for sample playback")
+            return
+
+        self.manual_sound_controller.set_manual_sound_controller_status(True)
+        result = self.manual_sound_controller.play_sounds(selected_sound_ids, volume)
+        print(f"play sample pressed for {current_group}: ids={selected_sound_ids}, volume={volume}, ok={result}")
+
+    def _stop_sample_playback(self):
+        """
+        This function stops sample playback when leaving this page.
+
+        Args:
+            None
+        """
+        if self.manual_sound_controller is not None:
+            self.manual_sound_controller.set_manual_sound_controller_status(False)
 
     def _update_play_sample_button_state(self, group_name):
         """
@@ -559,7 +640,7 @@ class CCSoundGroupMappingPage(QWidget):
             return
 
         selected_for_group = self.group_to_sounds[group_name]
-        available_sounds = [s for s in SOUND_OPTIONS if s not in selected_for_group]
+        available_sounds = [s for s in self.sound_option_labels if s not in selected_for_group]
 
         self.sound_dropdown.blockSignals(True)
         self.sound_dropdown.clear()
