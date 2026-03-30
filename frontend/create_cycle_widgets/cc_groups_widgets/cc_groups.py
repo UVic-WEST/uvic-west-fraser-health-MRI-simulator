@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QPushButton,
+    QHBoxLayout,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (
@@ -115,11 +116,40 @@ class CCGroupsPage(QWidget):
         content_layout.setContentsMargins(30, 30, 30, 30)
         content_layout.setSpacing(40)
 
-        self.page_status = QLabel("Select groups for this cycle")
-        self.page_status.setFont(QFont("Ubuntu", 24))
-        self.page_status.setStyleSheet("color: #0474BA;")
-        self.page_status.setAlignment(Qt.AlignCenter)
-        content_layout.addWidget(self.page_status)
+        #self.page_status = QLabel("Select groups for this cycle")
+        #self.page_status.setFont(QFont("Ubuntu", 24))
+        #self.page_status.setStyleSheet("color: #0474BA;")
+        #self.page_status.setAlignment(Qt.AlignCenter)
+        #content_layout.addWidget(self.page_status)
+        self.group_value = 4
+
+        self.prompt= QLabel("How many groups do you want to include in this cycle?")
+        self.prompt.setFont(QFont("Ubuntu", 20))
+        self.prompt.setStyleSheet("color: #0474BA;")
+        self.prompt.setAlignment(Qt.AlignCenter)
+        self.prompt.setWordWrap(True)
+        content_layout.addWidget(self.prompt)
+
+        stepper_layout = QHBoxLayout()
+        stepper_layout.setAlignment(Qt.AlignCenter)
+
+        self.minus_btn = QPushButton("-")
+        self.plus_btn = QPushButton("+")
+        self.value_label = QLabel(str(self.group_value))
+        self.value_label.setFont(QFont("Ubuntu", 24))
+        self.value_label.setAlignment(Qt.AlignCenter)
+
+        self.minus_btn.setFixedSize(60, 50)
+        self.plus_btn.setFixedSize(60, 50)
+        self.minus_btn.clicked.connect(self.decrease)
+        self.plus_btn.clicked.connect(self.increase)
+
+        stepper_layout.addWidget(self.minus_btn)
+        stepper_layout.addWidget(self.value_label)
+        stepper_layout.addWidget(self.plus_btn)
+        content_layout.addLayout(stepper_layout)        
+        
+        #Added part ends here
 
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
@@ -160,3 +190,13 @@ class CCGroupsPage(QWidget):
 
     def default_button_pressed(self):
         print("default button was pressed")
+
+    def increase(self):
+        if self.group_value < 8:
+            self.group_value += 1
+            self.value_label.setText(str(self.group_value))
+
+    def decrease(self):
+        if self.group_value > 1:
+            self.group_value -= 1
+            self.value_label.setText(str(self.group_value))
