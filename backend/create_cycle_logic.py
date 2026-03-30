@@ -3,9 +3,10 @@ from backend.cycle_repository import CycleRepository
 
 
 class CreateCycleLogic:
-    def __init__(self, cycle_duration: int = 300, light_level: int = 50):
+    def __init__(self, cycle_duration=300, light_level=50, cycle_controller=None):
         self.cycle_duration = cycle_duration # seconds
         self.light_level = light_level
+        self.cycle_controller = cycle_controller
     
     # --------------------------------------------------
     # DURATION
@@ -85,39 +86,21 @@ class CreateCycleLogic:
     # FINALIZE + SAVE CYCLE
     # --------------------------------------------------
     def save(self):
-        """
-        Build and persist the cycle.
-
-        Returns:
-            CycleConfig if successful, None otherwise
-        """
         if not self.validate_cycle():
             return None
-
+        
         # generate ID + name
         new_id = CycleRepository.get_next_id()
-        new_name = self._generate_cycle_name(new_id)
+        new_name = f"Cycle {new_id}"
 
         # build cycle config
         cycle = CycleConfig(
             cycle_id=new_id,
             cycle_name=new_name,
             cycle_duration_ms=self.cycle_duration * 1000,
-            actions=[]  # sound stuff add later
+            actions=[] # sound stuff add later
         )
-        
-        # save it
-        cycles = CycleRepository.load_all()
-        cycles.append(cycle)
-        CycleRepository.save_all(cycles)
+
+        CycleRepository.add_cycle(cycle)
 
         return cycle
-    
-    # --------------------------------------------------
-    # HELPERS
-    # --------------------------------------------------
-    def _generate_cycle_name(self, cycle_id: int) -> str:
-        """Generate default cycle name based on ID."""
-        return f"Cycle {cycle_id}"
-    
-    
