@@ -8,7 +8,7 @@ active and cuts all sounds when closed.
 import os
 from typing import List, Tuple
 
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, QTimer
 
 from backend.sound_config import SoundConfig
 
@@ -16,8 +16,12 @@ SOUNDS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "resources", "sounds"
 )
 
+
 SUPPORTED_EXTENSIONS = (".wav", ".mp3")
 MAX_SIMULTANEOUS_SOUNDS = 3
+
+# Sample playback time limit in seconds
+SAMPLE_PLAYBACK_SECONDS = 10
 
 
 class ManualSoundController(QObject):
@@ -47,6 +51,7 @@ class ManualSoundController(QObject):
         self.current_sounds: List[int] = []
         self.current_volume = 50
         self._sound_catalog = self._build_sound_catalog()
+        self._sample_timer = None
 
     def _build_sound_catalog(self) -> List[Tuple[int, str]]:
         """Scan the sounds directory and build an (id, name) catalog.
@@ -130,6 +135,13 @@ class ManualSoundController(QObject):
         if volume < 0 or volume > 100 or volume % 10 != 0:
             return False
 
+
+        # Stop any previous timer
+        if self._sample_timer is not None:
+            self._sample_timer.stop()
+            self._sample_timer.deleteLater()
+            self._sample_timer = None
+
         self.sound_player.stop()
 
         self.current_sounds = list(sounds)
@@ -139,6 +151,7 @@ class ManualSoundController(QObject):
             return True
 
         id_to_file = self._get_id_to_file_map()
+
 
         for sound_id in sounds:
             file_path = id_to_file.get(sound_id)
@@ -151,6 +164,13 @@ class ManualSoundController(QObject):
                 volume=volume,
             )
             self.sound_player.play(sound_config)
+
+        # Start a timer to stop playback after SAMPLE_PLAYBACK_SECONDS
+        if sounds:
+            self._sample_timer = QTimer(self)
+            self._sample_timer.setSingleShot(True)
+            self._sample_timer.timeout.connect(self.sound_player.stop)
+            self._sample_timer.start(SAMPLE_PLAYBACK_SECONDS * 1000)
 
         return True
 

@@ -6,6 +6,8 @@ from PySide6.QtWidgets import (
     QPushButton,
     QComboBox,
     QSlider,
+    QAbstractItemView,
+    QScroller,
 )
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import (
@@ -38,17 +40,46 @@ MAX_SOUNDS_PER_GROUP = 3
 
 class FixedComboBox(QComboBox):
     """
-    Combo box with a fixed popup position directly below the widget.
+    Combo box with a fixed popup position and constrained popup sizing.
     """
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.popup_max_visible_items = 5
+        view = self.view()
+        view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
+
     def showPopup(self):
+        view = self.view()
+        max_visible_items = self.popup_max_visible_items
+        view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setMaxVisibleItems(max_visible_items)
+
+        popup_width = self.width()
+        view.setMinimumWidth(popup_width)
+        view.setMaximumWidth(popup_width)
+
+        row_height = view.sizeHintForRow(0)
+        if row_height <= 0:
+            row_height = 28
+        popup_height = (row_height * max_visible_items) + (2 * view.frameWidth())
+        view.setMaximumHeight(popup_height)
+
         super().showPopup()
-        popup = self.view().window()
+        popup = view.window()
         if popup:
+            popup.setMinimumWidth(popup_width)
+            popup.setMaximumWidth(popup_width)
             popup.move(self.mapToGlobal(QPoint(0, self.height())))
 
 
 class CCSoundGroupMappingPage(QWidget):
+    SAMPLE_PLAYBACK_ACTIVE = False
+    SAMPLE_PLAYBACK_REMAINING = 0
+    SAMPLE_PLAYBACK_TIMER = None
+    SAMPLE_PLAYBACK_ACTIVE = False
     def __init__(self, controller, parent=None):
         """
         Sound group mapping page with the same structure as ConfirmationPage.
@@ -258,10 +289,12 @@ class CCSoundGroupMappingPage(QWidget):
         self.group_dropdown.addItems(GROUP_OPTIONS)
 
         self.sound_dropdown = FixedComboBox()
+        self.sound_dropdown.popup_max_visible_items = 4
         self.sound_dropdown.setFixedWidth(260)
         self.sound_dropdown.setFont(QFont("Ubuntu", 16))
         self.sound_dropdown.setStyleSheet(dropdown_style)
         self.sound_dropdown.addItem(SOUND_DROPDOWN_PLACEHOLDER)
+
 
         left_col.addWidget(self.group_dropdown)
         left_col.addWidget(self.sound_dropdown)
@@ -548,11 +581,13 @@ class CCSoundGroupMappingPage(QWidget):
 
     def default_button_pressed(self):
         """
-        Print a terminal message when the default button is pressed.
+        Clear the sounds for the currently selected group only.
         """
-        self.group_to_sounds = {group: [] for group in GROUP_OPTIONS}
-        self.on_group_changed(self.group_dropdown.currentText())
-        print("default button was pressed")
+        current_group = self.group_dropdown.currentText()
+        if current_group in self.group_to_sounds:
+            self.group_to_sounds[current_group] = []
+            self.on_group_changed(current_group)
+        print(f"default button was pressed for {current_group}")
 
     def play_sample_pressed(self):
         """
@@ -579,9 +614,60 @@ class CCSoundGroupMappingPage(QWidget):
             print("manual sound controller unavailable for sample playback")
             return
 
+
         self.manual_sound_controller.set_manual_sound_controller_status(True)
         result = self.manual_sound_controller.play_sounds(selected_sound_ids, volume)
         print(f"play sample pressed for {current_group}: ids={selected_sound_ids}, volume={volume}, ok={result}")
+        self.SAMPLE_PLAYBACK_ACTIVE = True
+        self.sound_dropdown.setEnabled(False)
+        self.group_dropdown.setEnabled(False)
+
+        # Change button to grey and start countdown
+        from backend.manual_sound_controller import SAMPLE_PLAYBACK_SECONDS
+        from PySide6.QtCore import QTimer
+        self.SAMPLE_PLAYBACK_REMAINING = SAMPLE_PLAYBACK_SECONDS
+        self.play_sample_btn.setEnabled(False)
+        self.play_sample_btn.setText(f"{self.SAMPLE_PLAYBACK_REMAINING}s")
+        self.play_sample_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #B4B4B4;
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 6px 14px;
+            }
+            """
+        )
+        if self.SAMPLE_PLAYBACK_TIMER is not None:
+            self.SAMPLE_PLAYBACK_TIMER.stop()
+            self.SAMPLE_PLAYBACK_TIMER.deleteLater()
+        self.SAMPLE_PLAYBACK_TIMER = QTimer(self)
+        self.SAMPLE_PLAYBACK_TIMER.setInterval(1000)
+        self.SAMPLE_PLAYBACK_TIMER.timeout.connect(self._on_sample_countdown_tick)
+        self.SAMPLE_PLAYBACK_TIMER.start()
+        QTimer.singleShot(SAMPLE_PLAYBACK_SECONDS * 1000, self._on_sample_playback_finished)
+
+    def _on_sample_countdown_tick(self):
+        self.SAMPLE_PLAYBACK_REMAINING -= 1
+        if self.SAMPLE_PLAYBACK_REMAINING > 0:
+            self.play_sample_btn.setText(f"{self.SAMPLE_PLAYBACK_REMAINING}s")
+        else:
+            if self.SAMPLE_PLAYBACK_TIMER is not None:
+                self.SAMPLE_PLAYBACK_TIMER.stop()
+                self.SAMPLE_PLAYBACK_TIMER.deleteLater()
+                self.SAMPLE_PLAYBACK_TIMER = None
+
+    def _on_sample_playback_finished(self):
+        self.SAMPLE_PLAYBACK_ACTIVE = False
+        self.sound_dropdown.setEnabled(True)
+        self.group_dropdown.setEnabled(True)
+        if self.SAMPLE_PLAYBACK_TIMER is not None:
+            self.SAMPLE_PLAYBACK_TIMER.stop()
+            self.SAMPLE_PLAYBACK_TIMER.deleteLater()
+            self.SAMPLE_PLAYBACK_TIMER = None
+        self.play_sample_btn.setText("Play Sample")
+        self._update_play_sample_button_state(self.group_dropdown.currentText())
 
     def _stop_sample_playback(self):
         """
@@ -650,6 +736,7 @@ class CCSoundGroupMappingPage(QWidget):
         self.sound_dropdown.view().setRowHidden(0, True)
         self.sound_dropdown.blockSignals(False)
 
+
         self.refresh_preview_panel(group_name)
         self._update_play_sample_button_state(group_name)
 
@@ -657,7 +744,7 @@ class CCSoundGroupMappingPage(QWidget):
         """
         Add selected sound to current group (max 3), then refresh UI.
         """
-        if sound_name == SOUND_DROPDOWN_PLACEHOLDER:
+        if sound_name == SOUND_DROPDOWN_PLACEHOLDER or self.SAMPLE_PLAYBACK_ACTIVE:
             return
 
         current_group = self.group_dropdown.currentText()
