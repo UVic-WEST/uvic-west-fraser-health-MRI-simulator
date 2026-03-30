@@ -11,8 +11,8 @@ from PySide6.QtGui import (
 from frontend.helpers import ReadOnlySlider
 
 
-import os  
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  
+# import os  
+# BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))  
 
 class CCBrightnessPage(QWidget):
     def __init__(self, controller, parent=None):
@@ -44,7 +44,7 @@ class CCBrightnessPage(QWidget):
         
         """
         self.bg_label = QLabel(self)
-        self.bg_pixmap = QPixmap(os.path.join(BASE_DIR, "resources/custom_brightness_assets/brightnesspagetemplate.png"))
+        self.bg_pixmap = QPixmap("resources/custom_brightness_assets/brightnesspagetemplate.png")
 
         self.bg_label.setPixmap(self.bg_pixmap.scaled(
             self.size(),
@@ -166,7 +166,7 @@ class CCBrightnessPage(QWidget):
        
         #Brightness label
         self.logo_label = QLabel(self)
-        self.logo_pixmap = QPixmap(os.path.join(BASE_DIR, "resources/custom_brightness_assets/brightnesslogo.png"))
+        self.logo_pixmap = QPixmap("resources/custom_brightness_assets/brightnesslogo.png")
         self.logo_label.setPixmap(self.logo_pixmap.scaled(
             58, 57, 
             Qt.KeepAspectRatio,
@@ -194,7 +194,7 @@ class CCBrightnessPage(QWidget):
         ##=========MINUS Button
         self.minus_btn = QPushButton("",self)
         self.minus_btn.setGeometry(225,343,23,44)
-        self.minus_btn.setIcon(QIcon(os.path.join(BASE_DIR, "resources/custom_brightness_assets/minus.png")))
+        self.minus_btn.setIcon(QIcon("resources/custom_brightness_assets/minus.png"))
         self.minus_btn.setIconSize(QSize(23, 44))
         self.minus_btn.setStyleSheet("""
                 QPushButton {
@@ -226,7 +226,7 @@ class CCBrightnessPage(QWidget):
         ##=============PLUS Button
         self.plus_btn = QPushButton("",self)
         self.plus_btn.setGeometry(771,337,23,44)
-        self.plus_btn.setIcon(QIcon(os.path.join(BASE_DIR, "resources/custom_brightness_assets/plus.png")))
+        self.plus_btn.setIcon(QIcon("resources/custom_brightness_assets/plus.png"))
         self.plus_btn.setIconSize(QSize(23, 44))
         self.plus_btn.setStyleSheet("""
                 QPushButton {
@@ -265,7 +265,7 @@ class CCBrightnessPage(QWidget):
         self.brightness_slider.setValue(50)    #default midpoint
         self.brightness_slider.setGeometry(225, 384, 575, 44)
         self.brightness_slider.valueChanged.connect(self.brightness_changed)
-
+        self.update_button_states()
 
     
 
@@ -280,7 +280,8 @@ class CCBrightnessPage(QWidget):
         This function sets default cycle time to system default
         """
         self.brightness=50 #UPDATE TO USE L2 FUNCTION CALL
-        self.setup_BrightnessScreen()
+        self.reset_light_default()
+        self.update_button_states()
         print("default clicked")
 
     def reset_customization(self):
@@ -369,21 +370,21 @@ class CCBrightnessPage(QWidget):
 # added only for testing my testing
 
 # """
-if __name__ == "__main__":
-    import sys
-    from PySide6.QtWidgets import QApplication
+# if __name__ == "__main__":
+#     import sys
+#     from PySide6.QtWidgets import QApplication
 
     
-    class MockController:
-        def set_brightness(self, val):
-            print(f"Brightness: {val}")
+#     class MockController:
+#         def set_brightness(self, val):
+#             print(f"Brightness: {val}")
 
-    class MockParent:
-        def next_pressed(self): print("Next")
-        def back_pressed(self): print("Back")
+#     class MockParent:
+#         def next_pressed(self): print("Next")
+#         def back_pressed(self): print("Back")
     
-    app = QApplication(sys.argv)
-    window = CCBrightnessPage(MockController(), None)
-    window.parent = MockParent()
-    window.show()
-    sys.exit(app.exec())
+#     app = QApplication(sys.argv)
+#     window = CCBrightnessPage(MockController(), None)
+#     window.parent = MockParent()
+#     window.show()
+#     sys.exit(app.exec())
