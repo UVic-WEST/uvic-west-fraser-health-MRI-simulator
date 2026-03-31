@@ -1,7 +1,11 @@
 from PySide6.QtCore import QObject, Signal
 from typing import List, Tuple
-from dataclasses import dataclass, field, asdict
 import json
+
+from backend.sound_config import SoundConfig
+from backend.sound_group_config import SoundGroupConfig
+from backend.cycle_action import CycleAction, ActionType
+from backend.cycle_controller import CycleController
 
 DEFAULT_LIGHT_LEVEL = 50
 DEFAULT_SOUND_LEVEL = 50
@@ -23,42 +27,23 @@ class CreateCycleLogic(QObject):
     available_sounds (List[(int, str)]): list of tuples, (sound_id, sound_name), each representing a sound available in system to select for custom cycle
   """
   #---------------------------------------------------------------------------
-  # internal SoundGroup dataclass
-  # ---------------------------------------------------------------------------
-  @dataclass
-  class SoundGroup:
-    """
-    Handles configuration of sound groups to be played during a custom cycle
-
-    ATTRIBUTES:
-      group_id (int): unique identifier for a group of sounds
-      group_volume (int): single volume level set for a group of sounds; must be within 0-100, inclusive
-      sound_ids (List[int]): list of sound ids for sounds to be played in custom cycle
-    """
-    group_id: int
-    group_volume: int = DEFAULT_SOUND_LEVEL
-    sound_ids: List[int] = field(default_factory=list)
-
-  
-  #---------------------------------------------------------------------------
   # signals to emit to communicate with frontend
   # ---------------------------------------------------------------------------
   light_level_set = Signal(int)
   duration_set = Signal(int)
-  volume_set = Signal(int)
-  sample_playing = Signal(int)
   groups_changed = Signal(int)
 
 
-  def __init__(self, cycle_id: int, cycle_name: str, cycle_dur_s: int = DEFAULT_CYCLE_DURATION_S, light_level: int = DEFAULT_LIGHT_LEVEL, sound_set: bool = False, group_list: List["CreateCycleLogic.SoundGroup"] | None = None):
+  def __init__(self, cycle_id: int, cycle_name: str, cycle_controller: CycleController):
     super().__init__()
     
     self.cycle_id = cycle_id
     self.cycle_name = cycle_name
-    self.cycle_dur_s = cycle_dur_s
-    self.light_level = light_level
-    self.sound_set = sound_set
-    self.group_list = group_list or []
+    self.cycle_controller = cycle_controller
+
+    self.cycle_dur_s = DEFAULT_CYCLE_DURATION_S
+    self.light_level = DEFAULT_LIGHT_LEVEL
+    self.group_list: List[SoundGroupConfig] = []
 
     # list of available sounds; hardcoded for now with assumption that there are 8 available sounds in system
     self.available_sounds: List[Tuple[int, str]] = [
@@ -83,7 +68,7 @@ class CreateCycleLogic(QObject):
   #---------------------------------------------------------------------------
   # helper function to search for sound group in selected cycle sounds given group_id
   # --------------------------------------------------------------------------
-  def _get_group(self, group_id: int) -> "SoundGroup":
+  def _get_group(self, group_id: int) -> "SoundGroupConfig":
     for group in self.group_list:
         if group.group_id == group_id:
             return group
@@ -209,11 +194,11 @@ class CreateCycleLogic(QObject):
   # sound group methods for custom cycle creation
   # ---------------------------------------------------------------------------
   def get_total_groups(self) -> Tuple[int, bool]:
-    if not self.sound_set:
-      return DEFAULT_NUM_GROUPS, self.sound_set  # default values if sounds have not been set yet
-    
-    return len(self.group_list), self.sound_set
-    
+    """Return number of groups and whether sound mapping has been accessed."""
+    if not getattr(self, "sound_set", False):
+        return DEFAULT_NUM_GROUPS, False
+    return len(self.group_list), True
+  
 
   def set_total_groups(self, new_total_groups: int) -> bool:
     """
@@ -231,41 +216,37 @@ class CreateCycleLogic(QObject):
     EMITS: signal that number of sound groups of custom cycle has been set to new_total_groups
     """
     if not (1 <= new_total_groups <= 8):
-      raise ValueError("Total groups must be between 1 and 8")
+        raise ValueError("Total groups must be between 1 and 8")
 
     current = len(self.group_list)
 
-    # Case 1: Reduce number of groups
+    # Reduce number of groups
     if new_total_groups < current:
-      self.group_list = self.group_list[:new_total_groups]
+        self.group_list = self.group_list[:new_total_groups]
 
-    # Case 2: Increase number of groups
+    # Increase number of groups
     elif new_total_groups > current:
-      for i in range(current, new_total_groups):
-        self.group_list.append(
-          CreateCycleLogic.SoundGroup(
-            group_id = i + 1,
-            group_volume = DEFAULT_SOUND_LEVEL,
-            sound_ids = []  # empty for now (UI will fill)
-          )
-        )
+        for i in range(current, new_total_groups):
+            self.group_list.append(
+                SoundGroupConfig(group_id=i + 1, group_volume=DEFAULT_SOUND_LEVEL)
+            )
 
-    # Re-index group IDs
+    # Reindex group IDs
     for i, group in enumerate(self.group_list):
         group.group_id = i + 1
 
-    self.groups_changed.emit(new_total_groups)     
+    self.groups_changed.emit(new_total_groups)
     return True
-  
 
   def reset_group_default(self):
-     self.set_total_groups(DEFAULT_NUM_GROUPS)
+    self.set_total_groups(DEFAULT_NUM_GROUPS)
       
 
   # ---------------------------------------------------------------------------
   # sound to group mapping methods for custom cycle creation
   # ---------------------------------------------------------------------------
-  def get_sounds_in_group(self, group_id: int):
+    
+  def get_sounds_in_group(self, group_id: int) -> List[SoundConfig] | None:
     """
     Gets a list of sounds belonging to a group if group with group_id is in the list of groups to be played during custom cycle.
 
@@ -278,11 +259,11 @@ class CreateCycleLogic(QObject):
     RAISES:
       ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
     """
-    group = self._get_group(group_id)  # _get_group(self, group_id) validates that group_id is in group list to be played during cycle
-    return group.sound_ids if group.sound_ids else None
-    
+    group = self._get_group(group_id)
+    return group.sounds if group.sounds else None
+  
 
-  def set_sounds_in_group(self, group_id: int, sound_list: List[int]) -> bool:
+  def set_sounds_in_group(self, group_id: int, sounds: List[SoundConfig]) -> bool:
     """
     Given a group_id, sets the sounds for this group to be played during custom cycle.
 
@@ -297,13 +278,12 @@ class CreateCycleLogic(QObject):
       ValueError: if number of sounds in sound_list chosen for group with group_id is not within [1, 3]
       ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
     """
-    if not (1 <= len(sound_list) <= 3):
+    if not (1 <= len(sounds) <= 3):
         raise ValueError("Each group must have 1–3 sounds")
-
     group = self._get_group(group_id)
-    group.sound_ids = list(sound_list)
+    group.sounds = sounds
     return True
-  
+
 
   def set_volume_for_group(self, group_id: int, new_group_volume: int) -> bool:
     """
@@ -323,8 +303,7 @@ class CreateCycleLogic(QObject):
     EMITS: signal that the volume gor the group identified by group_id has been set to new_group_volume
     """
     if not (0 <= new_group_volume <= 100):
-        raise ValueError("Volume must be within 0–100, inclusive")
-
+        raise ValueError("Volume must be within 0–100")
     group = self._get_group(group_id)
     group.group_volume = new_group_volume
     self.volume_set.emit(new_group_volume)
@@ -332,12 +311,14 @@ class CreateCycleLogic(QObject):
   
 
   def play_group_sample(self, group_id: int) -> bool:
+    """Play all sounds in a group simultaneously via SoundPlayer."""
     group = self._get_group(group_id)
-
-    if not group.sound_ids:
-        return False
-
-    self.sample_playing.emit(group_id)
+    if not group.sounds:
+      return False
+    if self.cycle_controller and self.cycle_controller.sound_player:
+      # Play each sound in group using SoundPlayer
+      for sound in group.sounds:
+        self.cycle_controller.sound_player.play(sound)
     return True
   
 
@@ -345,12 +326,13 @@ class CreateCycleLogic(QObject):
      self.sound_set = True
 
 
-  def confirm_sounds_in_each_group(self):
-    return all(1 <= len(group.sound_ids) <= 3 for group in self.group_list)
+  def confirm_sounds_in_each_group(self) -> bool:
+    return all(1 <= len(group.sounds) <= 3 for group in self.group_list)
   
   
   def reset_volume_default(self, group_id):
      self.set_volume_for_group(group_id, DEFAULT_SOUND_LEVEL)
+     
     
   # ---------------------------------------------------------------------------
   # save/load set custom cycle data to json file
