@@ -291,6 +291,37 @@ class CCBrightnessPage(QWidget):
         self.brightness_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.brightness_slider.setValue(50)    #default midpoint
         self.brightness_slider.setGeometry(225, 384, 575, 44)
+        self.brightness_slider.setStyleSheet(
+        """
+        QSlider::groove:horizontal {
+            height: 8px;
+            background: #D3D9DE;
+            border-radius: 4px;
+        }
+        QSlider::sub-page:horizontal {
+            background: #0474BA;
+            border-radius: 4px;
+        }
+        QSlider::add-page:horizontal {
+            background: #D3D9DE;
+            border-radius: 4px;
+        }
+        QSlider::handle:horizontal {
+            background: #FFFFFF;
+            border: 2px solid #0474BA;
+            width: 18px;
+            margin: -6px 0;
+            border-radius: 9px;
+        }
+        QSlider::handle:horizontal:hover {
+            background: #F3F9FD;
+        }
+        QSlider::tick-mark:horizontal {
+            background: #2F3B45;
+            width: 1px;
+            height: 6px;
+        }
+        """)
         self.brightness_slider.valueChanged.connect(self.brightness_changed)
         self.update_button_states()
 
