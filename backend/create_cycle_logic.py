@@ -62,14 +62,14 @@ class CreateCycleLogic(QObject):
 
     # list of available sounds; hardcoded for now with assumption that there are 8 available sounds in system
     self.available_sounds: List[Tuple[int, str]] = [
-      (1, "Sound 1"),
-      (2, "Sound 2"),
-      (3, "Sound 3"),
-      (4, "Sound 4"),
-      (5, "Sound 5"),
-      (6, "Sound 6"),
-      (7, "Sound 7"),
-      (8, "Sound 8"),
+      (1, "Pulse"),
+      (2, "Drill(S)"),
+      (3, "Drill(M)"),
+      (4, "Beeps"),
+      (5, "Scan"),
+      (6, "Alarm"),
+      (7, "Buzz"),
+      (8, "Drill(L)"),
     ]
 
 
