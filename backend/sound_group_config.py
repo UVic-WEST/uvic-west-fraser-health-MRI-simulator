@@ -1,4 +1,3 @@
-# sound_group_config.py
 from dataclasses import dataclass, field
 from typing import List
 from backend.sound_config import SoundConfig
