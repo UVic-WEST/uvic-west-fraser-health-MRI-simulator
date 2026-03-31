@@ -1,18 +1,35 @@
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QLabel,
-    QPushButton,
+    QWidget, QLabel, QPushButton, QSlider,
+    QVBoxLayout
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import (
     QPixmap,
     QFont,
 )
 
 
+
+from PySide6.QtCore import Qt, QSize, QTimer
+from PySide6.QtGui import (
+    QPixmap,
+    QIcon, 
+    )
+
+from frontend.helpers import ReadOnlySlider
+
+
+
 class CCBrightnessPage(QWidget):
     def __init__(self, controller, parent=None):
+
+        """
+        This function initializes the CCBrightnessPage and sets up all UI components.
+
+        Args:
+            controller: the application controller for handling brightness logic
+            parent: the parent widget for navigation handling
+        """
         super().__init__(parent)
         self.parent = parent
         self.controller = controller
@@ -123,6 +140,7 @@ class CCBrightnessPage(QWidget):
 
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
+        self.setup_BrightnessScreen()
 
     def set_background(self, image_path):
         self.bg_label = QLabel(self)
@@ -159,5 +177,220 @@ class CCBrightnessPage(QWidget):
                 current = None
 
     def default_button_pressed(self):
+        """
+        This function resets brightness to default value when default button is pressed
+        """
         print("default button was pressed")
+        self.reset_light_default()
+        self.update_button_states()
+
+
+    def setup_BrightnessScreen(self):
+        """
+        Creates the brightness slider card shown in the centre of the screen.
+        Mirrors the slider logic from LightControlsWidget for consistency.
+        """
+       
+        #Brightness label
+        self.logo_label = QLabel(self)
+        self.logo_pixmap = QPixmap("resources/custom_brightness_assets/brightnesslogo.png")
+        self.logo_label.setPixmap(self.logo_pixmap.scaled(
+            58, 57, 
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        ))
+
+        self.logo_label.setGeometry(483, 286, 58, 57)
+        self.logo_label.setStyleSheet("background: transparent;")
+       
+
+
+        #White background
+
+        self.sliderCard = QLabel(self)
+        self.sliderCard.setStyleSheet("""
+                background-color: white;
+                border-radius: 18px;
+            """)
+
+        self.sliderCard.setGeometry(199, 271, 627, 173)
+        self.sliderCard.setAlignment(Qt.AlignCenter)
+
+        self.logo_label.raise_() #make sure sits on background
+
+        ##=========MINUS Button
+        self.minus_btn = QPushButton("",self)
+        self.minus_btn.setGeometry(225,343,23,44)
+        self.minus_btn.setIcon(QIcon("resources/custom_brightness_assets/minus.png"))
+        self.minus_btn.setIconSize(QSize(23, 44))
+        self.minus_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    border: none;
+                    border-radius: 24px;
+                                     
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 30);
+                    border-radius: 24px;
+                }
+                QPushButton:pressed {
+                    background: rgba(255, 255, 255, 60);
+                    border-radius: 24px;
+                }
+                QPushButton:disabled {
+                    background: rgba(255, 255, 255, 60);  /* similar to selected/pressed look */
+                    border-radius: 24px;
+                }
+        """)
+        self.minus_btn.clicked.connect(self.dec_brightness)
+
+        self.minus_ripple = QLabel("",self)
+        self.minus_ripple.setGeometry(225,343,23,44)
+        self.minus_ripple.setStyleSheet("background:  rgba(255,255,255,100); border-radius: 24px")
+        self.minus_ripple.hide()
+
+        ##=============PLUS Button
+        self.plus_btn = QPushButton("",self)
+        self.plus_btn.setGeometry(771,337,23,44)
+        self.plus_btn.setIcon(QIcon("resources/custom_brightness_assets/plus.png"))
+        self.plus_btn.setIconSize(QSize(23, 44))
+        self.plus_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    border: none;
+                    border-radius: 24px;
+                                     
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 30);
+                    border-radius: 24px;
+                }
+                QPushButton:pressed {
+                    background: rgba(255, 255, 255, 60);
+                    border-radius: 24px;
+                }
+                QPushButton:disabled {
+                    background: rgba(255, 255, 255, 60);  /* similar to selected/pressed look */
+                    border-radius: 24px;
+                }
+        """)
+        self.plus_btn.clicked.connect(self.inc_brightness)
+
+        self.plus_ripple = QLabel("",self)
+        self.plus_ripple.setGeometry(771,337,23,44)
+        self.plus_ripple.setStyleSheet("background:  rgba(255,255,255,100); border-radius: 24px")
+        self.plus_ripple.hide()
+
+        ##=====SLIDER============
+        self.brightness_slider = ReadOnlySlider(Qt.Orientation.Horizontal, self)
+        self.brightness_slider.setRange(0, 100)
+        self.brightness_slider.setSingleStep(10)
+        self.brightness_slider.setPageStep(10)
+        self.brightness_slider.setTickInterval(10)
+        self.brightness_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.brightness_slider.setValue(50)    #default midpoint
+        self.brightness_slider.setGeometry(225, 384, 575, 44)
+        self.brightness_slider.setStyleSheet(
+        """
+        QSlider::groove:horizontal {
+            height: 8px;
+            background: #D3D9DE;
+            border-radius: 4px;
+        }
+        QSlider::sub-page:horizontal {
+            background: #0474BA;
+            border-radius: 4px;
+        }
+        QSlider::add-page:horizontal {
+            background: #D3D9DE;
+            border-radius: 4px;
+        }
+        QSlider::handle:horizontal {
+            background: #FFFFFF;
+            border: 2px solid #0474BA;
+            width: 18px;
+            margin: -6px 0;
+            border-radius: 9px;
+        }
+        QSlider::handle:horizontal:hover {
+            background: #F3F9FD;
+        }
+        QSlider::tick-mark:horizontal {
+            background: #2F3B45;
+            width: 1px;
+            height: 6px;
+        }
+        """)
+        self.brightness_slider.valueChanged.connect(self.brightness_changed)
+        self.update_button_states()
+
     
+
+  
+
+    def brightness_changed(self, value: int):
+        """
+        This function handles brightness updates and snaps values to 10-point increments.
+        Sends the snapped value to the controller.
+
+        Args:
+            value: the raw slider value to be snapped and applied
+        """
+        val = max(0, min(100, int(round(value/10.0)*10)))
+
+        if val!=value:
+            self.brightness_slider.blockSignals(True)
+            self.brightness_slider.setValue(val)
+            self.brightness_slider.blockSignals(False)
+        if self.controller:
+            self.controller.set_brightness(val)
+
+
+    def dec_brightness(self):
+        """
+        This button ensures brightness is decreased when clicked minus
+        Also handles ripple effect and greying out
+        """
+        self.show_ripple("minus")
+        self.brightness_slider.setValue(max(0, self.brightness_slider.value() - 10))
+        self.update_button_states()
+
+    def inc_brightness(self):
+        """
+        This button ensures brightness is increased when clicked plus
+        Also handles ripple effect and greying out
+        """
+        self.show_ripple("plus")
+        self.brightness_slider.setValue(min(100, self.brightness_slider.value() + 10))
+        self.update_button_states()
+
+    def reset_light_default(self):
+        """
+        This function sets the deafult value when default is pressed
+        """
+        self.brightness_slider.setValue(50)
+
+    def show_ripple(self,btn_type):
+        """
+        This function is used to create a ripple effect arouund plus and minus buttons when clicked
+
+        btn_type: The argument keeps teh track of which button is clicked
+        """
+        if btn_type=="plus":
+            self.plus_ripple.show()
+            self.plus_ripple.raise_()
+            QTimer.singleShot(200, self.plus_ripple.hide)
+        else:
+            self.minus_ripple.show()
+            self.minus_ripple.raise_()
+            QTimer.singleShot(200, self.minus_ripple.hide)
+
+    def update_button_states(self):
+        """
+        This function ensures the minus plus buttons greyed out when hits limit
+        """
+        val = self.brightness_slider.value()
+        self.minus_btn.setEnabled(val > 0)    # grey out minus at 0
+        self.plus_btn.setEnabled(val < 100)   # grey out plus at 100
+

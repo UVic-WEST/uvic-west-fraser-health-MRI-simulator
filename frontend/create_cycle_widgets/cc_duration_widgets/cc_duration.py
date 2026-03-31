@@ -164,7 +164,7 @@ class CCDurationPage(QWidget):
     def setup_DurationScreen(self):
         """
         This function sets the main screen orientation of time screen
-        It habdles time box, label, plus/minus buttons
+        It handles time box, label, plus/minus buttons
         """
 
         font_id = QFontDatabase.addApplicationFont("resources/timeduration_assets/DigitalNumbers.ttf")
