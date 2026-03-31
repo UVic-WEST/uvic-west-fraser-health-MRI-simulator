@@ -10,6 +10,8 @@ from PySide6.QtGui import (
     QPixmap,
     QFont,
     QIcon,
+    QPainter,
+    QColor
 )
 
 
@@ -123,12 +125,6 @@ class CCGroupsPage(QWidget):
         content_layout.setAlignment(Qt.AlignCenter)
         content_layout.setContentsMargins(30, 30, 30, 30)
         content_layout.setSpacing(40)
-
-        #self.page_status = QLabel("Select groups for this cycle")
-        #self.page_status.setFont(QFont("Ubuntu", 24))
-        #self.page_status.setStyleSheet("color: #0474BA;")
-        #self.page_status.setAlignment(Qt.AlignCenter)
-        #content_layout.addWidget(self.page_status)
         self.group_value = 4
 
         self.prompt= QLabel("How many sound groups would you like\nto have for the new cycle?")
@@ -186,6 +182,8 @@ class CCGroupsPage(QWidget):
                 border-radius: 24px;
             }
         """)
+        self.minus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/minus_sign.png"))
+
 
         self.plus_btn.setStyleSheet("""
             QPushButton {
@@ -206,6 +204,8 @@ class CCGroupsPage(QWidget):
                 border-radius: 24px;
             }
         """)
+        self.plus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/plus_sign.png"))
+
 
         self.minus_btn.clicked.connect(self.decrease)
         self.plus_btn.clicked.connect(self.increase)
@@ -309,3 +309,27 @@ class CCGroupsPage(QWidget):
             self.group_value -= 1
             self.value_label.setText(str(self.group_value))
         self._update_stepper_button_states()
+
+    def _build_icon_with_disabled(self, path: str) -> QIcon:
+        """
+        Sets up the disabled mask for the plus and minus buttons when they are at boundary
+        Args:
+            path(str): path to the icon for the button
+        """
+        normal = QPixmap(path)
+
+        # Keep transparency, then tint to gray
+        disabled = QPixmap(normal.size())
+        disabled.fill(Qt.transparent)
+
+        painter = QPainter(disabled)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.drawPixmap(0, 0, normal)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(disabled.rect(), QColor(150, 150, 150, 210))
+        painter.end()
+
+        icon = QIcon()
+        icon.addPixmap(normal, QIcon.Normal, QIcon.Off)
+        icon.addPixmap(disabled, QIcon.Disabled, QIcon.Off)
+        return icon
