@@ -275,23 +275,86 @@ class CreateCycleLogic:
                     errors.append(f"Group {group.group_id}: must have 1–3 sounds")
 
         return (len(errors) == 0, errors)
+    
+    # =========================================================
+    # PRIVATE: GENERATE CYCLE ACTIONS
+    # =========================================================
+    def _generate_cycle_actions(self) -> List[CycleAction]:
+        """
+        Create timestamped actions for this cycle.
+        
+        - Splits total duration equally among all groups
+        - Each group duration contains simultaneous SOUND_START for all its sounds
+        - SOUND_STOP scheduled at the end of the group duration
+        """
+        actions: List[CycleAction] = []
+
+        num_groups = len(self.group_list)
+        if num_groups == 0:
+            return actions  # nothing to schedule
+
+        total_duration_ms = self.cycle_duration * 1000
+        base_group_duration = total_duration_ms // num_groups
+        remainder = total_duration_ms % num_groups  # leftover ms to add to last group
+
+        current_time = 0
+
+        for i, group in enumerate(self.group_list):
+            group_duration = base_group_duration
+            if i == num_groups - 1:
+                # add remainder to last group to match total duration exactly
+                group_duration += remainder
+
+            # start all sounds in group simultaneously
+            if group.sounds:
+                for sound in group.sounds:
+                    actions.append(
+                        CycleAction(
+                            timestamp_ms=current_time,
+                            action_type=ActionType.SOUND_START,
+                            parameters={
+                                "file_name": sound.file_name,
+                                "volume": group.group_volume,
+                                "duration_ms": group_duration,
+                            },
+                        )
+                    )
+                # stop all sounds at the end of group duration
+                for sound in group.sounds:
+                    actions.append(
+                        CycleAction(
+                            timestamp_ms=current_time + group_duration,
+                            action_type=ActionType.SOUND_STOP,
+                            parameters={"file_name": sound.file_name},
+                        )
+                    )
+
+            current_time += group_duration
+        return actions
 
     # =========================================================
-    # SAVE
+    # SAVE CYCLE
     # =========================================================
-    def save_cycle(self):
+    def save_cycle(self) -> CycleConfig | None:
+        """
+        Validate cycle and save it with generated actions.
+        Returns the saved CycleConfig, or None if validation fails.
+        """
         is_valid, errors = self.validate_cycle()
         if not is_valid:
-            return None 
+            print("Cycle validation failed:", errors)
+            return None
 
         new_id = CycleRepository.get_next_id()
         new_name = f"Cycle {new_id}"
+
+        actions = self._generate_cycle_actions()
 
         cycle = CycleConfig(
             cycle_id=new_id,
             cycle_name=new_name,
             cycle_duration_ms=self.cycle_duration * 1000,
-            actions=[]  # sound stuff add later
+            actions=actions,
         )
 
         CycleRepository.add_cycle(cycle)
