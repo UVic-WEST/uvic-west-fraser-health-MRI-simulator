@@ -50,13 +50,13 @@ class ManualSoundController(QObject):
         self.current_volume = 50
         self._sound_catalog = self._build_sound_catalog()
 
-    def _build_sound_catalog(self) -> List[Tuple[int, str, float]]:
-        """Scan the sounds directory and build an (id, name, duration) catalog.
+    def _build_sound_catalog(self) -> List[Tuple[int, str]]:
+        """Scan the sounds directory and build an (id, name) catalog.
 
         Returns:
-            List of (sound_id, sound_name, duration_seconds) tuples sorted by id ascending.
+            List of (sound_id, sound_name) tuples sorted by id ascending.
         """
-        catalog: List[Tuple[int, str, float]] = []
+        catalog: List[Tuple[int, str]] = []
 
         if not os.path.isdir(SOUNDS_DIR):
             return catalog
@@ -72,30 +72,16 @@ class ManualSoundController(QObject):
             except (ValueError, IndexError):
                 continue
 
-            full_path = os.path.join(SOUNDS_DIR, fname)
-            duration = self._get_sound_duration(full_path)
-            catalog.append((sound_id, name_part, duration))
+            catalog.append((sound_id, name_part))
 
         catalog.sort(key=lambda x: x[0])
         return catalog
 
-    def _get_sound_duration(self, file_path: str) -> float:
-        """Get the duration of a sound file in seconds (supports .wav only)."""
-        if not file_path.lower().endswith('.wav'):
-            return 0.0
-        try:
-            with wave.open(file_path, 'rb') as wf:
-                frames = wf.getnframes()
-                rate = wf.getframerate()
-                return frames / float(rate)
-        except Exception:
-            return 0.0
-
-    def get_sounds(self) -> List[Tuple[int, str, float]]:
+    def get_sounds(self) -> List[Tuple[int, str]]:
         """Return the available sounds in the system.
 
         Returns:
-            List of (sound_id, sound_name, duration_seconds) tuples sorted by id ascending.
+            List of (sound_id, sound_name) tuples sorted by id ascending.
         """
         return list(self._sound_catalog)
 

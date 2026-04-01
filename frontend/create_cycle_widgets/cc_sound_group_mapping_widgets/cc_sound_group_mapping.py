@@ -96,21 +96,8 @@ class CCSoundGroupMappingPage(QWidget):
         if self.manual_sound_controller is not None and hasattr(self.manual_sound_controller, 'samplePlaybackFinished'):
             self.manual_sound_controller.samplePlaybackFinished.connect(self._on_sample_playback_finished)
         self.sound_catalog = self._load_sound_catalog()
-        # sound_catalog: List[Tuple[int, str, float]] or List[Tuple[int, str]]
-        self.sound_option_labels = []
-        self.sound_label_to_id = {}
-        self.sound_label_to_duration = {}
-        for entry in self.sound_catalog:
-            if len(entry) == 3:
-                sound_id, label, duration = entry
-            elif len(entry) == 2:
-                sound_id, label = entry
-                duration = 10  # fallback default
-            else:
-                continue
-            self.sound_option_labels.append(label)
-            self.sound_label_to_id[label] = sound_id
-            self.sound_label_to_duration[label] = duration
+        self.sound_option_labels = [label for _, label in self.sound_catalog]
+        self.sound_label_to_id = {label: sound_id for sound_id, label in self.sound_catalog}
 
         # Create main layout
         self.set_background("resources/cycle_running_page_assets/running_cycle.png")
@@ -624,9 +611,9 @@ class CCSoundGroupMappingPage(QWidget):
         if not selected_sound_ids:
             return
 
-        # Get the max duration of selected sounds (fallback to 10s if missing)
-        durations = [self.sound_label_to_duration.get(label, 10) for label in selected_labels]
-        max_duration = int(max(durations)) if durations else 10
+
+        # Use a fixed 10 second sample duration
+        max_duration = 10
 
         volume = int(self.volume_slider.value())
         if self.manual_sound_controller is None:
