@@ -89,3 +89,18 @@ class CycleController(QObject):
 
         elif action_type == ActionType.SOUND_RESET:
             self.sound_player.stop()
+
+    def get_sounds(self):
+        """Returns list of sounds present in system sorted in ascending order based on ids."""
+
+    def sound_mapping_accessed(self):
+        """Sets sound_set attribute to True when called with a specific MRI cycle."""
+
+    def save_cycle(self):
+        """
+        Called by L1 to signal that cycle is finalized and can be saved in a JSON file.
+
+        Saves cycle to JSON file to be used by L3
+        """
+
+        
