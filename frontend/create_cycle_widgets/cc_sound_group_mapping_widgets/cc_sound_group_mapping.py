@@ -96,8 +96,21 @@ class CCSoundGroupMappingPage(QWidget):
         if self.manual_sound_controller is not None and hasattr(self.manual_sound_controller, 'samplePlaybackFinished'):
             self.manual_sound_controller.samplePlaybackFinished.connect(self._on_sample_playback_finished)
         self.sound_catalog = self._load_sound_catalog()
-        self.sound_option_labels = [label for _, label in self.sound_catalog]
-        self.sound_label_to_id = {label: sound_id for sound_id, label in self.sound_catalog}
+        # sound_catalog: List[Tuple[int, str, float]] or List[Tuple[int, str]]
+        self.sound_option_labels = []
+        self.sound_label_to_id = {}
+        self.sound_label_to_duration = {}
+        for entry in self.sound_catalog:
+            if len(entry) == 3:
+                sound_id, label, duration = entry
+            elif len(entry) == 2:
+                sound_id, label = entry
+                duration = 10  # fallback default
+            else:
+                continue
+            self.sound_option_labels.append(label)
+            self.sound_label_to_id[label] = sound_id
+            self.sound_label_to_duration[label] = duration
 
         # Create main layout
         self.set_background("resources/cycle_running_page_assets/running_cycle.png")
@@ -611,22 +624,25 @@ class CCSoundGroupMappingPage(QWidget):
         if not selected_sound_ids:
             return
 
+        # Get the max duration of selected sounds (fallback to 10s if missing)
+        durations = [self.sound_label_to_duration.get(label, 10) for label in selected_labels]
+        max_duration = int(max(durations)) if durations else 10
+
         volume = int(self.volume_slider.value())
         if self.manual_sound_controller is None:
             print("manual sound controller unavailable for sample playback")
             return
 
-
         self.manual_sound_controller.set_manual_sound_controller_status(True)
         result = self.manual_sound_controller.play_sounds(selected_sound_ids, volume)
-        print(f"play sample pressed for {current_group}: ids={selected_sound_ids}, volume={volume}, ok={result}")
+        print(f"play sample pressed for {current_group}: ids={selected_sound_ids}, volume={volume}, ok={result}, duration={max_duration}")
         self.SAMPLE_PLAYBACK_ACTIVE = True
 
         # Grey out dropdowns and show countdown as placeholder
         self.sound_dropdown.setEnabled(False)
         self.group_dropdown.setEnabled(False)
         self._set_dropdowns_greyed(True)
-        self._set_dropdowns_placeholder(f"{self.SAMPLE_PLAYBACK_REMAINING}s")
+        self._set_dropdowns_placeholder(f"{max_duration}s")
 
         # Lock out navigation and default buttons
         self.cancel_home_btn.setEnabled(False)
@@ -635,9 +651,8 @@ class CCSoundGroupMappingPage(QWidget):
         self.default_btn.setEnabled(False)
 
         # Change button to grey and start countdown
-        from backend.manual_sound_controller import SAMPLE_PLAYBACK_SECONDS
         from PySide6.QtCore import QTimer
-        self.SAMPLE_PLAYBACK_REMAINING = SAMPLE_PLAYBACK_SECONDS
+        self.SAMPLE_PLAYBACK_REMAINING = max_duration
         self.play_sample_btn.setEnabled(False)
         self.play_sample_btn.setText(f"{self.SAMPLE_PLAYBACK_REMAINING}s")
         self.play_sample_btn.setStyleSheet(
@@ -665,10 +680,14 @@ class CCSoundGroupMappingPage(QWidget):
         if self.SAMPLE_PLAYBACK_REMAINING > 0:
             self.play_sample_btn.setText(f"{self.SAMPLE_PLAYBACK_REMAINING}s")
         else:
+            # Always clean up timer and trigger finish logic only once
             if self.SAMPLE_PLAYBACK_TIMER is not None:
                 self.SAMPLE_PLAYBACK_TIMER.stop()
                 self.SAMPLE_PLAYBACK_TIMER.deleteLater()
                 self.SAMPLE_PLAYBACK_TIMER = None
+            # Only call finish if not already unlocked
+            if self.SAMPLE_PLAYBACK_ACTIVE:
+                self._on_sample_playback_finished()
 
     def _on_sample_playback_finished(self):
         self.SAMPLE_PLAYBACK_ACTIVE = False

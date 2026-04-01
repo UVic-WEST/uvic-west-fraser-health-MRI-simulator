@@ -5,10 +5,12 @@ outside of a running cycle. Reserves the Layer 3 SoundPlayer while
 active and cuts all sounds when closed.
 """
 
+
 import os
+import wave
 from typing import List, Tuple
 
-from PySide6.QtCore import QObject, QTimer, Signal
+from PySide6.QtCore import QObject
 
 from backend.sound_config import SoundConfig
 
@@ -16,13 +18,8 @@ SOUNDS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "resources", "sounds"
 )
 
-
 SUPPORTED_EXTENSIONS = (".wav", ".mp3")
 MAX_SIMULTANEOUS_SOUNDS = 3
-
-# Sample playback time limit in seconds
-SAMPLE_PLAYBACK_SECONDS = 10
-
 
 
 class ManualSoundController(QObject):
@@ -38,8 +35,6 @@ class ManualSoundController(QObject):
         current_sounds (List[int]): IDs of currently playing sounds.
         current_volume (int): Volume for all playing sounds (0–100).
     """
-    # Signal emitted when sample playback finishes
-    samplePlaybackFinished = Signal()
 
     def __init__(self, sound_player, parent=None):
         """Initialise with a reference to the Layer 3 sound player.
@@ -51,18 +46,17 @@ class ManualSoundController(QObject):
         super().__init__(parent)
         self.sound_player = sound_player
         self.is_active = False
-        self.current_sounds = []
+        self.current_sounds: List[int] = []
         self.current_volume = 50
         self._sound_catalog = self._build_sound_catalog()
-        self._sample_timer = None
 
-    def _build_sound_catalog(self) -> List[Tuple[int, str]]:
-        """Scan the sounds directory and build an (id, name) catalog.
+    def _build_sound_catalog(self) -> List[Tuple[int, str, float]]:
+        """Scan the sounds directory and build an (id, name, duration) catalog.
 
         Returns:
-            List of (sound_id, sound_name) tuples sorted by id ascending.
+            List of (sound_id, sound_name, duration_seconds) tuples sorted by id ascending.
         """
-        catalog: List[Tuple[int, str]] = []
+        catalog: List[Tuple[int, str, float]] = []
 
         if not os.path.isdir(SOUNDS_DIR):
             return catalog
@@ -78,16 +72,30 @@ class ManualSoundController(QObject):
             except (ValueError, IndexError):
                 continue
 
-            catalog.append((sound_id, name_part))
+            full_path = os.path.join(SOUNDS_DIR, fname)
+            duration = self._get_sound_duration(full_path)
+            catalog.append((sound_id, name_part, duration))
 
         catalog.sort(key=lambda x: x[0])
         return catalog
 
-    def get_sounds(self) -> List[Tuple[int, str]]:
+    def _get_sound_duration(self, file_path: str) -> float:
+        """Get the duration of a sound file in seconds (supports .wav only)."""
+        if not file_path.lower().endswith('.wav'):
+            return 0.0
+        try:
+            with wave.open(file_path, 'rb') as wf:
+                frames = wf.getnframes()
+                rate = wf.getframerate()
+                return frames / float(rate)
+        except Exception:
+            return 0.0
+
+    def get_sounds(self) -> List[Tuple[int, str, float]]:
         """Return the available sounds in the system.
 
         Returns:
-            List of (sound_id, sound_name) tuples sorted by id ascending.
+            List of (sound_id, sound_name, duration_seconds) tuples sorted by id ascending.
         """
         return list(self._sound_catalog)
 
@@ -138,13 +146,6 @@ class ManualSoundController(QObject):
         if volume < 0 or volume > 100 or volume % 10 != 0:
             return False
 
-
-        # Stop any previous timer
-        if self._sample_timer is not None:
-            self._sample_timer.stop()
-            self._sample_timer.deleteLater()
-            self._sample_timer = None
-
         self.sound_player.stop()
 
         self.current_sounds = list(sounds)
@@ -154,7 +155,6 @@ class ManualSoundController(QObject):
             return True
 
         id_to_file = self._get_id_to_file_map()
-
 
         for sound_id in sounds:
             file_path = id_to_file.get(sound_id)
@@ -167,18 +167,6 @@ class ManualSoundController(QObject):
                 volume=volume,
             )
             self.sound_player.play(sound_config)
-
-        # Start a timer to stop playback after SAMPLE_PLAYBACK_SECONDS
-        if sounds:
-            self._sample_timer = QTimer(self)
-            self._sample_timer.setSingleShot(True)
-            self._sample_timer.timeout.connect(self._on_sample_playback_finished)
-            self._sample_timer.start(SAMPLE_PLAYBACK_SECONDS * 1000)
-
-    def _on_sample_playback_finished(self):
-        """Handle sample playback finished: stop sound and emit signal."""
-        self.sound_player.stop()
-        self.samplePlaybackFinished.emit()
 
         return True
 
