@@ -8,7 +8,7 @@ active and cuts all sounds when closed.
 import os
 from typing import List, Tuple
 
-from PySide6.QtCore import QObject, QTimer
+from PySide6.QtCore import QObject, QTimer, Signal
 
 from backend.sound_config import SoundConfig
 
@@ -24,6 +24,7 @@ MAX_SIMULTANEOUS_SOUNDS = 3
 SAMPLE_PLAYBACK_SECONDS = 10
 
 
+
 class ManualSoundController(QObject):
     """Backend logic for manual sound control on the home page.
 
@@ -37,6 +38,8 @@ class ManualSoundController(QObject):
         current_sounds (List[int]): IDs of currently playing sounds.
         current_volume (int): Volume for all playing sounds (0–100).
     """
+    # Signal emitted when sample playback finishes
+    samplePlaybackFinished = Signal()
 
     def __init__(self, sound_player, parent=None):
         """Initialise with a reference to the Layer 3 sound player.
@@ -48,7 +51,7 @@ class ManualSoundController(QObject):
         super().__init__(parent)
         self.sound_player = sound_player
         self.is_active = False
-        self.current_sounds: List[int] = []
+        self.current_sounds = []
         self.current_volume = 50
         self._sound_catalog = self._build_sound_catalog()
         self._sample_timer = None
@@ -169,8 +172,13 @@ class ManualSoundController(QObject):
         if sounds:
             self._sample_timer = QTimer(self)
             self._sample_timer.setSingleShot(True)
-            self._sample_timer.timeout.connect(self.sound_player.stop)
+            self._sample_timer.timeout.connect(self._on_sample_playback_finished)
             self._sample_timer.start(SAMPLE_PLAYBACK_SECONDS * 1000)
+
+    def _on_sample_playback_finished(self):
+        """Handle sample playback finished: stop sound and emit signal."""
+        self.sound_player.stop()
+        self.samplePlaybackFinished.emit()
 
         return True
 

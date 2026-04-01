@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QScroller,
 )
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QTimer
 from PySide6.QtGui import (
     QPixmap,
     QFont,
@@ -23,16 +23,7 @@ GROUP_OPTIONS = [
     "GROUP 4",
 ]
 
-SOUND_OPTIONS = [
-    "SOUND 1",
-    "SOUND 2",
-    "SOUND 3",
-    "SOUND 4",
-    "SOUND 5",
-    "SOUND 6",
-    "SOUND 7",
-    "SOUND 8",
-]
+
 
 SOUND_DROPDOWN_PLACEHOLDER = "SOUNDS"
 MAX_SOUNDS_PER_GROUP = 3
@@ -46,6 +37,7 @@ class FixedComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.popup_max_visible_items = 5
+        self._prevent_hide_popup = False
         view = self.view()
         view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
@@ -74,11 +66,17 @@ class FixedComboBox(QComboBox):
             popup.setMaximumWidth(popup_width)
             popup.move(self.mapToGlobal(QPoint(0, self.height())))
 
+    def hidePopup(self):
+        if getattr(self, '_prevent_hide_popup', False):
+            return
+        super().hidePopup()
+
 
 class CCSoundGroupMappingPage(QWidget):
     SAMPLE_PLAYBACK_ACTIVE = False
     SAMPLE_PLAYBACK_REMAINING = 0
     SAMPLE_PLAYBACK_TIMER = None
+    _dropdown_style = None
     SAMPLE_PLAYBACK_ACTIVE = False
     def __init__(self, controller, parent=None):
         """
@@ -94,6 +92,9 @@ class CCSoundGroupMappingPage(QWidget):
         self.setFixedSize(1024, 600)
 
         self.manual_sound_controller = self._resolve_manual_sound_controller()
+        # Connect to backend signal for sample playback finished
+        if self.manual_sound_controller is not None and hasattr(self.manual_sound_controller, 'samplePlaybackFinished'):
+            self.manual_sound_controller.samplePlaybackFinished.connect(self._on_sample_playback_finished)
         self.sound_catalog = self._load_sound_catalog()
         self.sound_option_labels = [label for _, label in self.sound_catalog]
         self.sound_label_to_id = {label: sound_id for sound_id, label in self.sound_catalog}
@@ -295,6 +296,9 @@ class CCSoundGroupMappingPage(QWidget):
         self.sound_dropdown.setStyleSheet(dropdown_style)
         self.sound_dropdown.addItem(SOUND_DROPDOWN_PLACEHOLDER)
 
+        # Save the original dropdown style for later restoration
+        self._dropdown_style = dropdown_style
+
 
         left_col.addWidget(self.group_dropdown)
         left_col.addWidget(self.sound_dropdown)
@@ -450,10 +454,7 @@ class CCSoundGroupMappingPage(QWidget):
 
     def _load_sound_catalog(self):
         """
-        This function loads sound options from backend and falls back to local defaults.
-
-        Args:
-            None
+        This function loads sound options from backend and falls back to a generic default if backend is unavailable.
 
         Returns:
             catalog: list of tuples in the form (sound_id, sound_label)
@@ -463,14 +464,15 @@ class CCSoundGroupMappingPage(QWidget):
                 backend_sounds = self.manual_sound_controller.get_sounds()
                 catalog = []
                 for sound_id, sound_name in backend_sounds:
-                    sound_label = str(sound_name).replace("_", " ").upper()
+                    sound_label = str(sound_name)  # Use backend name as-is
                     catalog.append((int(sound_id), sound_label))
                 if catalog:
                     return catalog
             except Exception:
                 pass
 
-        return [(index + 1, label) for index, label in enumerate(SOUND_OPTIONS)]
+        # Fallback: 8 generic sounds if backend is unavailable
+        return [(i + 1, f"SOUND {i + 1}") for i in range(8)]
 
     def set_background(self, image_path):
         """
@@ -619,8 +621,18 @@ class CCSoundGroupMappingPage(QWidget):
         result = self.manual_sound_controller.play_sounds(selected_sound_ids, volume)
         print(f"play sample pressed for {current_group}: ids={selected_sound_ids}, volume={volume}, ok={result}")
         self.SAMPLE_PLAYBACK_ACTIVE = True
+
+        # Grey out dropdowns and show countdown as placeholder
         self.sound_dropdown.setEnabled(False)
         self.group_dropdown.setEnabled(False)
+        self._set_dropdowns_greyed(True)
+        self._set_dropdowns_placeholder(f"{self.SAMPLE_PLAYBACK_REMAINING}s")
+
+        # Lock out navigation and default buttons
+        self.cancel_home_btn.setEnabled(False)
+        self.back_btn.setEnabled(False)
+        self.next_btn.setEnabled(False)
+        self.default_btn.setEnabled(False)
 
         # Change button to grey and start countdown
         from backend.manual_sound_controller import SAMPLE_PLAYBACK_SECONDS
@@ -646,7 +658,7 @@ class CCSoundGroupMappingPage(QWidget):
         self.SAMPLE_PLAYBACK_TIMER.setInterval(1000)
         self.SAMPLE_PLAYBACK_TIMER.timeout.connect(self._on_sample_countdown_tick)
         self.SAMPLE_PLAYBACK_TIMER.start()
-        QTimer.singleShot(SAMPLE_PLAYBACK_SECONDS * 1000, self._on_sample_playback_finished)
+        # UI will now be unlocked by backend signal, not by timer here
 
     def _on_sample_countdown_tick(self):
         self.SAMPLE_PLAYBACK_REMAINING -= 1
@@ -662,6 +674,59 @@ class CCSoundGroupMappingPage(QWidget):
         self.SAMPLE_PLAYBACK_ACTIVE = False
         self.sound_dropdown.setEnabled(True)
         self.group_dropdown.setEnabled(True)
+        self._set_dropdowns_greyed(False)
+        self._set_dropdowns_placeholder(SOUND_DROPDOWN_PLACEHOLDER)
+        # Re-enable navigation and default buttons
+        self.cancel_home_btn.setEnabled(True)
+        self.back_btn.setEnabled(True)
+        self.next_btn.setEnabled(True)
+        self.default_btn.setEnabled(True)
+
+    def _set_dropdowns_greyed(self, greyed):
+        grey_style = (
+            "QComboBox {"
+            "background-color: #B4B4B4;"
+            "color: white;"
+            "border: 1px solid #B4B4B4;"
+            "border-radius: 16px;"
+            "padding: 4px 10px;"
+            "}"
+            "QComboBox QAbstractItemView {"
+            "color: white;"
+            "background: #B4B4B4;"
+            "border: 1px solid #B4B4B4;"
+            "border-radius: 14px;"
+            "padding: 4px;"
+            "outline: 0;"
+            "}"
+            "QComboBox QAbstractItemView::item {"
+            "border: none;"
+            "padding: 0px 6px;"
+            "margin: 0px;"
+            "}"
+            "QComboBox::drop-down {"
+            "border: none;"
+            "width: 22px;"
+            "background-color: #B4B4B4;"
+            "border-top-right-radius: 16px;"
+            "border-bottom-right-radius: 16px;"
+            "}"
+            "QComboBox::down-arrow {"
+            "image: url(resources/frontend_common_assets/whitetriangle.png);"
+            "width: 12px;"
+            "height: 8px;"
+            "}"
+        )
+        if greyed:
+            self.sound_dropdown.setStyleSheet(grey_style)
+            self.group_dropdown.setStyleSheet(grey_style)
+        else:
+            # Restore original style
+            self.sound_dropdown.setStyleSheet(self._dropdown_style)
+            self.group_dropdown.setStyleSheet(self._dropdown_style)
+
+    def _set_dropdowns_placeholder(self, text):
+        self.sound_dropdown.setCurrentText(text)
         if self.SAMPLE_PLAYBACK_TIMER is not None:
             self.SAMPLE_PLAYBACK_TIMER.stop()
             self.SAMPLE_PLAYBACK_TIMER.deleteLater()
@@ -726,16 +791,60 @@ class CCSoundGroupMappingPage(QWidget):
             return
 
         selected_for_group = self.group_to_sounds[group_name]
-        available_sounds = [s for s in self.sound_option_labels if s not in selected_for_group]
-
-        self.sound_dropdown.blockSignals(True)
-        self.sound_dropdown.clear()
-        self.sound_dropdown.addItem(SOUND_DROPDOWN_PLACEHOLDER)
-        self.sound_dropdown.addItems(available_sounds)
-        self.sound_dropdown.setCurrentIndex(0)
-        self.sound_dropdown.view().setRowHidden(0, True)
-        self.sound_dropdown.blockSignals(False)
-
+        if len(selected_for_group) >= MAX_SOUNDS_PER_GROUP:
+            self.sound_dropdown.blockSignals(True)
+            self.sound_dropdown.clear()
+            self.sound_dropdown.addItem("Max 3 Sounds per Group")
+            self.sound_dropdown.setCurrentIndex(0)
+            self.sound_dropdown.setEnabled(False)
+            grey_style = (
+                "QComboBox {"
+                "background-color: #B4B4B4;"
+                "color: white;"
+                "border: 1px solid #B4B4B4;"
+                "border-radius: 16px;"
+                "padding: 4px 10px;"
+                "}"
+                "QComboBox QAbstractItemView {"
+                "color: white;"
+                "background: #B4B4B4;"
+                "border: 1px solid #B4B4B4;"
+                "border-radius: 14px;"
+                "padding: 4px;"
+                "outline: 0;"
+                "}"
+                "QComboBox QAbstractItemView::item {"
+                "border: none;"
+                "padding: 0px 6px;"
+                "margin: 0px;"
+                "}"
+                "QComboBox::drop-down {"
+                "border: none;"
+                "width: 22px;"
+                "background-color: #B4B4B4;"
+                "border-top-right-radius: 16px;"
+                "border-bottom-right-radius: 16px;"
+                "}"
+                "QComboBox::down-arrow {"
+                "image: url(resources/frontend_common_assets/whitetriangle.png);"
+                "width: 12px;"
+                "height: 8px;"
+                "}"
+            )
+            self.sound_dropdown.setStyleSheet(grey_style)
+            self.sound_dropdown.view().setRowHidden(0, False)
+            self.sound_dropdown.blockSignals(False)
+        else:
+            available_sounds = [s for s in self.sound_option_labels if s not in selected_for_group]
+            self.sound_dropdown.blockSignals(True)
+            self.sound_dropdown.clear()
+            self.sound_dropdown.addItem(SOUND_DROPDOWN_PLACEHOLDER)
+            self.sound_dropdown.addItems(available_sounds)
+            self.sound_dropdown.setCurrentIndex(0)
+            self.sound_dropdown.view().setRowHidden(0, True)
+            self.sound_dropdown.setEnabled(True)
+            self.sound_dropdown.setStyleSheet(self._dropdown_style)
+            self.sound_dropdown.blockSignals(False)
 
         self.refresh_preview_panel(group_name)
         self._update_play_sample_button_state(group_name)
@@ -763,6 +872,9 @@ class CCSoundGroupMappingPage(QWidget):
 
         selected_for_group.append(sound_name)
         self.on_group_changed(current_group)
+        # Re-open the popup after selection (unless group changed or max reached)
+        if len(selected_for_group) < MAX_SOUNDS_PER_GROUP:
+            QTimer.singleShot(150, self.sound_dropdown.showPopup)
 
     def refresh_preview_panel(self, group_name):
         """
@@ -805,7 +917,10 @@ class CCSoundGroupMappingPage(QWidget):
     def on_preview_sound_clicked(self, sound_name):
         """
         Remove a selected sound from the active group and refresh UI.
+        Disabled during sample playback.
         """
+        if self.SAMPLE_PLAYBACK_ACTIVE:
+            return
         current_group = self.group_dropdown.currentText()
         if current_group not in self.group_to_sounds:
             return
