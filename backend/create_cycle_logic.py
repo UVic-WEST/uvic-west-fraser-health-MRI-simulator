@@ -97,7 +97,6 @@ class CreateCycleLogic:
         if not getattr(self, "sound_set", False):
             return DEFAULT_NUM_GROUPS, False
         return len(self.group_list), True
-  
 
     def set_total_groups(self, new_total_groups: int) -> bool:
         """
@@ -136,7 +135,6 @@ class CreateCycleLogic:
     def reset_group_default(self):
         self.set_total_groups(DEFAULT_NUM_GROUPS)
       
-    
     # =========================================================
     # SOUND MAPPING
     # =========================================================
@@ -157,7 +155,6 @@ class CreateCycleLogic:
         group = self._get_group(group_id)
         return group.sounds if group.sounds else None
     
-
     def set_sounds_in_group(self, group_id: int, sounds: List[SoundConfig]) -> bool:
         """
         Given a group_id, sets the sounds for this group to be played during custom cycle.
@@ -178,8 +175,7 @@ class CreateCycleLogic:
         group = self._get_group(group_id)
         group.sounds = sounds
         return True
-
-
+    
     def set_volume_for_group(self, group_id: int, new_group_volume: int) -> bool:
         """
         Validates that new_group_volume is within the set values [0, 100] and, if so, sets the volume of the group identified by group_id to new_group_volume.
@@ -196,11 +192,10 @@ class CreateCycleLogic:
         ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
         """
         if not (0 <= new_group_volume <= 100):
-            raise ValueError("Volume must be within 0–100")
+            raise ValueError("Volume must be within 0-100")
         group = self._get_group(group_id)
         group.group_volume = new_group_volume
         return True
-    
 
     def play_group_sample(self, group_id: int) -> bool:
         """Play all sounds in a group simultaneously via SoundPlayer."""
@@ -212,22 +207,18 @@ class CreateCycleLogic:
             for sound in group.sounds:
                 self.cycle_controller.sound_player.play(sound)
         return True
-    
 
     def sound_mapping_accessed(self):
         self.sound_set = True
 
-
     def confirm_sounds_in_each_group(self) -> bool:
         return all(1 <= len(group.sounds) <= 3 for group in self.group_list)
-    
     
     def reset_volume_default(self, group_id: int):
         try:
             self.set_volume_for_group(group_id, DEFAULT_SOUND_LEVEL)
         except ValueError:
             pass
-        
         
     #---------------------------------------------------------------------------
     # get list of all sounds available in system
