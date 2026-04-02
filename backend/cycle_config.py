@@ -7,8 +7,6 @@ during playback. Supports JSON serialisation for saving/loading cycles.
 
 from dataclasses import dataclass, field
 from typing import List
-import json
-from pathlib import Path
 from backend.cycle_action import CycleAction, ActionType
 
 @dataclass
@@ -21,11 +19,10 @@ class CycleConfig:
         cycle_duration_ms: total duration of cycle in milliseconds
         actions: list of timestamped (by milliseconds) actions to execute in the cycle
     """
-    cycle_id: str
+    cycle_id: int
     cycle_name: str
     cycle_duration_ms: int
     actions: List[CycleAction] = field(default_factory=list)
-    
 
     def __post_init__(self):
         """verify duration and that action durations fit within cycle."""
@@ -43,14 +40,13 @@ class CycleConfig:
 
         # sort actions by timestamp_ms
         self.actions.sort(key=lambda a: a.timestamp_ms)
-        
+
 
     @property
     def cycle_duration_sec(self) -> float:
         """get cycle duration in seconds"""
         return self.cycle_duration_ms / 1000.0
 
-    
     def add_action(self, action: CycleAction):
         """
         add an action to the MRI simulation cycle
@@ -81,52 +77,28 @@ class CycleConfig:
             if abs(action.timestamp_ms - timestamp_ms) <= window_ms
         ]
 
-    def to_json(self, filepath: str):
-        """
-        save cycle configuration to JSON file
-        args: 
-            filepath: path to output JSON file
-        """
-        data = {
+    def to_dict(self):
+        return {
             "id": self.cycle_id,
             "name": self.cycle_name,
             "duration_ms": self.cycle_duration_ms,
             "actions": [
                 {
-                    "timestamp_ms": action.timestamp_ms,
+                    "timestamp": action.timestamp_ms,
                     "type": action.action_type.value,
                     "params": action.parameters
                 }
                 for action in self.actions
             ]
         }
-        filepath = Path(filepath)
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(filepath, 'w') as f:
-            json.dump(data, f, indent=2)
 
     @classmethod
-    def from_json(cls, filepath: str) -> 'CycleConfig':
-        """
-        load MRI simulation cycle configuration from JSON file
-        args:
-            filepath: path to JSON file
-        returns:
-            CycleConfig instance
-        raises:
-            FileNotFoundError: if file does not exist
-            json.JSONDecodeErrod: if file is invalid JSON
-            KeyError: if required fields are missing
-        """
-        with open(filepath, 'r') as f:
-            data = json.load(f)
-
+    def from_dict(cls, data: dict):
         actions = [
             CycleAction(
-                timestamp_ms=a["timestamp_ms"],
-                action_type=a["type"],
-                parameters=a["params"]
+                timestamp_ms=a["timestamp"],
+                action_type=ActionType(a["type"]),  # safer
+                parameters=a.get("params", {})
             )
             for a in data.get("actions", [])
         ]
@@ -137,7 +109,6 @@ class CycleConfig:
             cycle_duration_ms=data["duration_ms"],
             actions=actions
         )
-
     
     def __repr__(self):
         return (
@@ -146,4 +117,3 @@ class CycleConfig:
             f"duration={self.cycle_duration_sec}s, "
             f"actions={len(self.actions)})"
         )
-            

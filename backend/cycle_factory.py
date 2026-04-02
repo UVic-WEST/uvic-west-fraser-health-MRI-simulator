@@ -1,93 +1,36 @@
-"""Factory for predefined MRI simulation cycle configurations.
-
-Houses hardcoded cycle presets (e.g. Standard MRI, Fast MRI) that can be
-retrieved by ID or index. New presets are added by creating private
-_create_cycleN() methods and registering them in _load_cycles().
-"""
-
 from typing import List
 from backend.cycle_config import CycleConfig
-from backend.cycle_action import CycleAction, ActionType
+from backend.cycle_repository import CycleRepository
 
 
 class CycleFactory:
-    """Provides predefined MRI simulation cycle configurations.
-
-    Cycles are built at init time and stored in a list and a dict
-    for retrieval by index or by cycle_id respectively.
-    """
+    """Provides MRI simulation cycle configurations loaded from JSON."""
 
     def __init__(self):
-        self._predefined_cycles: List[CycleConfig] = []
+        self._cycles: List[CycleConfig] = []
         self._load_cycles()
 
     def _load_cycles(self):
-        """ load all predefined cycle configurations into the factory """
-        self._predefined_cycles.append(self._create_cycle1())
-        self._predefined_cycles.append(self._create_cycle2())
-        # more cycles can be added here
+        """Load all cycles from repository."""
+        self._cycles = CycleRepository.load_all()
 
-        # create a mapping of cycle_id to CycleConfig for easy retrieval
-        self._cycles = {cycle.cycle_id: cycle for cycle in self._predefined_cycles}
-    
-    def get_cycle_by_id(self, cycle_id: str) -> CycleConfig:
+    def get_cycle_by_id(self, cycle_id: int) -> CycleConfig:
         """
-        Retrieve a cycle configuration by its unique ID
-        
-        Raises:
-            ValueError: If no cycle exists with the specified ID
-        """
-        
-        try:
-            return self._cycles[cycle_id] 
-        except KeyError:
-            raise ValueError(f"No cycle with id {cycle_id}")
-    
-    def get_cycle_by_index(self, index: int) -> CycleConfig:
-        """
-        Retrieve a cycle configuration by its index in the predefined list
+        Retrieve a cycle by ID.
 
         Raises:
-            ValueError: If the index is out of range
+            ValueError if not found
         """
-        
-        try:
-            return self._predefined_cycles[index]
-        except IndexError:
-            raise ValueError(f"No cycle at index {index}")
+        for cycle in self._cycles:
+            if cycle.cycle_id == cycle_id:
+                return cycle
 
-    def list_cycles(self):
-        """ returns a list of all available predefined cycles """
-        return list(self._cycles.values())
+        raise ValueError(f"No cycle with id {cycle_id}")
 
-    # ---------------------------------------------------------------------------
-    # private methods to create predefined cycles
-    # these can be modified or expanded to create different cycles as needed
-    # ---------------------------------------------------------------------------
+    def list_cycles(self) -> List[CycleConfig]:
+        """Return all available cycles."""
+        return list(self._cycles)
 
-    def _create_cycle1(self):
-        return CycleConfig(
-            cycle_id="scan_1",
-            cycle_name="Standard MRI",
-            cycle_duration_ms=10000,
-            actions=[
-                CycleAction(0, ActionType.LIGHT_ON, {"intensity": 70}),
-                CycleAction(1000, ActionType.SOUND_START, {"volume": 50}),
-                CycleAction(4000, ActionType.LIGHT_OFF, {}),
-                CycleAction(4500, ActionType.SOUND_STOP, {})
-            ]
-        )
-
-    def _create_cycle2(self):
-        return CycleConfig(
-            cycle_id="scan_2",
-            cycle_name="Fast MRI",
-            cycle_duration_ms=5000,
-            actions=[
-                CycleAction(0, ActionType.LIGHT_ON, {"intensity": 70}),
-                CycleAction(500, ActionType.SOUND_START, {"volume": 50}),
-                CycleAction(2000, ActionType.SOUND_STOP, {}),
-            ]
-        )
-    
-    # create more cycles as needed
+    def refresh(self):
+        """Reload cycles from JSON (call after saving a new cycle)."""
+        self._load_cycles()
