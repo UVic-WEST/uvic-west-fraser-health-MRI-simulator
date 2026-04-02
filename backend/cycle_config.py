@@ -109,7 +109,7 @@ class CycleConfig:
             cycle_id=data["id"],
             cycle_name=data["name"],
             cycle_duration_ms=data["duration_ms"],
-            light_configuration=data["light_configuration"],
+            light_configuration=data.get("light_configuration", 50),
             actions=actions
         )
     

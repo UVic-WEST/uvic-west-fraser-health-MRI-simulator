@@ -72,13 +72,13 @@ def test_passes_single_light_action(cycle_running_logic):
 
 def test_passes_single_sound_action(cycle_running_logic, mocker):
     mock = mocker.patch('backend.cycle_running_page_logic.CycleRunningPageLogic.cycle_factory')
-    sound_config = {"file_name": "test", "duration": 1000, "volume": 50}
+    sound_config = {"sound_id": 1, "file_name": "test", "duration": 1000, "volume": 50}
     mock.get_cycle_by_id.return_value = CycleConfig(1, "test cycle", 3000, 70, [
         CycleAction(0, ActionType.SOUND_START, sound_config)
     ])
     cycle_running_logic.start_cycle(1)
     cycle_running_logic._update_timer()
-    cycle_running_logic.sound_player.play.assert_called_once_with(SoundConfig("test", 1000, 50))
+    cycle_running_logic.sound_player.play.assert_called_once_with(SoundConfig("test", 1, 1000, 50))
 
 def test_stops_sound_action(cycle_running_logic, mocker):
     mock = mocker.patch('backend.cycle_running_page_logic.CycleRunningPageLogic.cycle_factory')
@@ -96,7 +96,7 @@ def test_stops_sound_action(cycle_running_logic, mocker):
     
 def test_passes_multiple_actions_in_order(cycle_running_logic, mocker):
     mock = mocker.patch('backend.cycle_running_page_logic.CycleRunningPageLogic.cycle_factory')
-    sound_config = {"file_name": "test", "duration": 1000, "volume": 50}
+    sound_config = {"sound_id": 1, "file_name": "test", "duration": 1000, "volume": 50}
     mock.get_cycle_by_id.return_value = CycleConfig(1, "test cycle", 3000, 70, [
         CycleAction(0, ActionType.SOUND_START, sound_config),
         CycleAction(100, ActionType.SOUND_START, sound_config)
@@ -105,10 +105,10 @@ def test_passes_multiple_actions_in_order(cycle_running_logic, mocker):
     cycle_running_logic.light_controller.change_lights.assert_called_once_with(70)
     
     cycle_running_logic._update_timer()
-    cycle_running_logic.sound_player.play.assert_called_once_with(SoundConfig("test", 1000, 50))
+    cycle_running_logic.sound_player.play.assert_called_once_with(SoundConfig("test", 1, 1000, 50))
 
     cycle_running_logic._update_timer()
-    cycle_running_logic.sound_player.play.assert_called_with(SoundConfig("test", 1000, 50))
+    cycle_running_logic.sound_player.play.assert_called_with(SoundConfig("test", 1, 1000, 50))
 
 def test_no_active_cycle_on_finish(cycle_running_logic, mock_cycle_factory):
     cycle_running_logic.current_cycle = mock_cycle_factory.get_cycle_by_id(1)
@@ -154,8 +154,8 @@ def test_resumes_restarts_timer_progress(cycle_running_logic):
 
 def test_next_action_is_dispatched_after_resume(cycle_running_logic, mocker):
     mock = mocker.patch('backend.cycle_running_page_logic.CycleRunningPageLogic.cycle_factory')
-    first_sound = {"file_name": "first", "duration": 1000, "volume": 50}
-    second_sound = {"file_name": "second", "duration": 1000, "volume": 50}
+    first_sound = {"sound_id": 1, "file_name": "first", "duration": 1000, "volume": 50}
+    second_sound = {"sound_id": 2, "file_name": "second", "duration": 1000, "volume": 50}
     mock.get_cycle_by_id.return_value = CycleConfig(1, "test cycle", 3000, 70, [
         CycleAction(0, ActionType.SOUND_START, first_sound),
         CycleAction(150, ActionType.SOUND_START, second_sound)
@@ -167,7 +167,7 @@ def test_next_action_is_dispatched_after_resume(cycle_running_logic, mocker):
 
     cycle_running_logic.sound_player.play.reset_calls()
     cycle_running_logic._update_timer()
-    cycle_running_logic.sound_player.play.assert_called_with(SoundConfig("second", 1000, 50))
+    cycle_running_logic.sound_player.play.assert_called_with(SoundConfig("second", 2, 1000, 50))
 
 def test_stop_after_pause_resets_state(cycle_running_logic):
     cycle_running_logic.start_cycle(1)

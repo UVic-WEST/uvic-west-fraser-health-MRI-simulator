@@ -211,6 +211,7 @@ class CycleRunningPageLogic(QObject):
 
         if action_type == ActionType.SOUND_START:
             sound = SoundConfig(
+                sound_id = params.get("sound_id"),
                 file_name=params.get("file_name", ""),
                 duration=params.get("duration", 0),
                 volume=params.get("volume", 50),
