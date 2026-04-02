@@ -71,21 +71,21 @@ class ConfirmationPage(QWidget):
 
     def set_cycle(self, cycle):
         """
-        This sets the confirmation question with the proper cycle name.
-
+        Sets the confirmation question with the proper cycle name.
         Args:
-            cycle (Cycle): Cycle to confirm to begin playing
+            cycle: tuple (cycle_id, cycle_name) or just cycle_id (for backward compatibility)
         """
-        
         self.cycle = cycle
         if not cycle:
             self.cycle_status.setText("Are you sure you want to run cycle?")
             return
 
-        cycle_text = str(cycle)
-        parts = cycle_text.split()
-        cycle_suffix = parts[-1] if parts and parts[-1].isdigit() else cycle_text
-        self.cycle_status.setText(f"Are you sure you want to run cycle {cycle_suffix}?")
+        # Accept (cycle_id, cycle_name) tuple or just cycle_id
+        if isinstance(cycle, tuple) and len(cycle) == 2:
+            _, cycle_name = cycle
+        else:
+            cycle_name = str(cycle)
+        self.cycle_status.setText(f"Are you sure you want to run cycle '{cycle_name}'?")
         
     def set_background(self, image_path):
         """

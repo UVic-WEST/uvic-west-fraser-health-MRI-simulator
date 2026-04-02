@@ -42,16 +42,16 @@ class CycleSelectorWidget(QWidget):
     cycle_selected = Signal(str)
     custom_cycle_requested = Signal()
 
-    def __init__(self, available_cycles, parent=None):
+    def __init__(self, cycles, parent=None):
         """
-        This function builds the cycle selector widget and custom cycle button
-
         Args:
-            available_cycles: the cycle names shown in the dropdown
-            parent: the parent widget for this container
+            cycles: list of (cycle_id, cycle_name) tuples
+            parent: parent widget
         """
         super().__init__(parent)
-        self.available_cycles = available_cycles
+        self.cycles = cycles  # List of (cycle_id, cycle_name)
+        self.id_to_name = {cid: name for cid, name in cycles}
+        self.name_to_id = {name: cid for cid, name in cycles}
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(DROPDOWN_BUTTON_GAP_PX)
@@ -85,7 +85,9 @@ class CycleSelectorWidget(QWidget):
                 height: 8px;
             }}
         """)
-        self.cycle_selector.addItems(self.available_cycles)
+        # Add cycle names to dropdown
+        for cid, name in cycles:
+            self.cycle_selector.addItem(name, cid)
         self.cycle_selector.setCurrentIndex(0)
         self.main_layout.addWidget(self.cycle_selector)
 
@@ -104,21 +106,18 @@ class CycleSelectorWidget(QWidget):
 
     def _on_cycle_selected(self, cycle_name):
         """
-        This function emits the selected cycle name from the dropdown
-
-        Args:
-            cycle_name: the cycle name selected by the user
+        Emits the selected cycle's ID (not just name)
         """
-        self.cycle_selected.emit(cycle_name)
+        cycle_id = self.name_to_id.get(cycle_name, None)
+        if cycle_id:
+            self.cycle_selected.emit(cycle_id)
 
-    def get_selected_cycle(self):
+    def get_selected_cycle_id(self):
         """
-        This function returns the currently selected cycle name
-
-        Args:
-            None
+        Returns the currently selected cycle's ID
         """
-        return self.cycle_selector.currentText()
+        name = self.cycle_selector.currentText()
+        return self.name_to_id.get(name, None)
 
     def _on_custom_cycle_requested(self):
         """

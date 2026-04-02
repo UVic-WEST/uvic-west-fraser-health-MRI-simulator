@@ -16,35 +16,25 @@ class CyclePlayerWidget(QWidget):
         parent: the parent widget for this container
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, cycles, parent=None):
         """
-        This function builds the cycle player widget and its controls
-
         Args:
-            parent: the parent widget for this container
+            cycles: list of (cycle_id, cycle_name) tuples
+            parent: parent widget
         """
-        #setup
         super().__init__(parent)
         self.parent = parent
         self.main_layout = QVBoxLayout()
         self.main_layout.setSpacing(PLAY_SQUARE_DROPDOWN_GAP_PX)
         self.main_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-        self.cur_cycle = None
-        
-        #####################
-        #####################
-        #####################
-        # Dummy cycle list for testing
-        # Will need to be replaced!!!!
-        self.available_cycles = ["Cycle 1", "Cycle 2", "Cycle 3"]
+        self.cur_cycle_id = None
 
-        #setting up widgets
-        #setup for play square widget
+        # setup for play square widget
         self.play_square_widget = PlaySquareWidget(self)
         self.main_layout.addWidget(self.play_square_widget)
 
         # setup for cycle selector dropdown and custom cycle button
-        self.cycle_selector_widget = CycleSelectorWidget(self.available_cycles, self)
+        self.cycle_selector_widget = CycleSelectorWidget(cycles, self)
         self.main_layout.addWidget(self.cycle_selector_widget)
 
         # Keep this container tightly wrapped to its content to avoid extra vertical slack.
@@ -52,41 +42,32 @@ class CyclePlayerWidget(QWidget):
         self.setFixedHeight(
             self.play_square_widget.height() +
             self.cycle_selector_widget.height() +
-            PLAY_SQUARE_DROPDOWN_GAP_PX  # Gap between play square and selector widget
+            PLAY_SQUARE_DROPDOWN_GAP_PX
         )
 
-        #setting layout
         self.setLayout(self.main_layout)
 
-        #connect dropdown selection to update cycle
+        # connect dropdown selection to update cycle
         self.cycle_selector_widget.cycle_selected.connect(self.on_cycle_selected)
         self.cycle_selector_widget.custom_cycle_requested.connect(self.open_custom_cycle_warning)
-        
-        #initialize with first cycle selected
-        self.on_cycle_selected(self.cycle_selector_widget.get_selected_cycle())
-    
-    #called when user selects a cycle from the dropdown
-    def on_cycle_selected(self, cycle_name):
+
+        # initialize with first cycle selected
+        self.on_cycle_selected(self.cycle_selector_widget.get_selected_cycle_id())
+
+    def on_cycle_selected(self, cycle_id):
         """
         This function updates the selected cycle from the dropdown
-
         Args:
-            cycle_name: the cycle name selected by the user
+            cycle_id: the cycle id selected by the user
         """
-        self.cur_cycle = cycle_name
-        print("Current cycle updated to:", cycle_name)  
-        self.parent.set_cur_cycle(cycle_name)
-        self.play_square_widget.update_selected_cycle(cycle_name)
+        self.cur_cycle_id = cycle_id
+        print("Current cycle updated to ID:", cycle_id)
+        self.parent.set_cur_cycle(cycle_id)
+        self.play_square_widget.update_selected_cycle(cycle_id)
 
     def play_selected_cycle(self):
-        """
-        This function tells the parent widget to play the selected cycle
-        """
         self.parent.play_selected_cycle()
 
     def open_custom_cycle_warning(self):
-        """
-        This function requests opening the custom cycle warning page
-        """
         self.parent.show_custom_cycle_warning()
 

@@ -31,8 +31,8 @@ class PlaySquareWidget(QWidget):
         main_layout.setSpacing(0)
         self.setFixedSize(353,273)
 
-        ## this has the current cycle information, gets updated from CycleplayerWidget
-        self.cur_cycle = None
+        ## this has the current cycle id, gets updated from CyclePlayerWidget
+        self.cur_cycle_id = None
 
         #asset paths
         play_button_asset_path = 'resources/home_page_assets/cycle_play_button.png'
@@ -64,13 +64,19 @@ class PlaySquareWidget(QWidget):
         cycle_play_button.setIconSize(QSize(cycle_play_button_size,cycle_play_button_size))
         make_button_circle(cycle_play_button,cycle_play_button_size)
 
-        #for the clock icon
+
+        # for the clock icon and duration label
         clock_icon_pix = QPixmap(clock_icon_asset_path)
         clock_icon = QLabel()
         clock_icon.setStyleSheet("background: transparent;")
         clock_icon.setPixmap(clock_icon_pix)
         clock_icon.setScaledContents(True)
         clock_icon.setFixedSize(40, 40)
+
+        self.duration_label = QLabel("")
+        self.duration_label.setFont(QFont("Ubuntu", 28))
+        self.duration_label.setStyleSheet("color: white; background: transparent;")
+        self.duration_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
 
         #for the cycle title at the top of the play square
         cycle_title = QLabel("Full Cycle")
@@ -79,8 +85,18 @@ class PlaySquareWidget(QWidget):
         cycle_title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
         #organize widget layout
+
         blue_box_layout.addWidget(cycle_title, 0, 0, 1, 1, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        blue_box_layout.addWidget(clock_icon, 0, 0, 1, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+        # Add clock icon and duration label in a horizontal layout at bottom left
+        from PySide6.QtWidgets import QHBoxLayout, QWidget as QtQWidget
+        clock_row = QHBoxLayout()
+        clock_row.setContentsMargins(0, 0, 0, 0)
+        clock_row.setSpacing(6)
+        clock_row.addWidget(clock_icon)
+        clock_row.addWidget(self.duration_label)
+        clock_row_container = QtQWidget()
+        clock_row_container.setLayout(clock_row)
+        blue_box_layout.addWidget(clock_row_container, 0, 0, 1, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         blue_box_layout.addWidget(cycle_play_button, 0, 0, 1, 1, Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(blue_box, 0, 0, 1, 2)
         self.setLayout(main_layout)
@@ -98,11 +114,21 @@ class PlaySquareWidget(QWidget):
         self.parent.play_selected_cycle()
         
 
-    def update_selected_cycle(self, cycle_name):
+    def update_selected_cycle(self, cycle_id):
         """
         This function updates the selected cycle from the dropdown
-
+        and updates the duration label.
         Args:
-            cycle_name: the cycle name selected by the user
+            cycle_id: the cycle id selected by the user
         """
-        self.cur_cycle = cycle_name
+        self.cur_cycle_id = cycle_id
+        # Try to get the duration from backend
+        duration_text = ""
+        if cycle_id and hasattr(self.parent, 'parent') and hasattr(self.parent.parent, 'cycle_factory'):
+            try:
+                cycle_obj = self.parent.parent.cycle_factory.get_cycle_by_id(cycle_id)
+                duration_sec = int(round(cycle_obj.cycle_duration_ms / 1000))
+                duration_text = f"{duration_sec} s"
+            except Exception:
+                duration_text = ""
+        self.duration_label.setText(duration_text)

@@ -47,8 +47,12 @@ class CycleRunningPage(QWidget):
         self.main_layout.addSpacing(40)
         self.main_layout.addWidget(self.controlling_buttons)
         
-    def play_cycle(self, cycle_dur_s:int):
-        self.controller.start_cycle(1,cycle_dur_s)
+    def play_cycle(self, cycle_id, cycle_dur_s: int):
+        """
+        Start the selected cycle by passing its ID and duration to the controller.
+        """
+        self.cycle = cycle_id
+        self.controller.start_cycle(cycle_id, cycle_dur_s)
 
     def pause_cycle(self):
         self.controller.pause_cycle()
