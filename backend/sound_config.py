@@ -8,19 +8,14 @@ from dataclasses import dataclass
 
 
 @dataclass
-class SoundConfig:
-    """Configuration for a single sound used in a cycle.
+class SoundConfig: 
+    """Stores configuration for a single sound used in a cycle."""
 
-    Attributes:
-        file_name (str): Path to the audio file (e.g. "mri_gradient.wav").
-        duration (float): Playback duration in seconds.
-        volume (int): Volume level from 0 to 100 (percentage). Defaults to 50.
-    """
-
-    file_name: str
-    duration: float
-    volume: int = 50
-
+    file_name: str # file path of sound file 
+    sound_id: int # unique identifier for a sound file
+    duration: float # seconds
+    volume: 50 # value from 0 - 100 (preset percentage of full volume, initally 50%)
+    
     def __post_init__(self):
         """Validate sound config values.
 
@@ -43,6 +38,7 @@ class SoundConfig:
         
         return (
             f"SoundConfig({self.file_name}, "
+            f"sound_id={self.sound_id}, "
             f"duration={self.duration}, "
             f"volume={self.volume})"
         )

@@ -8,19 +8,33 @@ from PySide6.QtGui import (
     QPixmap, 
     QFont
 )
+from typing import Callable
 from frontend.warning_page_widgets.confirmation_buttons import WarningButtons
 
 class WarningPage(QWidget):
 
-    def __init__(self, parent=None):
+    DEFAULT_WARNING_MESSAGE = "WARNING"
+
+    def __init__(
+        self,
+        parent=None,
+        warning_message: str | None = None,
+        on_confirm: Callable[[], None] | None = None,
+        on_cancel: Callable[[], None] | None = None,
+    ):
         """
         This function builds the warning page shown before custom cycle creation
 
         Args:
             parent: the parent widget for this page
+            warning_message (str | None): optional warning text to display
+            on_confirm (Callable[[], None] | None): optional callback when confirm is clicked
+            on_cancel (Callable[[], None] | None): optional callback when cancel is clicked
         """
         super().__init__(parent)
         self.parent = parent
+        self.on_confirm = on_confirm
+        self.on_cancel = on_cancel
         self.setFixedSize(1024,600)
 
         # Create main layout
@@ -48,7 +62,7 @@ class WarningPage(QWidget):
         #setting up widgets
 
         # warning label
-        self.warning_status = QLabel("WARNING!\n REMOVE CHILD FROM MRI\n BEFORE PROCEEDING")
+        self.warning_status = QLabel(warning_message or self.DEFAULT_WARNING_MESSAGE)
         cycle_status_font = QFont("Ubuntu", 24)
         cycle_status_font.setBold(True)
         self.warning_status.setFont(cycle_status_font)
@@ -64,6 +78,30 @@ class WarningPage(QWidget):
         
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
+
+    def set_warning_message(self, message: str):
+        """
+        Update the warning text displayed on the page.
+
+        Args:
+            message (str): text to display in the warning label
+        """
+        self.warning_status.setText(message)
+
+    def set_callbacks(
+        self,
+        on_confirm: Callable[[], None] | None = None,
+        on_cancel: Callable[[], None] | None = None,
+    ):
+        """
+        Update confirm/cancel callbacks used by warning buttons.
+
+        Args:
+            on_confirm (Callable[[], None] | None): callback for confirm action
+            on_cancel (Callable[[], None] | None): callback for cancel action
+        """
+        self.on_confirm = on_confirm
+        self.on_cancel = on_cancel
 
     def set_background(self, image_path):
         """
@@ -84,12 +122,22 @@ class WarningPage(QWidget):
 
     def warning_cancelled(self):
         """
-        This function emits cancel when warning is dismissed
+        Handle cancel click; runs on_cancel callback if provided,
+        otherwise falls back to the sign-in page.
         """
-        self.parent.show_home()
+        if self.on_cancel is not None:
+            self.on_cancel()
+            return
+
+        self.parent.show_signin()
 
     def warning_confirmed(self):
         """
-        This function emits proceed when warning is accepted
+        Handle confirm click; runs on_confirm callback if provided,
+        otherwise falls back to the home page.
         """
-        self.parent.show_create_cycle_pages()
+        if self.on_confirm is not None:
+            self.on_confirm()
+            return
+
+        self.parent.show_home()
