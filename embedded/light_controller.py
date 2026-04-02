@@ -1,6 +1,7 @@
 from PySide6.QtCore import (
     QObject
 )
+from .led_strip import LEDStrip
 class LightController(QObject):
     '''
     This is the controller for turning on lights and changing their brighness throughtout the MRI
@@ -12,11 +13,13 @@ class LightController(QObject):
 
     eg: app_router.py -> cycle_running_logic.py -> your_file.py
     '''
+    BASE_BRIGHTNESS = .1
 
     def __init__(self,parent):
         super().__init__(parent)
         self.parent = parent
         self.locked = False
+        self.strip = LEDStrip()
         self.system_idle()
 
     def system_idle(self):
@@ -25,9 +28,10 @@ class LightController(QObject):
         baseline after a cycle
         '''
         self.locked = False
-        return True
         #send signal to ELEC code to turn on light
         #send signal to ELEC code to turn brightness to 0 or to baseline light level
+        self.strip.set_white(self.BASE_BRIGHTNESS)
+        return True
 
     def change_lights(self, brightness:float):
         '''
@@ -42,7 +46,7 @@ class LightController(QObject):
 
         #to ask: will this require a fork?
         #send signal to elec to change light level of lights
-        #that it for now until I can actually get my mitts on their code
+        self.strip.set_white(brightness)
 
         self.locked = False
 
@@ -53,5 +57,5 @@ class LightController(QObject):
         possible function to connect with e-stop or on/off switch
         '''
         #call to elec to shut off lights?
-        pass
+        self.strip.power_off()
 
