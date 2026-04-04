@@ -22,6 +22,7 @@ class CycleConfig:
     cycle_id: int
     cycle_name: str
     cycle_duration_ms: int
+    light_configuration: int
     actions: List[CycleAction] = field(default_factory=list)
 
     def __post_init__(self):
@@ -74,7 +75,7 @@ class CycleConfig:
         """
         return [
             action for action in self.actions
-            if abs(action.timestamp_ms - timestamp_ms) <= window_ms
+            if abs(action.timestamp_ms - timestamp_ms) < window_ms
         ]
 
     def to_dict(self):
@@ -82,6 +83,7 @@ class CycleConfig:
             "id": self.cycle_id,
             "name": self.cycle_name,
             "duration_ms": self.cycle_duration_ms,
+            "light_configuration": self.light_configuration,
             "actions": [
                 {
                     "timestamp": action.timestamp_ms,
@@ -107,6 +109,7 @@ class CycleConfig:
             cycle_id=data["id"],
             cycle_name=data["name"],
             cycle_duration_ms=data["duration_ms"],
+            light_configuration=data.get("light_configuration", 50),
             actions=actions
         )
     

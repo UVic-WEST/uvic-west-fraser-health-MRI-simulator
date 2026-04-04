@@ -12,11 +12,11 @@ def sound_player():
 
 @pytest.fixture
 def sound_mid_volume():
-    return SoundConfig(file_name="test.wav", duration=5.0, volume=50)
+    return SoundConfig(sound_id=1, file_name="test.wav", duration=5.0, volume=50)
 
 @pytest.fixture
 def sound_low_volume():
-    return SoundConfig(file_name="test.wav", duration=5.0, volume=10)
+    return SoundConfig(sound_id=2, file_name="test.wav", duration=5.0, volume=10)
 
 @pytest.fixture(autouse=True)
 def mock_subprocess():

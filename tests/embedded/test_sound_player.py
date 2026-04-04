@@ -14,7 +14,7 @@ def test_play_sets_current_volume(sound_player, sound_mid_volume):
 
 def test_play_returns_filename_in_result(sound_player, sound_mid_volume):
     result = sound_player.play(sound_mid_volume)
-    assert "test.wav" in result
+    assert "test.wav" in result[1]
 
 # ======================
 # Stop Sound Behavior
@@ -76,7 +76,7 @@ def test_decr_volume_no_sound_playing(sound_player):
 def test_play_returns_error_on_failure(sound_player, sound_mid_volume, mock_subprocess):
     mock_subprocess.side_effect = subprocess.CalledProcessError(1, "aplay")
     result = sound_player.play(sound_mid_volume)
-    assert "Failed to play sound" in result
+    assert "Failed to play sound" in result[1]
 
 def test_stop_returns_error_on_failure(sound_player, mock_subprocess):
     mock_subprocess.side_effect = subprocess.CalledProcessError(1, "killall")

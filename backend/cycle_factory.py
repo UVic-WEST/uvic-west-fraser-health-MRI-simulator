@@ -2,7 +2,6 @@ from typing import List
 from backend.cycle_config import CycleConfig
 from backend.cycle_repository import CycleRepository
 
-
 class CycleFactory:
     """Provides MRI simulation cycle configurations loaded from JSON."""
 

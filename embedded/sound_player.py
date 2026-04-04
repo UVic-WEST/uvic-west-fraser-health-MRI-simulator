@@ -29,9 +29,9 @@ class SoundPlayer:
 
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
-            return f"Failed to play sound, error: {error_msg}"
+            return False, f"Failed to play sound, error: {error_msg}"
 
-        return f"Playing sound {self.current_sound.file_name} at {self.current_volume}%"
+        return True, f"Playing sound {self.current_sound.file_name} at {self.current_volume}%"
 
     def stop(self) -> str:
         """
