@@ -26,7 +26,7 @@ class CreateCycleLogic:
         self.light_level = DEFAULT_LIGHT_LEVEL
         self.group_list: List[SoundGroupConfig] = []
         
-        self.sound_set = False
+        self.sound_set = False 
 
         # list of available sounds; hardcoded for now with assumption that there are 8 available sounds in system
         self.available_sounds: List[Tuple[int, str]] = [
@@ -92,11 +92,11 @@ class CreateCycleLogic:
     # ---------------------------------------------------------------------------
     # SOUND GROUPS
     # ---------------------------------------------------------------------------
+    # previous version had get_total_groups and set_total_groups combined with sound mapping, but separating them to simplify logic and validation around total groups vs sounds in each group
     def get_total_groups(self) -> Tuple[int, bool]:
         """Return number of groups and whether sound mapping has been accessed."""
-        if not getattr(self, "sound_set", False):
-            return DEFAULT_NUM_GROUPS, False
-        return len(self.group_list), True
+        # Always return the current group count, and whether sound mapping has been accessed
+        return len(self.group_list) if self.group_list else DEFAULT_NUM_GROUPS, getattr(self, "sound_set", False)
 
     def set_total_groups(self, new_total_groups: int) -> bool:
         """
@@ -140,6 +140,7 @@ class CreateCycleLogic:
     # =========================================================
         
     def get_sounds_in_group(self, group_id: int) -> List[SoundConfig] | None:
+        print(f"[CreateCycleLogic.get_sounds_in_group] CALLED with group_id={group_id}")
         """
         Gets a list of sounds belonging to a group if group with group_id is in the list of groups to be played during custom cycle.
 
@@ -153,30 +154,39 @@ class CreateCycleLogic:
         ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
         """
         group = self._get_group(group_id)
+        print(f"[CreateCycleLogic.get_sounds_in_group] returning sounds: {group.sounds if group.sounds else None}")
         return group.sounds if group.sounds else None
     
-    def set_sounds_in_group(self, group_id: int, sounds: List[SoundConfig]) -> bool:
+    def set_sounds_in_group(self, group_id: int, sounds: List[SoundConfig], allow_empty: bool = False) -> bool:
+        print(f"[CreateCycleLogic.set_sounds_in_group] CALLED with group_id={group_id}, sounds={sounds}, allow_empty={allow_empty}")
         """
         Given a group_id, sets the sounds for this group to be played during custom cycle.
 
         ARGUMENTS: 
         group_id: unique identifier of the sound group for which sounds are to be chosen
         sound_list: the list of sounds to be put into the group identified by group_id
+        allow_empty: if True, allows setting the group to have zero sounds (for default/reset)
 
         RETURNS:
         True (for validation)
 
         RAISES:
-        ValueError: if number of sounds in sound_list chosen for group with group_id is not within [1, 3]
+        ValueError: if number of sounds in sound_list chosen for group with group_id is not within [1, 3] (unless allow_empty is True)
         ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
         """
-        if not (1 <= len(sounds) <= 3):
+        if not allow_empty and not (1 <= len(sounds) <= 3):
+            print(f"[CreateCycleLogic.set_sounds_in_group] Invalid number of sounds: {len(sounds)}")
             raise ValueError("Each group must have 1–3 sounds")
+        if allow_empty and len(sounds) == 0:
+            print(f"[CreateCycleLogic.set_sounds_in_group] Allowing empty group {group_id}")
         group = self._get_group(group_id)
+        print(f"[CreateCycleLogic.set_sounds_in_group] setting group {group_id} sounds to: {sounds}")
         group.sounds = sounds
+        print(f"[CreateCycleLogic.set_sounds_in_group] Set group {group_id} sounds to: {group.sounds}")
         return True
     
     def set_volume_for_group(self, group_id: int, new_group_volume: int) -> bool:
+        print(f"[CreateCycleLogic.set_volume_for_group] CALLED with group_id={group_id}, new_group_volume={new_group_volume}")
         """
         Validates that new_group_volume is within the set values [0, 100] and, if so, sets the volume of the group identified by group_id to new_group_volume.
 
@@ -192,20 +202,27 @@ class CreateCycleLogic:
         ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
         """
         if not (0 <= new_group_volume <= 100):
+            print(f"[CreateCycleLogic.set_volume_for_group] Invalid volume: {new_group_volume}")
             raise ValueError("Volume must be within 0-100")
         group = self._get_group(group_id)
+        print(f"[CreateCycleLogic.set_volume_for_group] setting group {group_id} volume to: {new_group_volume}")
         group.group_volume = new_group_volume
+        print(f"[CreateCycleLogic.set_volume_for_group] Set group {group_id} volume to: {group.group_volume}")
         return True
 
     def play_group_sample(self, group_id: int) -> bool:
-        """Play all sounds in a group simultaneously via SoundPlayer."""
+        print(f"[CreateCycleLogic.play_group_sample] CALLED with group_id={group_id}")
         group = self._get_group(group_id)
         if not group.sounds:
+            print(f"[CreateCycleLogic.play_group_sample] No sounds in group {group_id}")
             return False
         if self.cycle_controller and self.cycle_controller.sound_player:
-            # Play each sound in group using SoundPlayer
+            print(f"[CreateCycleLogic.play_group_sample] Playing sounds for group {group_id}: {group.sounds}")
             for sound in group.sounds:
+                print(f"[CreateCycleLogic.play_group_sample] Playing sound: {sound}")
                 self.cycle_controller.sound_player.play(sound)
+        else:
+            print(f"[CreateCycleLogic.play_group_sample] No sound_player available in cycle_controller")
         return True
 
     def sound_mapping_accessed(self):

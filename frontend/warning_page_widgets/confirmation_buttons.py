@@ -9,6 +9,10 @@ from typing import Literal
 
 
 class WarningButtons(QWidget):
+    """
+    Widget for displaying warning confirmation and cancel buttons with configurable modes and labels.
+    Emits signals when buttons are clicked.
+    """
     confirm_clicked = Signal()
     cancel_clicked = Signal()
 
@@ -19,6 +23,15 @@ class WarningButtons(QWidget):
         red_text: str = "CANCEL",
         button_mode: Literal["green", "red", "both"] = "both",
     ):
+        """
+        Initialize the WarningButtons widget with configurable button texts and modes.
+
+        Args:
+            parent: Parent widget.
+            green_text: Text for the green confirm button.
+            red_text: Text for the red cancel button.
+            button_mode: Which buttons to show: "green", "red", or "both".
+        """
         super().__init__(parent)
 
         button_layout = QHBoxLayout()
@@ -80,12 +93,12 @@ class WarningButtons(QWidget):
         red_text: str | None = None,
     ):
         """
-        This function configures warning button visibility and optional labels.
+        Configure which buttons are visible and optionally update their labels.
 
         Args:
-            button_mode: "green", "red", or "both"
-            green_text: optional text for the green confirm button
-            red_text: optional text for the red cancel button
+            button_mode: Which buttons to show: "green", "red", or "both".
+            green_text: Optional new text for the green confirm button.
+            red_text: Optional new text for the red cancel button.
         """
         if green_text is not None:
             self.yes_button.setText(green_text)
@@ -105,20 +118,14 @@ class WarningButtons(QWidget):
 
     def on_yes_clicked(self):
         """
-        This function handles clicks for the green warning button.
-
-        Args:
-            None
+        Handle click event for the green confirm button. Emits confirm_clicked signal.
         """
         print("Warning continue")
         self.confirm_clicked.emit()
 
     def on_no_clicked(self):
         """
-        This function handles clicks for the red warning button.
-
-        Args:
-            None
+        Handle click event for the red cancel button. Emits cancel_clicked signal.
         """
         print("Warning cancel")
         self.cancel_clicked.emit()

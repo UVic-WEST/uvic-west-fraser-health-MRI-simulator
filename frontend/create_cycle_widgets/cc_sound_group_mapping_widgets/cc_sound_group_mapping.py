@@ -25,11 +25,13 @@ def get_dynamic_group_options(controller):
     """
     Returns a list of group names (e.g., ["GROUP 1", ...]) based on backend CreateCycleLogic.get_total_groups().
     """
-    if hasattr(controller, 'create_cycle_logic') and hasattr(controller.create_cycle_logic, 'get_total_groups'):
-        total_groups, _ = controller.create_cycle_logic.get_total_groups()
+    if hasattr(controller, 'get_total_groups'):
+        total_groups, _ = controller.get_total_groups()
+        # Always use the backend value, never fallback
+        print(f"Total groups from backend: {total_groups}")  # Debug print
         return [f"GROUP {i+1}" for i in range(total_groups)]
-    # fallback to default 4 groups if backend not available
-    return [f"GROUP {i+1}" for i in range(4)]
+    # If backend not available, return empty (should not happen in production)
+    return []
 
 
 
@@ -57,12 +59,44 @@ class FixedComboBox(QComboBox):
     def showPopup(self):
         """
         shows the combo box popup below the widget and constrains the popup size to a maximum number of visible items, showing a scrollbar if necessary.
+        Also styles the scrollbar and background for visibility.
         """
         view = self.view()
         max_visible_items = self.popup_max_visible_items
-        view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # Show vertical scrollbar only when needed
+        view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setMaxVisibleItems(max_visible_items)
+
+        # Style the popup background and scrollbar
+        view.setStyleSheet('''
+            QAbstractItemView {
+                color: white;
+                background: #0474BA;
+                border: 1px solid #0474BA;
+                border-radius: 14px;
+                padding: 4px;
+                outline: 0;
+            }
+            QScrollBar:vertical {
+                background: #0474BA;
+                width: 14px;
+                margin: 2px 0 2px 0;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:vertical {
+                background: white;
+                min-height: 24px;
+                border-radius: 7px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                background: none;
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+        ''')
 
         popup_width = self.width()
         view.setMinimumWidth(popup_width)
@@ -102,7 +136,25 @@ class CCSoundGroupMappingPage(QWidget):
     SAMPLE_PLAYBACK_REMAINING = 0
     SAMPLE_PLAYBACK_TIMER = None
     _dropdown_style = None
-    SAMPLE_PLAYBACK_ACTIVE = False
+
+    def refresh_groups_from_backend(self):
+        """
+        Refresh the group dropdown and internal group list from backend, preserving sound choices for existing groups.
+        """
+        old_group = self.group_dropdown.currentText()
+        self.group_options = get_dynamic_group_options(self.controller)
+        self.group_dropdown.blockSignals(True)
+        self.group_dropdown.clear()
+        self.group_dropdown.addItems(self.group_options)
+        # Try to restore previous group selection if still valid
+        if old_group in self.group_options:
+            self.group_dropdown.setCurrentText(old_group)
+        else:
+            self.group_dropdown.setCurrentIndex(0)
+        self.group_dropdown.blockSignals(False)
+        # Refresh UI for the selected group
+        self.on_group_changed(self.group_dropdown.currentText())
+
     def __init__(self, controller, parent=None):
         """
         Sound group mapping page with the same structure as ConfirmationPage.
@@ -131,6 +183,12 @@ class CCSoundGroupMappingPage(QWidget):
         self.main_layout.setContentsMargins(40, 0, 40, 16)
         self.main_layout.setSpacing(4)
         self.setLayout(self.main_layout)
+
+        # Error label for invalid sound removal (inside preview panel)
+        self.error_label = QLabel("")
+        self.error_label.setStyleSheet("color: #EC221F; font-size: 16px; font-family: Ubuntu; background: transparent;")
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setVisible(False)
 
         self.cancel_home_btn = QPushButton("Cancel", self)
         self.cancel_home_btn.setGeometry(20, 20, 120, 44)
@@ -353,6 +411,9 @@ class CCSoundGroupMappingPage(QWidget):
         preview_layout.setContentsMargins(14, 12, 14, 12)
         preview_layout.setSpacing(6)
 
+        # Insert error label at the top of the preview panel
+        preview_layout.addWidget(self.error_label)
+
         self.preview_buttons_host = QWidget()
         self.preview_buttons_layout = QVBoxLayout(self.preview_buttons_host)
         self.preview_buttons_layout.setContentsMargins(0, 0, 0, 0)
@@ -488,9 +549,9 @@ class CCSoundGroupMappingPage(QWidget):
             catalog: list of tuples in the form (sound_id, sound_label)
         """
         # Prefer backend CreateCycleLogic if available
-        if hasattr(self.controller, 'create_cycle_logic') and hasattr(self.controller.create_cycle_logic, 'get_sounds'):
+        if hasattr(self.controller, 'get_sounds'):
             try:
-                backend_sounds = self.controller.create_cycle_logic.get_sounds()
+                backend_sounds = self.controller.get_sounds()
                 catalog = []
                 for sound_id, sound_name in backend_sounds:
                     sound_label = str(sound_name)
@@ -545,7 +606,20 @@ class CCSoundGroupMappingPage(QWidget):
         """
         This function moves to the next create-cycle page when mapping is confirmed.
         """
-        if any(len(self.group_to_sounds.get(group, [])) == 0 for group in self.group_options):
+        # Check backend for each group
+        incomplete = False
+        for group in self.group_options:
+            group_id = self._group_name_to_id(group)
+            backend_sounds = []
+            if hasattr(self.controller, 'get_sounds_in_group'):
+                try:
+                    backend_sounds = self.controller.get_sounds_in_group(group_id) or []
+                except Exception:
+                    pass
+            if len(backend_sounds) == 0:
+                incomplete = True
+                break
+        if incomplete:
             self._show_incomplete_input_warning()
             return
 
@@ -614,47 +688,35 @@ class CCSoundGroupMappingPage(QWidget):
 
     def default_button_pressed(self):
         """
-        Clear the sounds for the currently selected group only (via backend).
+        Clear the sounds for the currently selected group only (via backend), allowing empty group.
         """
         current_group = self.group_dropdown.currentText()
         group_id = self._group_name_to_id(current_group)
-        if hasattr(self.controller, 'create_cycle_logic'):
-            try:
-                self.controller.create_cycle_logic.set_sounds_in_group(group_id, [])
-            except Exception:
-                pass
+        try:
+            # Explicitly allow empty group
+            self.controller.set_sounds_in_group(group_id, [], allow_empty=True)
+        except Exception as exc:
+            print(f"[default_button_pressed] Error when clearing group {group_id}: {exc}")
         self.on_group_changed(current_group)
         print(f"default button was pressed for {current_group}")
 
     def play_sample_pressed(self):
         """
         This function handles the Play Sample action for the active group's selected sounds.
+        Uses play_group_sample from backend logic.
         """
         current_group = self.group_dropdown.currentText()
-        selected_labels = self.group_to_sounds.get(current_group, [])
-        if not selected_labels:
+        group_id = self._group_name_to_id(current_group)
+        print(f"[play_sample_pressed] Play Sample pressed for group_id={group_id} ({current_group})")
+        try:
+            result = self.controller.play_group_sample(group_id)
+            print(f"[play_sample_pressed] play_group_sample result: {result}")
+        except Exception as exc:
+            print(f"[play_sample_pressed] Error calling play_group_sample: {exc}")
             return
 
-        selected_sound_ids = [
-            self.sound_label_to_id[label]
-            for label in selected_labels
-            if label in self.sound_label_to_id
-        ]
-        if not selected_sound_ids:
-            return
-
-
-        # Use a fixed 10 second sample duration
+        # Use a fixed 10 second sample duration for UI lockout
         max_duration = 10
-
-        volume = int(self.volume_slider.value())
-        if self.manual_sound_controller is None:
-            print("manual sound controller unavailable for sample playback")
-            return
-
-        self.manual_sound_controller.set_manual_sound_controller_status(True)
-        result = self.manual_sound_controller.play_sounds(selected_sound_ids, volume)
-        print(f"play sample pressed for {current_group}: ids={selected_sound_ids}, volume={volume}, ok={result}, duration={max_duration}")
         self.SAMPLE_PLAYBACK_ACTIVE = True
 
         # Grey out dropdowns and show countdown as placeholder
@@ -807,10 +869,9 @@ class CCSoundGroupMappingPage(QWidget):
         """
         group_id = self._group_name_to_id(group_name)
         has_sounds = False
-        if hasattr(self.controller, 'create_cycle_logic'):
-            logic = self.controller.create_cycle_logic
+        if hasattr(self.controller, 'get_sounds_in_group'):
             try:
-                backend_sounds = logic.get_sounds_in_group(group_id)
+                backend_sounds = self.controller.get_sounds_in_group(group_id)
                 has_sounds = bool(backend_sounds)
             except Exception:
                 pass
@@ -847,21 +908,20 @@ class CCSoundGroupMappingPage(QWidget):
     def on_group_changed(self, group_name):
         """
         Refresh dropdown options and selected sound list for the active group, syncing with backend.
+        Uses get_sounds_in_group directly for all retrievals.
         """
         group_id = self._group_name_to_id(group_name)
         selected_for_group = []
         group_volume = 50
-        if hasattr(self.controller, 'create_cycle_logic'):
-            logic = self.controller.create_cycle_logic
-            try:
-                backend_sounds = logic.get_sounds_in_group(group_id)
-                if backend_sounds:
-                    # Use file_name as label for UI
-                    selected_for_group = [s.file_name for s in backend_sounds]
-                group = logic._get_group(group_id)
-                group_volume = getattr(group, 'group_volume', 50)
-            except Exception:
-                pass
+        try:
+            backend_sounds = self.controller.get_sounds_in_group(group_id)
+            if backend_sounds:
+                selected_for_group = [s.file_name for s in backend_sounds]
+            # Only use backend for group volume
+            group = self.controller._get_group(group_id)
+            group_volume = getattr(group, 'group_volume', 50)
+        except Exception:
+            pass
         # Update dropdowns
         if len(selected_for_group) >= MAX_SOUNDS_PER_GROUP:
             self.sound_dropdown.blockSignals(True)
@@ -925,13 +985,28 @@ class CCSoundGroupMappingPage(QWidget):
         self.volume_slider.blockSignals(False)
 
     def _group_name_to_id(self, group_name):
-        # Assumes group_name is 'GROUP N'
+        """
+        Convert a group name string (e.g., 'GROUP 1') to its integer group ID.
+
+        Args:
+            group_name (str): The group name in the format 'GROUP N'.
+
+        Returns:
+            int: The group ID as an integer. Defaults to 1 if parsing fails.
+        """
         try:
             return int(group_name.split()[-1])
         except Exception:
             return 1
 
     def refresh_preview_panel_backend(self, group_name, selected_for_group):
+        """
+        Render the selected sounds for the active group in the preview panel (right panel).
+
+        Args:
+            group_name (str): The name of the group being displayed.
+            selected_for_group (list): List of sound names selected for this group.
+        """
         self._clear_preview_buttons()
         if not selected_for_group:
             return
@@ -964,39 +1039,40 @@ class CCSoundGroupMappingPage(QWidget):
     def on_sound_selected(self, sound_name):
         """
         Add selected sound to current group (max 3), then refresh UI and backend.
+        Uses get_sounds_in_group and set_sounds_in_group directly.
         """
         if sound_name == SOUND_DROPDOWN_PLACEHOLDER or self.SAMPLE_PLAYBACK_ACTIVE:
             return
         current_group = self.group_dropdown.currentText()
         group_id = self._group_name_to_id(current_group)
-        # Get current backend sounds
-        backend_sounds = []
-        if hasattr(self.controller, 'create_cycle_logic'):
-            logic = self.controller.create_cycle_logic
-            try:
-                backend_sounds = logic.get_sounds_in_group(group_id) or []
-            except Exception:
-                pass
+        # Get current backend sounds directly
+        try:
+            backend_sounds = self.controller.get_sounds_in_group(group_id) or []
+        except Exception as exc:
+            print(f"[on_sound_selected] Error getting backend sounds for group {group_id}: {exc}")
+            backend_sounds = []
         # Prevent duplicates and max
         if any(s.file_name == sound_name for s in backend_sounds):
+            print(f"[on_sound_selected] Sound '{sound_name}' already in group {group_id}, skipping add.")
             self.on_group_changed(current_group)
             return
         if len(backend_sounds) >= MAX_SOUNDS_PER_GROUP:
+            print(f"[on_sound_selected] Group {group_id} already has max sounds, skipping add.")
             self.on_group_changed(current_group)
             return
         # Add new sound as SoundConfig
-        # Find sound_id for this label
         sound_id = self.sound_label_to_id.get(sound_name, None)
         if sound_id is None:
+            print(f"[on_sound_selected] Could not find sound_id for '{sound_name}', skipping add.")
             return
-        # Use default duration and volume for new sound
         new_sound = SoundConfig(file_name=sound_name, sound_id=sound_id, duration=10.0, volume=int(self.volume_slider.value()))
         new_sounds = list(backend_sounds) + [new_sound]
-        if hasattr(self.controller, 'create_cycle_logic'):
-            try:
-                self.controller.create_cycle_logic.set_sounds_in_group(group_id, new_sounds)
-            except Exception:
-                pass
+        print(f"[on_sound_selected] Attempting to set new sounds for group {group_id}: {new_sounds}")
+        try:
+            self.controller.set_sounds_in_group(group_id, new_sounds)
+            print(f"[on_sound_selected] Successfully set new sounds for group {group_id}.")
+        except Exception as exc:
+            print(f"[on_sound_selected] Error setting new sounds for group {group_id}: {exc}")
         self.on_group_changed(current_group)
         # Re-open the popup after selection (unless group changed or max reached)
         if len(new_sounds) < MAX_SOUNDS_PER_GROUP:
@@ -1006,7 +1082,15 @@ class CCSoundGroupMappingPage(QWidget):
         """
         Render selected sounds for the active group in the right panel.
         """
-        selected_for_group = self.group_to_sounds.get(group_name, [])
+        # Get selected sound labels for this group from backend
+        selected_for_group = []
+        group_id = self._group_name_to_id(group_name)
+        if hasattr(self.controller, 'get_sounds_in_group'):
+            try:
+                backend_sounds = self.controller.get_sounds_in_group(group_id) or []
+                selected_for_group = [s.file_name for s in backend_sounds]
+            except Exception:
+                pass
 
         self._clear_preview_buttons()
 
@@ -1043,42 +1127,62 @@ class CCSoundGroupMappingPage(QWidget):
     def on_preview_sound_clicked(self, sound_name):
         """
         Remove a selected sound from the active group and update backend.
-        Disabled during sample playback.
+        Disabled during sample playback. Shows error if backend rejects empty group.
+        Uses get_sounds_in_group and set_sounds_in_group directly.
         """
         if self.SAMPLE_PLAYBACK_ACTIVE:
             return
         current_group = self.group_dropdown.currentText()
         group_id = self._group_name_to_id(current_group)
-        backend_sounds = []
-        if hasattr(self.controller, 'create_cycle_logic'):
-            logic = self.controller.create_cycle_logic
-            try:
-                backend_sounds = logic.get_sounds_in_group(group_id) or []
-            except Exception:
-                pass
+        try:
+            backend_sounds = self.controller.get_sounds_in_group(group_id) or []
+        except Exception:
+            backend_sounds = []
         # Remove by file_name
         new_sounds = [s for s in backend_sounds if s.file_name != sound_name]
-        if hasattr(self.controller, 'create_cycle_logic'):
-            try:
-                self.controller.create_cycle_logic.set_sounds_in_group(group_id, new_sounds)
-            except Exception:
-                pass
+        error = False
+        try:
+            self.controller.set_sounds_in_group(group_id, new_sounds)
+            # If backend rejects empty, show error
+            if len(new_sounds) == 0:
+                self._show_error("Cannot remove sound.\nAll groups must have at least 1 sound.")
+                error = True
+        except Exception as exc:
+            self._show_error("Cannot remove sound.\nAll groups must have at least 1 sound.")
+            error = True
         self.on_group_changed(current_group)
+        if not error:
+            self._hide_error()
+
+    def _show_error(self, message):
+        """
+        Show a red error message label and auto-hide after 3 seconds.
+        """
+        self.error_label.setText(message)
+        self.error_label.setVisible(True)
+        QTimer.singleShot(3000, self._hide_error)
+
+    def _hide_error(self):
+        """
+        Hide the error message label in the preview panel.
+        This is called after a timeout or when the error is no longer relevant.
+        """
+        self.error_label.setVisible(False)
     def on_volume_slider_changed(self, value):
         """
-        Update backend group volume when slider changes.
+        Update backend group volume when slider changes using set_volume_for_group.
         """
         current_group = self.group_dropdown.currentText()
         group_id = self._group_name_to_id(current_group)
-        if hasattr(self.controller, 'create_cycle_logic'):
-            try:
-                self.controller.create_cycle_logic.set_volume_for_group(group_id, value)
-            except Exception:
-                pass
+        try:
+            self.controller.set_volume_for_group(group_id, value)
+        except Exception as exc:
+            print(f"[on_volume_slider_changed] Error setting volume for group {group_id}: {exc}")
 
     def _clear_preview_buttons(self):
         """
-        Remove all rendered sound chips from the preview panel.
+        Remove all sound chip widgets from the preview panel for the current group.
+        This clears the panel before re-rendering the current group's selected sounds.
         """
         while self.preview_buttons_layout.count() > 0:
             item = self.preview_buttons_layout.takeAt(0)
