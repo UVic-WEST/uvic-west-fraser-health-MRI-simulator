@@ -11,15 +11,6 @@ from backend.cycle_action import CycleAction, ActionType
 
 @dataclass
 class CycleConfig:
-        def to_json(self, file_path):
-            """
-            Serialize the cycle configuration to a JSON file.
-            Args:
-                file_path: Path to the output JSON file (str or Path).
-            """
-            import json
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(self.to_dict(), f, indent=2)
     """
     required attributes and configuration for a single MRI simulation cycle
     attributes:
