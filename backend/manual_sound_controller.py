@@ -148,6 +148,7 @@ class ManualSoundController(QObject):
                 continue
 
             sound_config = SoundConfig(
+                sound_id=sound_id,
                 file_name=file_path,
                 duration=0,
                 volume=volume,

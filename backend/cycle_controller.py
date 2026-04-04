@@ -68,6 +68,7 @@ class CycleController(QObject):
         if action_type == ActionType.SOUND_START:
             from backend.sound_config import SoundConfig
             sound = SoundConfig(
+                sound_id=params.get("sound_id", 0),
                 file_name=params.get("file_name", ""),
                 duration=params.get("duration", 0),
                 volume=params.get("volume", 50),

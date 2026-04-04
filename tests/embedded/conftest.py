@@ -16,7 +16,7 @@ def sound_mid_volume():
 
 @pytest.fixture
 def sound_low_volume():
-    return SoundConfig(file_name="test.wav", duration=5.0, volume=10)
+    return SoundConfig(file_name="test.wav", sound_id=1, duration=5.0, volume=10)
 
 @pytest.fixture(autouse=True)
 def mock_subprocess():
