@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from PySide6.QtWidgets import (
     QWidget,
     QMainWindow,
@@ -21,9 +23,9 @@ from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
 
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
-from backend.cycle_controller import CycleController
 from backend.manual_light_controller import ManualLightController
 from backend.manual_sound_controller import ManualSoundController
+from backend.cycle_factory import CycleFactory
 
 #PASSWORD 
 PASS = '2026'
@@ -41,9 +43,6 @@ class AppRouter(QMainWindow):
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
         self.light_controller = LightController(self)
         self.sound_player = SoundPlayer()
-        self.cycle_controller = CycleController(
-            self.light_controller, self.sound_player, parent=self
-        )
         self.manual_light_controller = ManualLightController(
             self.light_controller, parent=self
         )
@@ -51,11 +50,16 @@ class AppRouter(QMainWindow):
             self.sound_player, parent=self
         )
 
+        self.cycle_factory = CycleFactory()
+
         #create window
         self.setFixedSize(1024, 600)
-        self.main_layout = QStackedLayout()
         self.setStyleSheet("background-color: white;")
         self.setWindowTitle("MRI Simulator")
+
+        self.app = QWidget()
+        self.main_layout = QStackedLayout()
+        self.app.setLayout(self.main_layout)
 
         #create pages, connect controllers, add to app widget stack
         #code for sign in page
@@ -66,7 +70,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.timed_out_page)
 
         #code for homepage
-        self.home_page_controller = HomePageLogic()
+        self.home_page_controller = HomePageLogic(cycle_factory=self.cycle_factory)
         self.home_page = HomePage(self.home_page_controller, self.manual_light_controller, self.manual_sound_controller, self)
         self.main_layout.addWidget(self.home_page)
 
@@ -82,19 +86,18 @@ class AppRouter(QMainWindow):
 
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningPageLogic(
-            sound_player=self.sound_player, light_controller=self.light_controller, parent=self
+            sound_player=self.sound_player,
+            light_controller=self.light_controller,
+            parent=self,
+            cycle_factory=self.cycle_factory,
         )
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
-        #Code for create cycle pages
-        self.create_cycle_router = CreateCycleRouter(self)
+        #Code for create cycle pages (pass AppRouter explicitly — parent becomes central QWidget)
+        self.create_cycle_router = CreateCycleRouter(self, self.app)
         self.main_layout.addWidget(self.create_cycle_router)
 
-        #set layout of QstackedWidget
-
-        self.app = QWidget()
-        self.app.setLayout(self.main_layout)
         self.setCentralWidget(self.app)
 
 

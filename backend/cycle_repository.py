@@ -54,3 +54,16 @@ class CycleRepository:
         cycles = CycleRepository.load_all()
         cycles.append(cycle)
         CycleRepository.save_all(cycles)
+
+    # ---------------------------------------------------------
+    # DELETE ONE CYCLE BY ID
+    # ---------------------------------------------------------
+    @staticmethod
+    def delete_cycle(cycle_id: int) -> bool:
+        """Remove the cycle with ``cycle_id`` from storage. Returns True if one was removed."""
+        cycles = CycleRepository.load_all()
+        kept = [c for c in cycles if c.cycle_id != cycle_id]
+        if len(kept) == len(cycles):
+            return False
+        CycleRepository.save_all(kept)
+        return True
