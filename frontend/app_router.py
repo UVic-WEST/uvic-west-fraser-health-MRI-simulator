@@ -82,7 +82,7 @@ class AppRouter(QMainWindow):
 
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningPageLogic(
-            cycle_controller=self.cycle_controller, parent=self
+            sound_player=self.sound_player, light_controller=self.light_controller, parent=self
         )
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
