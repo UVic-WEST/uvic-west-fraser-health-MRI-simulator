@@ -51,4 +51,4 @@ class CustomCycleButton(QWidget):
         This function handles the Create Custom Cycle button press action.
         """
         print("Create Custom Cycle selected")
-        self.custom_cycle_requested.emit()
+        self.parent._on_custom_cycle_requested()

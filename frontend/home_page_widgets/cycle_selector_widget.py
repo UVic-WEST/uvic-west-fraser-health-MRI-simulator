@@ -40,7 +40,6 @@ class CycleSelectorWidget(QWidget):
     """
 
     cycle_selected = Signal(str)
-    custom_cycle_requested = Signal()
 
     def __init__(self, cycles, parent=None):
         """
@@ -110,7 +109,7 @@ class CycleSelectorWidget(QWidget):
         """
         cycle_id = self.name_to_id.get(cycle_name, None)
         if cycle_id:
-            self.cycle_selected.emit(cycle_id)
+            self.cycle_selected.emit(str(cycle_id))
 
     def get_selected_cycle_id(self):
         """
@@ -126,4 +125,4 @@ class CycleSelectorWidget(QWidget):
         Args:
             None
         """
-        self.custom_cycle_requested.emit()
+        self.parent().open_custom_cycle_warning()

@@ -21,7 +21,6 @@ from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
 
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
-from backend.cycle_controller import CycleController
 from backend.manual_light_controller import ManualLightController
 from backend.manual_sound_controller import ManualSoundController
 
@@ -41,9 +40,7 @@ class AppRouter(QMainWindow):
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
         self.light_controller = LightController(self)
         self.sound_player = SoundPlayer()
-        self.cycle_controller = CycleController(
-            self.light_controller, self.sound_player, parent=self
-        )
+
         self.manual_light_controller = ManualLightController(
             self.light_controller, parent=self
         )
@@ -175,16 +172,8 @@ class AppRouter(QMainWindow):
         """
         # Get the selected cycle ID
         selected_cycle_id = self.cur_cycle
-        # Look up the duration from backend
-        duration_s = 0
-        if selected_cycle_id:
-            try:
-                cycle_obj = self.home_page.cycle_factory.get_cycle_by_id(selected_cycle_id)
-                duration_s = int(round(cycle_obj.cycle_duration_ms / 1000))
-            except Exception:
-                duration_s = 0
         self.main_layout.setCurrentWidget(self.cycle_running_page)
-        self.cycle_running_page.play_cycle(selected_cycle_id, duration_s)
+        self.cycle_running_page.play_cycle(selected_cycle_id)
 
     def show_home(self):
         """

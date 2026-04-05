@@ -47,10 +47,6 @@ class CyclePlayerWidget(QWidget):
 
         self.setLayout(self.main_layout)
 
-        # connect dropdown selection to update cycle
-        self.cycle_selector_widget.cycle_selected.connect(self.on_cycle_selected)
-        self.cycle_selector_widget.custom_cycle_requested.connect(self.open_custom_cycle_warning)
-
         # initialize with first cycle selected
         self.on_cycle_selected(self.cycle_selector_widget.get_selected_cycle_id())
 

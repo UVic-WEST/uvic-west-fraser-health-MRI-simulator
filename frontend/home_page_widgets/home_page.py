@@ -29,6 +29,7 @@ class HomePage(QWidget):
         for cid, name in cycle_tuples:
             self.play_widget.cycle_selector_widget.cycle_selector.addItem(name, cid)
         self.play_widget.cycle_selector_widget.cycle_selector.setCurrentIndex(0)
+
     def __init__(self, controller, light_controller, sound_controller, parent=None):
         """
         This function builds the HomePage UI and initializes page-level state
