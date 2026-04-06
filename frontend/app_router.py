@@ -171,6 +171,24 @@ class AppRouter(QMainWindow):
             on_cancel=self.show_home,
         )
 
+    def _resolve_play_cycle_id(self, selected) -> int:
+        """Figure out which cycle id to run from whatever the home page gives us.
+
+        Tries a real name match from the cycle list first, then falls back to the number
+        at the end of strings like ``Cycle 2``. If nothing matches, we default to 1.
+        Tweak this if you change how the dropdown labels work pleaseeeeee
+        """
+        if selected is None:
+            return 1
+        name = str(selected).strip()
+        for c in self.cycle_factory.list_cycles():
+            if c.cycle_name == name:
+                return c.cycle_id
+        tail = name.rsplit(None, 1)[-1]
+        if tail.isdigit():
+            return int(tail)
+        return 1
+
     def play_cycle_confirmed(self):
         """
         This function routes the app to the cycle running page when the user has confirmed 
@@ -179,7 +197,8 @@ class AppRouter(QMainWindow):
         # Get the selected cycle ID
         selected_cycle_id = self.cur_cycle
         self.main_layout.setCurrentWidget(self.cycle_running_page)
-        self.cycle_running_page.play_cycle(selected_cycle_id)
+        cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
+        self.cycle_running_page.play_cycle(cycle_id)
 
     def show_home(self):
         """

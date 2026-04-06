@@ -197,9 +197,13 @@ class CycleRunningPageLogic(QObject):
     def _set_light_intensity(self):
         """
         Passes instruction to lower-layer light controller to set the light brightness to the level specified
-        by the cycle configuration.
+        by the cycle configuration. ``light_configuration`` is 0–100; ``LightController`` expects 0.0–1.0.
         """
-        self.light_controller.change_lights(self.current_cycle.light_configuration)
+        if not self.current_cycle.lights_on:
+            self.light_controller.system_off()
+            return
+        brightness = self.current_cycle.light_configuration / 100.0
+        self.light_controller.change_lights(brightness)
 
     def _lower_layer_stop_cycle(self):
         """Ensures that lights are set back to idle and sound stops."""
@@ -221,17 +225,23 @@ class CycleRunningPageLogic(QObject):
         params = action.parameters
 
         if action_type == ActionType.SOUND_START:
+            duration_sec = params.get("duration")
+            if duration_sec is None and "duration_ms" in params:
+                duration_sec = float(params["duration_ms"]) / 1000.0
+            if duration_sec is None:
+                duration_sec = 0.0
+            sid = params.get("sound_id", 1)
             sound = SoundConfig(
-                sound_id = params.get("sound_id"),
+                sound_id=int(sid) if sid is not None else 1,
                 file_name=params.get("file_name", ""),
-                duration=params.get("duration", 0),
+                duration=float(duration_sec),
                 volume=params.get("volume", 50),
             )
-            success, _ = self.sound_player.play(sound)
-            
+            success, err_msg = self.sound_player.play(sound)
+
             if not success:
+                print("Sound play failed :((((((  (cycle continues):", err_msg)
                 self.error_signal.emit(True)
-                self._reset()
 
         elif action_type == ActionType.SOUND_STOP or action_type == ActionType.SOUND_RESET:
             self.sound_player.stop()

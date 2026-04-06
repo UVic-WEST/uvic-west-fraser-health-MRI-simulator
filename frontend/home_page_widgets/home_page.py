@@ -142,14 +142,16 @@ class HomePage(QWidget):
 
     def show_custom_cycle_warning(self):
         """
-        This function routes to the warning page for custom cycle creation
+        Routes to the MRI warning, then create-cycle flow. Must use AppRouter's
+        ``show_custom_cycle_warning`` so confirm/cancel callbacks are set; bare
+        ``show_warning()`` leaves callbacks unset and Continue falls back to home.
         """
         self.close_manual_controllers()
         self.parent.show_custom_cycle_warning()
 
     def close_manual_controllers(self):
         """
-        close and reset the manual controllers
+        Collapse manual sound/light panels. Does not navigate — routing stays with the caller.
         """
         if self.sound_controls_widget._expanded:
             self.sound_controls_widget._toggle_panel()
