@@ -3,6 +3,8 @@ from PySide6.QtWidgets import (
     QStackedLayout,
 )
 
+from backend.create_cycle_logic import CreateCycleLogic
+from backend.cycle_repository import CycleRepository
 from frontend.create_cycle_widgets.cc_duration_widgets.cc_duration import CCDurationPage
 from frontend.create_cycle_widgets.cc_groups_widgets.cc_groups import CCGroupsPage
 from frontend.create_cycle_widgets.cc_brightness_widgets.cc_brightness import CCBrightnessPage
@@ -10,11 +12,11 @@ from frontend.create_cycle_widgets.cc_sound_group_mapping_widgets.cc_sound_group
 from frontend.create_cycle_widgets.cc_summary_widgets.cc_summary import CCSummary
 
 class CreateCycleRouter(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, app_router, parent=None):
         """
         CreateCycleRouter (QWidget) handles the flow for creating a new cycle.
         It instantiates the following classes upon access (called by the app router)
-            1. cc_controller (ADD NAME OF PAGE HERE)
+            1. cc_controller (CreateCycleLogic)
             2. cc_duration_page (CCDurationPage)
             3. cc_groups_page (CCGroupsPage)
             4. cc_brightness_page (CCBrightnessPage)
@@ -23,10 +25,13 @@ class CreateCycleRouter(QWidget):
         [2-6] is also the flow of the create cycle process, which can be traversed at user will.
 
         Args:
-            parent (QWidget): parent of this widget instance, in this case AppRouter
+            app_router: AppRouter instance (QMainWindow) owning light_controller / sound_player.
+                Required because Qt may reparent this widget to the central container, so
+                self.parent() is not reliable for reaching AppRouter.
+            parent (QWidget): Qt parent widget (often the central widget wrapper).
         """
-
         super().__init__(parent)
+        self._app_router = app_router
         
         #controller refreshes
         self.cc_controller = None 
@@ -43,13 +48,14 @@ class CreateCycleRouter(QWidget):
         """
         Refreshes the controller and pages when starting a new create cycle process. Called by the parent.
         """
-        from backend.create_cycle_logic import CreateCycleLogic
-        from backend.cycle_controller import CycleController
-        from backend.cycle_config import CycleConfig
-
-        parent = self.parent()
-        cycle_controller = getattr(parent, 'cycle_controller', None)
-        self.cc_controller = CreateCycleLogic(cycle_id=0, cycle_name="New Custom Cycle", cycle_controller=cycle_controller)
+        next_id = CycleRepository.get_next_id()
+        r = self._app_router
+        self.cc_controller = CreateCycleLogic(
+            next_id,
+            "New cycle",
+            r.light_controller,
+            r.sound_player,
+        )
 
         self.cc_duration_page = CCDurationPage(self.cc_controller, self)
         self.cc_groups_page = CCGroupsPage(self.cc_controller, self)

@@ -3,6 +3,12 @@
     "id": 1,
     "name": "Preset Cycle 1",
     "duration_ms": 60000,
+    "lights": {
+      "on": true,
+      "brightness": 50
+    },
+    "volume": 50,
+    "light_configuration": 50,
     "actions": [
       {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Pulse", "volume": 50, "duration_ms": 15000}},
       {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Drill(S)", "volume": 50, "duration_ms": 15000}},
@@ -29,6 +35,12 @@
     "id": 2,
     "name": "Preset Cycle 2",
     "duration_ms": 180000,
+    "lights": {
+      "on": true,
+      "brightness": 50
+    },
+    "volume": 50,
+    "light_configuration": 50,
     "actions": [
       {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Pulse", "volume": 50, "duration_ms": 15000}},
       {"timestamp": 22500, "type": "sound_stop", "params": {"file_name": "Pulse"}},
@@ -59,6 +71,12 @@
     "id": 3,
     "name": "Preset Cycle 3",
     "duration_ms": 300000,
+    "lights": {
+      "on": true,
+      "brightness": 50
+    },
+    "volume": 50,
+    "light_configuration": 50,
     "actions": [
       {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Pulse", "volume": 50, "duration_ms": 15000}},
       {"timestamp": 37500, "type": "sound_stop", "params": {"file_name": "Pulse"}},

@@ -1,12 +1,14 @@
-from PySide6.QtCore import QObject, Signal
+from __future__ import annotations
+
 from typing import List, Tuple
 
 from backend.sound_config import SoundConfig
 from backend.sound_group_config import SoundGroupConfig
 from backend.cycle_action import CycleAction, ActionType
-from backend.cycle_controller import CycleController
 from backend.cycle_config import CycleConfig
 from backend.cycle_repository import CycleRepository
+from embedded.light_controller import LightController
+from embedded.sound_player import SoundPlayer
 
 DEFAULT_LIGHT_LEVEL = 50
 DEFAULT_SOUND_LEVEL = 50
@@ -17,10 +19,17 @@ class CreateCycleLogic:
     """Handles creation of custom MRI cycles (L2 logic)."""
     
     # ---------------- INIT ----------------
-    def __init__(self, cycle_id: int, cycle_name: str, cycle_controller: CycleController):        
+    def __init__(
+        self,
+        cycle_id: int,
+        cycle_name: str,
+        light_controller: LightController,
+        sound_player: SoundPlayer,
+    ):
         self.cycle_id = cycle_id
         self.cycle_name = cycle_name
-        self.cycle_controller = cycle_controller
+        self.light_controller = light_controller
+        self.sound_player = sound_player
 
         self.cycle_duration = DEFAULT_CYCLE_DURATION
         self.light_level = DEFAULT_LIGHT_LEVEL
@@ -80,8 +89,8 @@ class CreateCycleLogic:
 
         brightness = light_level / 100.0
 
-        if self.cycle_controller:
-            self.cycle_controller.light_controller.change_lights(brightness)
+        if self.light_controller:
+            self.light_controller.change_lights(brightness)
 
         return True
 
@@ -216,13 +225,9 @@ class CreateCycleLogic:
         if not group.sounds:
             print(f"[CreateCycleLogic.play_group_sample] No sounds in group {group_id}")
             return False
-        if self.cycle_controller and self.cycle_controller.sound_player:
-            print(f"[CreateCycleLogic.play_group_sample] Playing sounds for group {group_id}: {group.sounds}")
+        if self.sound_player:
             for sound in group.sounds:
-                print(f"[CreateCycleLogic.play_group_sample] Playing sound: {sound}")
-                self.cycle_controller.sound_player.play(sound)
-        else:
-            print(f"[CreateCycleLogic.play_group_sample] No sound_player available in cycle_controller")
+                self.sound_player.play(sound)
         return True
 
     def sound_mapping_accessed(self):
@@ -367,10 +372,19 @@ class CreateCycleLogic:
 
         actions = self._generate_cycle_actions()
 
+        cycle_volume = (
+            round(sum(g.group_volume for g in self.group_list) / len(self.group_list))
+            if self.group_list
+            else DEFAULT_SOUND_LEVEL
+        )
+
         cycle = CycleConfig(
             cycle_id=new_id,
             cycle_name=new_name,
             cycle_duration_ms=self.cycle_duration * 1000,
+            light_configuration=self.light_level,
+            lights_on=True,
+            volume=cycle_volume,
             actions=actions,
         )
 

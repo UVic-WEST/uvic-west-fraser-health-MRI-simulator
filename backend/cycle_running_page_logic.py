@@ -1,9 +1,13 @@
 """Running-cycle page controller.
 
 Provides a 1-second countdown timer that emits time_signal_in_s for the
-frontend TimerWidget, and delegates hardware start/stop to CycleController
-on each lifecycle event (start, pause, resume, stop, completion).
+frontend TimerWidget, and delegates hardware start/stop to the embedded
+controllers on each lifecycle event (start, pause, resume, stop, completion).
 """
+
+from __future__ import annotations
+
+from typing import Optional
 
 from PySide6.QtCore import (
     QTimer,
@@ -29,9 +33,14 @@ class CycleRunningPageLogic(QObject):
 
     time_signal_in_s = Signal(int)
     error_signal = Signal(bool)
-    cycle_factory = CycleFactory()
 
-    def __init__(self, sound_player: SoundPlayer, light_controller: LightController, parent=None):
+    def __init__(
+        self,
+        sound_player: SoundPlayer,
+        light_controller: LightController,
+        parent=None,
+        cycle_factory: Optional[CycleFactory] = None,
+    ):
         """
         This function initializes the CycleRunningPageLogic class, which contains the main logic
         for running cycles. This class is in charge of receiving requests from the frontend and forwarding
@@ -41,6 +50,7 @@ class CycleRunningPageLogic(QObject):
             sound_player(SoundPlayer): lower-layer sound controller
             light_controller(LightController): lower-layer light controller
             parent (QObject, optional): Qt parent for ownership.
+            cycle_factory (CycleFactory, optional): shared factory; default is a new ``CycleFactory``.
 
         Returns:
             None
@@ -51,6 +61,7 @@ class CycleRunningPageLogic(QObject):
         # lower layer controllers
         self.sound_player = sound_player
         self.light_controller = light_controller
+        self.cycle_factory = cycle_factory or CycleFactory()
 
         # internal state
         self.current_cycle = None

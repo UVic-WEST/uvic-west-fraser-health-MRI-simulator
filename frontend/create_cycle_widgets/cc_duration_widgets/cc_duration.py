@@ -167,7 +167,8 @@ class CCDurationPage(QWidget):
         It handles time box, label, plus/minus buttons
         """
         font_id = QFontDatabase.addApplicationFont("resources/timeduration_assets/DigitalNumbers.ttf")
-        font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+        families = QFontDatabase.applicationFontFamilies(font_id)
+        font_family = families[0] if families else "Courier New"
 
         self.durationText = QLabel("Enter Cycle Duration", self)
         self.durationText.setGeometry(328,199,415,76)
