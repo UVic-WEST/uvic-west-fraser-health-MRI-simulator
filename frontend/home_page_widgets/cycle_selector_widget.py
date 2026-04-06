@@ -127,4 +127,4 @@ class CycleSelectorWidget(QWidget):
         Args:
             None
         """
-        self.parent().open_custom_cycle_warning()
+        self.parent.open_custom_cycle_warning()

@@ -71,12 +71,12 @@ class CreateCycleRouter(QWidget):
         """
         self.main_layout = QStackedLayout()
 
+        self.main_layout.addWidget(self.cc_summary_page)
         self.main_layout.addWidget(self.cc_duration_page)
         self.main_layout.addWidget(self.cc_groups_page)
         self.main_layout.addWidget(self.cc_brightness_page)
         # Insert a placeholder for the sound group mapping page
         self.main_layout.addWidget(QWidget())  # Placeholder
-        self.main_layout.addWidget(self.cc_summary_page)
 
         self.setLayout(self.main_layout)
 
