@@ -34,7 +34,6 @@ def get_dynamic_group_options(controller):
     return []
 
 
-
 SOUND_DROPDOWN_PLACEHOLDER = "SOUNDS"
 MAX_SOUNDS_PER_GROUP = 3
 

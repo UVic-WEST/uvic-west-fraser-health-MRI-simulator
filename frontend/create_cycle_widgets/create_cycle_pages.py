@@ -110,4 +110,8 @@ class CreateCycleRouter(QWidget):
         Reroutes to the previous page of the create cycle process. Called by child widgets.
         """
         back_page_index = (self.main_layout.currentIndex()) - 1 
+        if back_page_index == 3:
+            self._ensure_sound_group_mapping_page()
+            if self.cc_sound_group_mapping_page is not None:
+                self.cc_sound_group_mapping_page.refresh_groups_from_backend()
         self.main_layout.setCurrentIndex(back_page_index)

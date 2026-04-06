@@ -48,6 +48,7 @@ class CycleSelectorWidget(QWidget):
             parent: parent widget
         """
         super().__init__(parent)
+        self.parent = parent
         self.cycles = cycles  # List of (cycle_id, cycle_name)
         self.id_to_name = {cid: name for cid, name in cycles}
         self.name_to_id = {name: cid for cid, name in cycles}
@@ -108,8 +109,9 @@ class CycleSelectorWidget(QWidget):
         Emits the selected cycle's ID (not just name)
         """
         cycle_id = self.name_to_id.get(cycle_name, None)
+        print(f"selected cycle: {cycle_id}")
         if cycle_id:
-            self.cycle_selected.emit(str(cycle_id))
+            self.parent.on_cycle_selected(cycle_id)
 
     def get_selected_cycle_id(self):
         """

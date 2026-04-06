@@ -191,9 +191,6 @@ class CCSummary(QWidget):
             else:
                 current = None
 
-    def default_button_pressed(self):
-        print("default button was pressed")
-
     def _go_to_page(self, page_index):
         """
         This function routes to a specific page in the create-cycle flow.
