@@ -166,7 +166,6 @@ class CCDurationPage(QWidget):
         This function sets the main screen orientation of time screen
         It handles time box, label, plus/minus buttons
         """
-
         font_id = QFontDatabase.addApplicationFont("resources/timeduration_assets/DigitalNumbers.ttf")
         families = QFontDatabase.applicationFontFamilies(font_id)
         font_family = families[0] if families else "Courier New"
@@ -176,21 +175,18 @@ class CCDurationPage(QWidget):
         self.durationText.setStyleSheet("Font-Family: Ubuntu; font-size: 44px; color: black")
         self.durationText.setAlignment(Qt.AlignCenter)
 
-
         self.time_img = QLabel(self)
         self.time_img.setGeometry(366,291,307,94)
         self.time_img.setPixmap(QPixmap("resources/timeduration_assets/timebox.png").scaled(
-        307, 94, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+            307, 94, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
         ))
-        # self.time_label.setStyleSheet("background-color: white; color: green; border: 2px solid #34C759; border-radius: 8px; font-size: 52px; font-family: 'Digital Numbers';" )
 
         self.time_label = QLabel("05:00", self)
         self.time_label.setGeometry(366, 291, 307, 94)  # same position!
         self.time_label.setStyleSheet(f"background: transparent; color: #34C759; font-size: 48px; font-family: '{font_family}'; padding-bottom: 10px;")
         self.time_label.setAlignment(Qt.AlignCenter)
-       
-        
-        self.minus_btn = QPushButton("",self)
+
+        self.minus_btn = QPushButton("", self)
         self.minus_btn.setGeometry(280,314,48,48)
         self.minus_btn.setIcon(QIcon("resources/timeduration_assets/minus_sign.png"))
         self.minus_btn.setIconSize(QSize(48,48))
@@ -199,7 +195,6 @@ class CCDurationPage(QWidget):
                     background: transparent;
                     border: none;
                     border-radius: 24px;
-                                     
                 }
                 QPushButton:hover {
                     background: rgba(255, 255, 255, 30);
@@ -216,16 +211,14 @@ class CCDurationPage(QWidget):
         """)
         self.minus_btn.clicked.connect(self.dec_time)
 
-
-        
-        self.minus_ripple = QLabel("",self)
+        self.minus_ripple = QLabel("", self)
         self.minus_ripple.setGeometry(280,314,48,48)
         self.minus_ripple.setStyleSheet("background:  rgba(255,255,255,100); border-radius: 24px")
         self.minus_ripple.hide()
 
-        self.plus_btn = QPushButton("",self)
+        self.plus_btn = QPushButton("", self)
         self.plus_btn.setGeometry(682,314,48,48)
-        self.plus_btn.setIcon(QIcon("resources/timeduration_assets/plus_sign.png"))
+        self.plus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/plus_sign.png"))
         self.plus_btn.setIconSize(QSize(48,48))
         self.plus_btn.setStyleSheet("""
             QPushButton {
@@ -236,24 +229,19 @@ class CCDurationPage(QWidget):
             QPushButton:hover {
                 background: rgba(255, 255, 255, 30);
                 border-radius: 24px;
-                
             }
             QPushButton:pressed {
                 background: rgba(255, 255, 255, 30);
                 border-radius: 24px;
             }
             QPushButton:disabled {
-                background: rgba(255, 255, 255, 60);  /* similar to selected/pressed look */
+                background: rgba(255, 255, 255, 60);
                 border-radius: 24px;
             }
         """)
-
         self.plus_btn.clicked.connect(self.inc_time)
 
-        self.minus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/minus_sign.png"))
-        self.plus_btn.setIcon(self._build_icon_with_disabled("resources/timeduration_assets/plus_sign.png"))
-
-        self.plus_ripple = QLabel("",self)
+        self.plus_ripple = QLabel("", self)
         self.plus_ripple.setGeometry(682,314,48,48)
         self.plus_ripple.setStyleSheet("background:  rgba(255,255,255,100); border-radius: 24px")
         self.plus_ripple.hide()
@@ -280,31 +268,38 @@ class CCDurationPage(QWidget):
 
     def inc_time(self):
         """
-        This function helps increase the time 
-        The increment is done by 30 seconds
+        Increase the duration by 30 seconds using controller.set_duration.
         """
         self.show_ripple("plus")
-        self.seconds+=30
-        if self.seconds==60:
-            self.minutes+=1 
-            self.seconds=0
-        self.cycledisplayScreen()
-        self.check_boundaries()
-        print("add time")
+        # Get current duration from controller
+        if hasattr(self.controller, "get_duration") and hasattr(self.controller, "set_duration"):
+            try:
+                current_duration = self.controller.get_duration()
+                new_duration = min(900, current_duration + 30)
+                self.controller.set_duration(new_duration)
+                self._update_time_from_controller()
+                self.cycledisplayScreen()
+                self.check_boundaries()
+                print("add time")
+            except Exception as e:
+                print(f"[inc_time] Error: {e}")
         
     def dec_time(self):
         """
-        This function helps decrease the time 
-        The decrement is done by 30 seconds
+        Decrease the duration by 30 seconds using controller.set_duration.
         """
         self.show_ripple("minus")
-        self.seconds-=30
-        if self.seconds<0:
-            self.minutes-=1
-            self.seconds=30
-        self.cycledisplayScreen()
-        self.check_boundaries()
-        print("minus time")
+        if hasattr(self.controller, "get_duration") and hasattr(self.controller, "set_duration"):
+            try:
+                current_duration = self.controller.get_duration()
+                new_duration = max(60, current_duration - 30)
+                self.controller.set_duration(new_duration)
+                self._update_time_from_controller()
+                self.cycledisplayScreen()
+                self.check_boundaries()
+                print("minus time")
+            except Exception as e:
+                print(f"[dec_time] Error: {e}")
 
     def show_ripple(self,btn_type):
         """
@@ -345,14 +340,21 @@ class CCDurationPage(QWidget):
         This function takes the time from controller and converts the duration into 
         minutes and seconds format before displaying
         """
-       
-        total_dur = 300 #UPDATE TO USE L2 CALL FOR DEFAULT
-
-        self.minutes = total_dur//60
-        self.seconds = total_dur %60
-
+        self._update_time_from_controller()
         self.cycledisplayScreen()
         self.check_boundaries()
+
+    def _update_time_from_controller(self):
+        """
+        Helper to update self.minutes and self.seconds from controller.get_duration().
+        """
+        if hasattr(self.controller, "get_duration"):
+            try:
+                total_dur = self.controller.get_duration()
+                self.minutes = total_dur // 60
+                self.seconds = total_dur % 60
+            except Exception as e:
+                print(f"[_update_time_from_controller] Error: {e}")
 
     def _build_icon_with_disabled(self, path: str) -> QIcon:
         """
@@ -396,7 +398,14 @@ class CCDurationPage(QWidget):
             self.parent.back_pressed()
 
     def mapping_confirmed(self):
-        print("next was pressed")
+        # Print the duration sent to the backend when next is pressed
+        duration = None
+        if hasattr(self.controller, "get_duration"):
+            try:
+                duration = self.controller.get_duration()
+            except Exception as e:
+                print(f"[mapping_confirmed] Error getting duration: {e}")
+        print(f"next was pressed, duration sent to backend: {duration}")
         if self.parent and hasattr(self.parent, "next_pressed"):
             self.parent.next_pressed()
 
@@ -414,10 +423,14 @@ class CCDurationPage(QWidget):
 
     def default_button_pressed(self):
         """
-        This function sets default cycle time to system default
+        Set default cycle time using controller.set_duration.
         """
-        self.minutes=5 #UPDATE TO USE L2 FUNCTION CALL
-        self.seconds=0
-        self.cycledisplayScreen()
-        self.check_boundaries()
-        print("default clicked")
+        if hasattr(self.controller, "set_duration"):
+            try:
+                self.controller.set_duration(300)
+                self._update_time_from_controller()
+                self.cycledisplayScreen()
+                self.check_boundaries()
+                print("default clicked")
+            except Exception as e:
+                print(f"[default_button_pressed] Error: {e}")

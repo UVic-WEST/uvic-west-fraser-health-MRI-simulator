@@ -73,7 +73,7 @@ class SoundControlsWidget(QWidget):
         buttons_layout = QGridLayout()
         buttons_layout.setSpacing(10)
 
-        for i, (id,name) in enumerate(self.sound_catalog):
+        for i, (id, name) in enumerate(self.sound_catalog):
             btn = QPushButton(name)
             btn.setFont(QFont("Ubuntu", 14))
             btn.setStyleSheet(self._sound_button_stylesheet(is_selected=False))

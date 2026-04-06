@@ -101,18 +101,25 @@ class AppRouter(QMainWindow):
         self.setCentralWidget(self.app)
 
 
-    def play_cycle(self, selected_cycle=None):
+    def play_cycle(self, selected_cycle_id=None):
         """
-        This function prepares a cycle to be played, selected on the homepage.
-
+        Prepares a cycle to be played, selected on the homepage.
         Args:
-            selected_cycle (Cycle): selected cycle to play
+            selected_cycle_id (str): selected cycle id to play
         """
-        
-        self.cur_cycle = selected_cycle
-        # Backward-compatible alias while transitioning to cur_cycle naming.
-        self.selected_cycle = selected_cycle
-        self.confirmation_page.set_cycle(self.cur_cycle)
+        self.cur_cycle = selected_cycle_id
+        self.selected_cycle = selected_cycle_id
+        # Lookup name for confirmation page
+        cycle_name = None
+        if selected_cycle_id:
+            # Use the HomePage's cycle_factory to get the name
+            try:
+                cycle_obj = self.home_page.cycle_factory.get_cycle_by_id(selected_cycle_id)
+                cycle_name = cycle_obj.cycle_name
+            except Exception:
+                cycle_name = selected_cycle_id
+        # Pass both id and name to confirmation page
+        self.confirmation_page.set_cycle((selected_cycle_id, cycle_name))
         self.main_layout.setCurrentWidget(self.confirmation_page)
 
     def show_confirmation(self):
@@ -126,14 +133,20 @@ class AppRouter(QMainWindow):
         warning_message: str | None = None,
         on_confirm=None,
         on_cancel=None,
+        button_mode: str = "both",
+        green_button_text: str = "CONTINUE",
+        red_button_text: str = "CANCEL",
     ):
         """
-        Show warning page with optional message and button handlers.
+        This function shows the warning page with optional message and button handlers.
 
         Args:
             warning_message (str | None): warning text to display
             on_confirm: callback for confirm button; uses warning page fallback if None
             on_cancel: callback for cancel button; uses warning page fallback if None
+            button_mode: which warning buttons to show ("green", "red", "both")
+            green_button_text: label for green warning button
+            red_button_text: label for red warning button
         """
         if warning_message is not None:
             self.warning_page.set_warning_message(warning_message)
@@ -141,6 +154,11 @@ class AppRouter(QMainWindow):
             self.warning_page.set_warning_message(self.warning_page.DEFAULT_WARNING_MESSAGE)
 
         self.warning_page.set_callbacks(on_confirm=on_confirm, on_cancel=on_cancel)
+        self.warning_page.set_button_config(
+            button_mode=button_mode,
+            green_button_text=green_button_text,
+            red_button_text=red_button_text,
+        )
         self.main_layout.setCurrentWidget(self.warning_page)
 
     def show_custom_cycle_warning(self):
@@ -174,8 +192,10 @@ class AppRouter(QMainWindow):
     def play_cycle_confirmed(self):
         """
         This function routes the app to the cycle running page when the user has confirmed 
-        they want to play a cycle
+        they want to play a cycle. Sends the selected cycle's ID and duration to the running logic.
         """
+        # Get the selected cycle ID
+        selected_cycle_id = self.cur_cycle
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
         self.cycle_running_page.play_cycle(cycle_id)
@@ -184,6 +204,7 @@ class AppRouter(QMainWindow):
         """
         This function routes the application to show the homepage
         """
+        self.home_page.refresh_cycles_from_backend()
         self.main_layout.setCurrentWidget(self.home_page)
 
     def timeout_signin(self):

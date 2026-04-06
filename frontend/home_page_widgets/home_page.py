@@ -15,6 +15,21 @@ from frontend.home_page_widgets.sign_out_button import SignOutButton
 
 
 class HomePage(QWidget):
+    def refresh_cycles_from_backend(self):
+        """
+        Refresh the cycle list from the backend and update the player widget.
+        Call this when rerouting to the homepage to ensure the list is up to date.
+        """
+        cycles = self.cycle_factory.list_cycles()
+        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
+        self.play_widget.cycle_selector_widget.cycles = cycle_tuples
+        self.play_widget.cycle_selector_widget.id_to_name = {cid: name for cid, name in cycle_tuples}
+        self.play_widget.cycle_selector_widget.name_to_id = {name: cid for cid, name in cycle_tuples}
+        self.play_widget.cycle_selector_widget.cycle_selector.clear()
+        for cid, name in cycle_tuples:
+            self.play_widget.cycle_selector_widget.cycle_selector.addItem(name, cid)
+        self.play_widget.cycle_selector_widget.cycle_selector.setCurrentIndex(0)
+
     def __init__(self, controller, light_controller, sound_controller, parent=None):
         """
         This function builds the HomePage UI and initializes page-level state
@@ -34,12 +49,18 @@ class HomePage(QWidget):
         self.sound_controller = sound_controller
         self.main_layout = QGridLayout()
         self.main_layout.setContentsMargins(40, 110, 40, 40)
-        self.cur_cycle = None
+        self.cur_cycle_id = None
+
+        # Get cycles from backend
+        from backend.cycle_factory import CycleFactory
+        self.cycle_factory = CycleFactory()
+        cycles = self.cycle_factory.list_cycles()
+        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
 
         #setting up and organizing widgets
-        self.play_widget = CyclePlayerWidget(self)
-        self.sound_controls_widget = SoundControlsWidget(self.sound_controller,self)
-        self.light_controls_widget = LightControlsWidget(self.light_controller,self)
+        self.play_widget = CyclePlayerWidget(cycle_tuples, self)
+        self.sound_controls_widget = SoundControlsWidget(self.sound_controller, self)
+        self.light_controls_widget = LightControlsWidget(self.light_controller, self)
 
         #right column: sound controls stacked above light controls
         right_col = QVBoxLayout()
@@ -88,36 +109,27 @@ class HomePage(QWidget):
 
     ###########################
     #######################
-    # probably want to remove this and instead store in backend
-    #stores the currently selected cycle from child widgets
-    def set_cur_cycle(self, cycle_name):
+    # stores the currently selected cycle ID from child widgets
+    def set_cur_cycle(self, cycle_id):
         """
-        This function stores the currently selected cycle
-
+        Stores the currently selected cycle ID
         Args:
-            cycle_name: the name of the selected cycle
+            cycle_id: the ID of the selected cycle
         """
-        self.cur_cycle = cycle_name
+        self.cur_cycle_id = cycle_id
 
     
-    def set_selected_cycle(self, cycle_name):
-        """
-        This function forwards legacy cycle selection calls to set_cur_cycle
-
-        Args:
-            cycle_name: the name of the selected cycle
-        """
-        self.set_cur_cycle(cycle_name)
+    def set_selected_cycle(self, cycle_id):
+        self.set_cur_cycle(cycle_id)
         
     
     def play_selected_cycle(self):
         """
-        This function requests playback of the currently selected cycle
+        Requests playback of the currently selected cycle by ID
         """
-        print("Current cycle confirmed to play:", self.cur_cycle)
-
-        self.parent.play_cycle(self.cur_cycle)
+        print("Current cycle confirmed to play (ID):", self.cur_cycle_id)
         self.close_manual_controllers()
+        self.parent.play_cycle(self.cur_cycle_id)
 
     
     def signout(self):

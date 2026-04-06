@@ -57,10 +57,10 @@ class CreateCycleRouter(QWidget):
             r.sound_player,
         )
 
-        self.cc_duration_page = CCDurationPage(self.cc_controller,self)
+        self.cc_duration_page = CCDurationPage(self.cc_controller, self)
         self.cc_groups_page = CCGroupsPage(self.cc_controller, self)
         self.cc_brightness_page = CCBrightnessPage(self.cc_controller, self)
-        self.cc_sound_group_mapping_page = CCSoundGroupMappingPage(self.cc_controller, self)
+        self.cc_sound_group_mapping_page = None  # Delay instantiation
         self.cc_summary_page = CCSummary(self.cc_controller, self)
 
         self.reset_layout()
@@ -72,18 +72,38 @@ class CreateCycleRouter(QWidget):
         self.main_layout = QStackedLayout()
 
         self.main_layout.addWidget(self.cc_duration_page)
-        self.main_layout.addWidget(self.cc_groups_page) 
+        self.main_layout.addWidget(self.cc_groups_page)
         self.main_layout.addWidget(self.cc_brightness_page)
-        self.main_layout.addWidget(self.cc_sound_group_mapping_page)
         self.main_layout.addWidget(self.cc_summary_page)
 
+        # Insert a placeholder for the sound group mapping page
+        self.main_layout.addWidget(QWidget())  # Placeholder
+
         self.setLayout(self.main_layout)
+
+    def _ensure_sound_group_mapping_page(self):
+        """
+        Instantiates and inserts the sound group mapping page if not already done.
+        """
+        if self.cc_sound_group_mapping_page is None:
+            self.cc_sound_group_mapping_page = CCSoundGroupMappingPage(self.cc_controller, self)
+            # Replace the placeholder with the real widget
+            self.main_layout.insertWidget(3, self.cc_sound_group_mapping_page)
+            # Remove the old placeholder (now at index 4)
+            placeholder = self.main_layout.widget(4)
+            self.main_layout.removeWidget(placeholder)
+            placeholder.deleteLater()
 
     def next_pressed(self):
         """
         Reroutes to the next page of the create cycle process. Called by child widgets.
         """
-        next_page_index = (self.main_layout.currentIndex()) + 1 
+        next_page_index = self.main_layout.currentIndex() + 1
+        # If navigating to the sound group mapping page, ensure it's created and refreshed
+        if next_page_index == 3:
+            self._ensure_sound_group_mapping_page()
+            if self.cc_sound_group_mapping_page is not None:
+                self.cc_sound_group_mapping_page.refresh_groups_from_backend()
         self.main_layout.setCurrentIndex(next_page_index)
 
     def back_pressed(self):
@@ -91,4 +111,8 @@ class CreateCycleRouter(QWidget):
         Reroutes to the previous page of the create cycle process. Called by child widgets.
         """
         back_page_index = (self.main_layout.currentIndex()) - 1 
+        if back_page_index == 3:
+            self._ensure_sound_group_mapping_page()
+            if self.cc_sound_group_mapping_page is not None:
+                self.cc_sound_group_mapping_page.refresh_groups_from_backend()
         self.main_layout.setCurrentIndex(back_page_index)

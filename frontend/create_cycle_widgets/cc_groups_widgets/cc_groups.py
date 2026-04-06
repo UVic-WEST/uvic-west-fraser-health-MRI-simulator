@@ -126,6 +126,12 @@ class CCGroupsPage(QWidget):
         content_layout.setContentsMargins(30, 30, 30, 30)
         content_layout.setSpacing(40)
         self.group_value = 4
+        if hasattr(self.controller, "get_total_groups"):
+            try:
+                total, _ = self.controller.get_total_groups()
+                self.group_value = total
+            except Exception as e:
+                print(f"[CCGroupsPage.__init__] Error getting total groups: {e}")
 
         self.prompt= QLabel("How many sound groups would you like\nto have for the new cycle?")
         self.prompt.setFont(QFont("Ubuntu", 20))
@@ -264,7 +270,19 @@ class CCGroupsPage(QWidget):
         """
         This function handles when the Next button is pressed
         """
-        print("next was pressed")
+        # Always update backend with current group_value before proceeding
+        if hasattr(self.controller, "set_total_groups"):
+            try:
+                self.controller.set_total_groups(self.group_value)
+            except Exception as e:
+                print(f"[mapping_confirmed] Error setting total groups: {e}")
+        total_groups = None
+        if hasattr(self.controller, "get_total_groups"):
+            try:
+                total_groups, _ = self.controller.get_total_groups()
+            except Exception as e:
+                print(f"[mapping_confirmed] Error getting total groups: {e}")
+        print(f"next was pressed, groups set in backend: {total_groups}")
         if self.parent and hasattr(self.parent, "next_pressed"):
             self.parent.next_pressed()
 
@@ -288,7 +306,15 @@ class CCGroupsPage(QWidget):
         This function resets the selected group value to the default setting
         """
         print("default button was pressed")
-        self.group_value = 4
+        if hasattr(self.controller, "reset_group_default") and hasattr(self.controller, "get_total_groups"):
+            try:
+                self.controller.reset_group_default()
+                total, _ = self.controller.get_total_groups()
+                self.group_value = total
+            except Exception as e:
+                print(f"[default_button_pressed] Error: {e}")
+        else:
+            self.group_value = 4
         self.value_label.setText(str(self.group_value))
         self._update_stepper_button_states()
 
@@ -297,7 +323,13 @@ class CCGroupsPage(QWidget):
         This function increases the group value by one, up to the maximum allowed value
         """
         if self.group_value < 8:
-            self.group_value += 1
+            new_value = self.group_value + 1
+            if hasattr(self.controller, "set_total_groups"):
+                try:
+                    self.controller.set_total_groups(new_value)
+                except Exception as e:
+                    print(f"[increase] Error: {e}")
+            self.group_value = new_value
             self.value_label.setText(str(self.group_value))
         self._update_stepper_button_states()
 
@@ -306,7 +338,13 @@ class CCGroupsPage(QWidget):
         This function decreases the group value by one, down to the minimum allowed value
         """
         if self.group_value > 1:
-            self.group_value -= 1
+            new_value = self.group_value - 1
+            if hasattr(self.controller, "set_total_groups"):
+                try:
+                    self.controller.set_total_groups(new_value)
+                except Exception as e:
+                    print(f"[decrease] Error: {e}")
+            self.group_value = new_value
             self.value_label.setText(str(self.group_value))
         self._update_stepper_button_states()
 

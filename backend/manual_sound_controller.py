@@ -5,7 +5,9 @@ outside of a running cycle. Reserves the Layer 3 SoundPlayer while
 active and cuts all sounds when closed.
 """
 
+
 import os
+import wave
 from typing import List, Tuple
 
 from PySide6.QtCore import QObject

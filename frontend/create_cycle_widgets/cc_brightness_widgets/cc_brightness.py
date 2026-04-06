@@ -141,6 +141,13 @@ class CCBrightnessPage(QWidget):
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
         self.setup_BrightnessScreen()
+        # Set slider to backend value on init
+        if self.controller:
+            try:
+                backend_val = self.controller.get_light_level()
+                self.brightness_slider.setValue(backend_val)
+            except Exception as e:
+                print(f"[CCBrightnessPage] Error getting light level from backend: {e}")
 
     def set_background(self, image_path):
         self.bg_label = QLabel(self)
@@ -338,13 +345,17 @@ class CCBrightnessPage(QWidget):
             value: the raw slider value to be snapped and applied
         """
         val = max(0, min(100, int(round(value/10.0)*10)))
-
-        if val!=value:
+        if val != value:
             self.brightness_slider.blockSignals(True)
             self.brightness_slider.setValue(val)
             self.brightness_slider.blockSignals(False)
         if self.controller:
-            self.controller.set_brightness(val)
+            try:
+                self.controller.set_light_level(val)
+                self.controller.display_light_level(val)
+                print(f"[CustomCycle] Set brightness to backend: {val}")
+            except Exception as e:
+                print(f"[CCBrightnessPage] Error setting/displaying light level: {e}")
 
 
     def dec_brightness(self):
@@ -353,7 +364,14 @@ class CCBrightnessPage(QWidget):
         Also handles ripple effect and greying out
         """
         self.show_ripple("minus")
-        self.brightness_slider.setValue(max(0, self.brightness_slider.value() - 10))
+        new_val = max(0, self.brightness_slider.value() - 10)
+        self.brightness_slider.setValue(new_val)
+        if self.controller:
+            try:
+                self.controller.set_light_level(new_val)
+                self.controller.display_light_level(new_val)
+            except Exception as e:
+                print(f"[CCBrightnessPage] Error setting/displaying light level: {e}")
         self.update_button_states()
 
     def inc_brightness(self):
@@ -362,7 +380,14 @@ class CCBrightnessPage(QWidget):
         Also handles ripple effect and greying out
         """
         self.show_ripple("plus")
-        self.brightness_slider.setValue(min(100, self.brightness_slider.value() + 10))
+        new_val = min(100, self.brightness_slider.value() + 10)
+        self.brightness_slider.setValue(new_val)
+        if self.controller:
+            try:
+                self.controller.set_light_level(new_val)
+                self.controller.display_light_level(new_val)
+            except Exception as e:
+                print(f"[CCBrightnessPage] Error setting/displaying light level: {e}")
         self.update_button_states()
 
     def reset_light_default(self):
