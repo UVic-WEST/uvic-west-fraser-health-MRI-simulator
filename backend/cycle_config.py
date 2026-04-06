@@ -31,7 +31,7 @@ class CycleConfig:
             raise ValueError(
                 f"total duration of {self.cycle_name} must be positive, got {self.cycle_duration_ms}ms"
             )
-     
+
         for action in self.actions:
             if action.timestamp_ms > self.cycle_duration_ms:
                 raise ValueError(
@@ -77,6 +77,12 @@ class CycleConfig:
             action for action in self.actions
             if abs(action.timestamp_ms - timestamp_ms) < window_ms
         ]
+
+
+    def get_num_sound_groups(self) -> int:
+        """Returns number of sound groups for an instance of CycleConfig."""
+        return sum(1 for action in self.actions if action.action_type == ActionType.SOUND_START)
+
 
     def to_dict(self):
         return {
