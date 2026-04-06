@@ -9,7 +9,7 @@ def test_double_start():
     pass
 
 def test_sound_player_failure(cycle_running_logic, mock_sound_player):
-    """Tests that there is no active cycle if there is a failure when calling SoundPlayer.play"""
+    """Playback failure does not abort the cycle (timer keeps running)."""
     mock_sound_player.play.return_value = (False, "Error")
 
     with patch.object(cycle_running_logic, "cycle_factory") as mock:
@@ -20,8 +20,8 @@ def test_sound_player_failure(cycle_running_logic, mock_sound_player):
         cycle_running_logic.start_cycle(1)
         cycle_running_logic._update_timer()
 
-    assert not cycle_running_logic._active_cycle
-    assert not cycle_running_logic._active_timer
+    assert cycle_running_logic._active_cycle
+    assert cycle_running_logic._active_timer
 
 def test_light_controller_failure():
     """Current implementation never seems to indicate failure?"""
@@ -70,7 +70,7 @@ def test_cycle_stops_at_zero(cycle_running_logic, qtbot, mock_cycle_factory):
 def test_passes_single_light_action(cycle_running_logic):
     cycle_running_logic.start_cycle(1)
     cycle_running_logic._update_timer()
-    cycle_running_logic.light_controller.change_lights.assert_called_once_with(70)
+    cycle_running_logic.light_controller.change_lights.assert_called_once_with(0.7)
 
 def test_passes_single_sound_action(cycle_running_logic):
     with patch.object(cycle_running_logic, "cycle_factory") as mock:
@@ -104,7 +104,7 @@ def test_passes_multiple_actions_in_order(cycle_running_logic):
             CycleAction(100, ActionType.SOUND_START, sound_config)
         ])
         cycle_running_logic.start_cycle(1)
-        cycle_running_logic.light_controller.change_lights.assert_called_once_with(70)
+        cycle_running_logic.light_controller.change_lights.assert_called_once_with(0.7)
 
         cycle_running_logic._update_timer()
         cycle_running_logic.sound_player.play.assert_called_once_with(SoundConfig("test", 1, 1000, 50))
