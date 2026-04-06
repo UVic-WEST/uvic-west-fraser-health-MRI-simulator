@@ -145,12 +145,7 @@ class ManualSoundController(QObject):
             if file_path is None:
                 continue
 
-            sound_config = SoundConfig(
-                sound_id=sound_id,
-                file_name=file_path,
-                duration=0,
-                volume=volume,
-            )
+            sound_config = SoundConfig(file_path, sound_id, 0.0, volume)
             self.sound_player.play(sound_config)
 
         return True

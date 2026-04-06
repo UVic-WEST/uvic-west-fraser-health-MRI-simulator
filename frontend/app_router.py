@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from PySide6.QtWidgets import (
     QWidget,
     QMainWindow,
@@ -21,9 +23,9 @@ from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
 
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
-from backend.cycle_controller import CycleController
 from backend.manual_light_controller import ManualLightController
 from backend.manual_sound_controller import ManualSoundController
+from backend.cycle_factory import CycleFactory
 
 #PASSWORD 
 PASS = '2026'
@@ -41,9 +43,6 @@ class AppRouter(QMainWindow):
         #SHARED RESOURCES. PLEASE PASS THESE IN TO YOUR FILES THROUGH THIS FILE
         self.light_controller = LightController(self)
         self.sound_player = SoundPlayer()
-        self.cycle_controller = CycleController(
-            self.light_controller, self.sound_player, parent=self
-        )
         self.manual_light_controller = ManualLightController(
             self.light_controller, parent=self
         )
@@ -51,11 +50,16 @@ class AppRouter(QMainWindow):
             self.sound_player, parent=self
         )
 
+        self.cycle_factory = CycleFactory()
+
         #create window
         self.setFixedSize(1024, 600)
-        self.main_layout = QStackedLayout()
         self.setStyleSheet("background-color: white;")
         self.setWindowTitle("MRI Simulator")
+
+        self.app = QWidget()
+        self.main_layout = QStackedLayout()
+        self.app.setLayout(self.main_layout)
 
         #create pages, connect controllers, add to app widget stack
         #code for sign in page
@@ -66,7 +70,7 @@ class AppRouter(QMainWindow):
         self.main_layout.addWidget(self.timed_out_page)
 
         #code for homepage
-        self.home_page_controller = HomePageLogic()
+        self.home_page_controller = HomePageLogic(cycle_factory=self.cycle_factory)
         self.home_page = HomePage(self.home_page_controller, self.manual_light_controller, self.manual_sound_controller, self)
         self.main_layout.addWidget(self.home_page)
 
@@ -82,19 +86,18 @@ class AppRouter(QMainWindow):
 
         #Code for cycle running page. 
         self.cycle_running_page_controller = CycleRunningPageLogic(
-            sound_player=self.sound_player, light_controller=self.light_controller, parent=self
+            sound_player=self.sound_player,
+            light_controller=self.light_controller,
+            parent=self,
+            cycle_factory=self.cycle_factory,
         )
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
         self.main_layout.addWidget(self.cycle_running_page)
 
-        #Code for create cycle pages
-        self.create_cycle_router = CreateCycleRouter(self)
+        #Code for create cycle pages (pass AppRouter explicitly — parent becomes central QWidget)
+        self.create_cycle_router = CreateCycleRouter(self, self.app)
         self.main_layout.addWidget(self.create_cycle_router)
 
-        #set layout of QstackedWidget
-
-        self.app = QWidget()
-        self.app.setLayout(self.main_layout)
         self.setCentralWidget(self.app)
 
 
@@ -150,16 +153,32 @@ class AppRouter(QMainWindow):
             on_cancel=self.show_home,
         )
 
+    def _resolve_play_cycle_id(self, selected) -> int:
+        """Figure out which cycle id to run from whatever the home page gives us.
+
+        Tries a real name match from the cycle list first, then falls back to the number
+        at the end of strings like ``Cycle 2``. If nothing matches, we default to 1.
+        Tweak this if you change how the dropdown labels work pleaseeeeee
+        """
+        if selected is None:
+            return 1
+        name = str(selected).strip()
+        for c in self.cycle_factory.list_cycles():
+            if c.cycle_name == name:
+                return c.cycle_id
+        tail = name.rsplit(None, 1)[-1]
+        if tail.isdigit():
+            return int(tail)
+        return 1
+
     def play_cycle_confirmed(self):
         """
         This function routes the app to the cycle running page when the user has confirmed 
         they want to play a cycle
         """
         self.main_layout.setCurrentWidget(self.cycle_running_page)
-        #REMOVE LATER
-        dummytime = 30
-        # hard-coding cycle by id for now
-        self.cycle_running_page.play_cycle(1)
+        cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
+        self.cycle_running_page.play_cycle(cycle_id)
 
     def show_home(self):
         """
