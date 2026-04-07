@@ -15,7 +15,7 @@ from PySide6.QtCore import QObject
 from backend.sound_config import SoundConfig
 
 SOUNDS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "resources", "sounds"
+    os.path.dirname(os.path.dirname(__file__)), "resources", "sounds", "mp3s"
 )
 
 SUPPORTED_EXTENSIONS = (".wav", ".mp3")
@@ -72,7 +72,9 @@ class ManualSoundController(QObject):
             except (ValueError, IndexError):
                 continue
 
-            catalog.append((sound_id, name_part))
+            sound_name = parts[0]
+
+            catalog.append((sound_id, sound_name))
 
         catalog.sort(key=lambda x: x[0])
         return catalog
