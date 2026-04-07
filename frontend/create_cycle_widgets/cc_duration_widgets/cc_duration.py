@@ -61,12 +61,6 @@ class CCDurationPage(QWidget):
         self.cancel_home_btn.clicked.connect(self.cancel_to_home)
         self.cancel_home_btn.raise_()
 
-        self.back_btn = QPushButton("Back", self)
-        self.back_btn.setGeometry(20, 536, 120, 44)
-        self.back_btn.setStyleSheet(self.cancel_home_btn.styleSheet())
-        self.back_btn.clicked.connect(self.mapping_cancelled)
-        self.back_btn.raise_()
-
         self.next_btn = QPushButton("Next", self)
         self.next_btn.setGeometry(884, 536, 120, 44)
         self.next_btn.setStyleSheet(self.cancel_home_btn.styleSheet())
@@ -391,11 +385,6 @@ class CCDurationPage(QWidget):
         )
         self.bg_label.setGeometry(0, 1, self.width(), self.height())
         self.bg_label.lower()
-
-    def mapping_cancelled(self):
-        print("back was pressed")
-        if self.parent and hasattr(self.parent, "back_pressed"):
-            self.parent.back_pressed()
 
     def mapping_confirmed(self):
         # Print the duration sent to the backend when next is pressed

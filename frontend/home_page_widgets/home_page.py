@@ -20,6 +20,7 @@ class HomePage(QWidget):
         Refresh the cycle list from the backend and update the player widget.
         Call this when rerouting to the homepage to ensure the list is up to date.
         """
+        self.cycle_factory.refresh()
         cycles = self.cycle_factory.list_cycles()
         cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
         self.play_widget.cycle_selector_widget.cycles = cycle_tuples
