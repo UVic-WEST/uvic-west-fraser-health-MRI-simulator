@@ -2,14 +2,38 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QComboBox,
+    QStyledItemDelegate,
+    QStyle,
 )
-from PySide6.QtCore import QPoint, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtCore import QPoint, Signal, Qt, QRect, QEvent
+from PySide6.QtGui import QFont, QMouseEvent, QPainter
 
 from frontend.home_page_widgets.custom_cycle_button import CustomCycleButton
 
 CYCLE_OPTIONS_DROPDOWN_COLOUR = "#FAF5F5"
 DROPDOWN_BUTTON_GAP_PX = 20
+DELETE_ICON_ROLE = Qt.UserRole + 1
+
+
+class CycleItemDelegate(QStyledItemDelegate):
+    """Paint dropdown rows with an optional right-aligned trash icon."""
+
+    def paint(self, painter: QPainter, option, index):
+        super().paint(painter, option, index)
+        if not bool(index.data(DELETE_ICON_ROLE)):
+            return
+
+        icon = option.widget.style().standardIcon(QStyle.SP_TrashIcon)
+        icon_rect = self._icon_rect(option.rect)
+        icon.paint(painter, icon_rect)
+
+    @staticmethod
+    def _icon_rect(item_rect: QRect) -> QRect:
+        icon_size = 16
+        right_padding = 12
+        x = item_rect.right() - right_padding - icon_size
+        y = item_rect.top() + (item_rect.height() - icon_size) // 2
+        return QRect(x, y, icon_size, icon_size)
 
 
 class FixedComboBox(QComboBox):
@@ -40,6 +64,7 @@ class CycleSelectorWidget(QWidget):
     """
 
     cycle_selected = Signal(str)
+    cycle_delete_requested = Signal(int)
 
     def __init__(self, cycles, parent=None):
         """
@@ -85,10 +110,9 @@ class CycleSelectorWidget(QWidget):
                 height: 8px;
             }}
         """)
-        # Add cycle names to dropdown
-        for cid, name in cycles:
-            self.cycle_selector.addItem(name, cid)
-        self.cycle_selector.setCurrentIndex(0)
+        self.cycle_selector.setItemDelegate(CycleItemDelegate(self.cycle_selector))
+        self.cycle_selector.view().viewport().installEventFilter(self)
+        self.set_cycles(cycles)
         self.main_layout.addWidget(self.cycle_selector)
 
         self.custom_cycle_button = CustomCycleButton(self)
@@ -103,13 +127,53 @@ class CycleSelectorWidget(QWidget):
 
         self.cycle_selector.currentTextChanged.connect(self._on_cycle_selected)
         self.custom_cycle_button.custom_cycle_requested.connect(self._on_custom_cycle_requested)
+        self.cycle_delete_requested.connect(self._on_delete_requested)
+
+    def _should_show_delete_icon(self, cycle_id: int) -> bool:
+        """Show delete icon only for custom cycles when more than 3 cycles exist."""
+        return len(self.cycles) > 3 and cycle_id >= 4
+
+    def set_cycles(self, cycles):
+        """Replace dropdown cycles and rebuild item metadata/icons."""
+        self.cycles = cycles
+        self.id_to_name = {cid: name for cid, name in cycles}
+        self.name_to_id = {name: cid for cid, name in cycles}
+
+        self.cycle_selector.blockSignals(True)
+        self.cycle_selector.clear()
+        for cid, name in cycles:
+            self.cycle_selector.addItem(name, cid)
+            row = self.cycle_selector.count() - 1
+            self.cycle_selector.setItemData(row, self._should_show_delete_icon(cid), DELETE_ICON_ROLE)
+        if self.cycle_selector.count() > 0:
+            self.cycle_selector.setCurrentIndex(0)
+        self.cycle_selector.blockSignals(False)
+
+    def eventFilter(self, watched, event):
+        """Handle clicks on trash icons within dropdown rows."""
+        if watched is self.cycle_selector.view().viewport() and event.type() == QEvent.MouseButtonPress:
+            mouse_event = event
+            if isinstance(mouse_event, QMouseEvent):
+                index = self.cycle_selector.view().indexAt(mouse_event.position().toPoint())
+                if index.isValid() and bool(index.data(DELETE_ICON_ROLE)):
+                    icon_rect = CycleItemDelegate._icon_rect(self.cycle_selector.view().visualRect(index))
+                    if icon_rect.contains(mouse_event.position().toPoint()):
+                        cycle_id = int(index.data(Qt.UserRole))
+                        self.cycle_delete_requested.emit(cycle_id)
+                        self.cycle_selector.hidePopup()
+                        return True
+        return super().eventFilter(watched, event)
+
+    def _on_delete_requested(self, cycle_id: int):
+        """Forward delete requests to the parent container."""
+        if self.parent and hasattr(self.parent, "request_cycle_delete"):
+            self.parent.request_cycle_delete(cycle_id)
 
     def _on_cycle_selected(self, cycle_name):
         """
         Emits the selected cycle's ID (not just name)
         """
         cycle_id = self.name_to_id.get(cycle_name, None)
-        print(f"selected cycle: {cycle_id}")
         if cycle_id:
             self.parent.on_cycle_selected(cycle_id)
 
