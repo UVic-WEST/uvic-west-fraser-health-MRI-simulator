@@ -19,72 +19,6 @@ from frontend.home_page_widgets.sign_out_button import SignOutButton
 
 
 class HomePage(QWidget):
-    def refresh_cycles_from_backend(self):
-        """
-        Refresh the cycle list from the backend and update the player widget.
-        Call this when rerouting to the homepage to ensure the list is up to date.
-        """
-        self.cycle_factory.refresh()
-        cycles = self.cycle_factory.list_cycles()
-        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
-        self.play_widget.cycle_selector_widget.set_cycles(cycle_tuples)
-        selected_id = self.play_widget.cycle_selector_widget.get_selected_cycle_id()
-        self.play_widget.on_cycle_selected(selected_id)
-
-    def request_cycle_delete(self, cycle_id: int):
-        """
-        Prompt for confirmation before deleting an eligible custom cycle.
-
-        Args:
-            cycle_id: cycle ID requested for deletion
-        """
-        if cycle_id < 4:
-            return
-
-        self.pending_delete_cycle_id = cycle_id
-        cycle_name = None
-        for cycle in self.cycle_factory.list_cycles():
-            if cycle.cycle_id == cycle_id:
-                cycle_name = cycle.cycle_name
-                break
-
-        display_name = cycle_name or f"Cycle {cycle_id}"
-        warning_message = (
-            f"Are you sure you want to\ndelete {display_name}?\n\n"
-            "This action cannot be undone."
-        )
-
-        self.parent.show_warning(
-            warning_message=warning_message,
-            on_confirm=self._confirm_delete_cycle,
-            on_cancel=self._cancel_delete_cycle,
-            button_mode="both",
-            green_button_text="YES",
-            red_button_text="NO",
-        )
-
-    def _confirm_delete_cycle(self):
-        """
-        Delete the pending cycle after confirmation, then return to home.
-        """
-        cycle_id = self.pending_delete_cycle_id
-        self.pending_delete_cycle_id = None
-        if cycle_id is None or cycle_id < 4:
-            self.parent.show_home()
-            return
-
-        removed = self.controller.delete_cycle(cycle_id)
-        if removed:
-            self.refresh_cycles_from_backend()
-        self.parent.show_home()
-
-    def _cancel_delete_cycle(self):
-        """
-        Cancel the pending delete action and return to home unchanged.
-        """
-        self.pending_delete_cycle_id = None
-        self.parent.show_home()
-
     def __init__(self, controller, light_controller, sound_controller, parent=None):
         """
         This function builds the HomePage UI and initializes page-level state
@@ -159,9 +93,80 @@ class HomePage(QWidget):
         self.logo_label.setScaledContents(False)
         self.logo_label.adjustSize()
         self.logo_label.raise_()  # Bring to front
-    
+
+    def refresh_cycles_from_backend(self):
+        """
+        Refresh the cycle list from the backend and update the player widget.
+        Call this when rerouting to the homepage to ensure the list is up to date.
+        """
+        self.cycle_factory.refresh()
+        cycles = self.cycle_factory.list_cycles()
+        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
+        self.play_widget.cycle_selector_widget.set_cycles(cycle_tuples)
+        selected_id = self.play_widget.cycle_selector_widget.get_selected_cycle_id()
+        self.play_widget.on_cycle_selected(selected_id)
+
+    def request_cycle_delete(self, cycle_id: int):
+        """
+        Prompt for confirmation before deleting an eligible custom cycle.
+
+        Args:
+            cycle_id: cycle ID requested for deletion
+        """
+        if cycle_id < 4:
+            return
+
+        self.pending_delete_cycle_id = cycle_id
+        cycle_name = None
+        for cycle in self.cycle_factory.list_cycles():
+            if cycle.cycle_id == cycle_id:
+                cycle_name = cycle.cycle_name
+                break
+
+        display_name = cycle_name or f"Cycle {cycle_id}"
+        warning_message = (
+            f"Are you sure you want to\ndelete {display_name}?\n\n"
+            "This action cannot be undone."
+        )
+
+        self.parent.show_warning(
+            warning_message=warning_message,
+            on_confirm=self._confirm_delete_cycle,
+            on_cancel=self._cancel_delete_cycle,
+            button_mode="both",
+            green_button_text="YES",
+            red_button_text="NO",
+        )
+
+    def _confirm_delete_cycle(self):
+        """
+        Delete the pending cycle after confirmation, then return to home.
+        """
+        cycle_id = self.pending_delete_cycle_id
+        self.pending_delete_cycle_id = None
+        if cycle_id is None or cycle_id < 4:
+            self.parent.show_home()
+            return
+
+        removed = self.controller.delete_cycle(cycle_id)
+        if removed:
+            self.refresh_cycles_from_backend()
+        self.parent.show_home()
+
+    def _cancel_delete_cycle(self):
+        """
+        Cancel the pending delete action and return to home unchanged.
+        """
+        self.pending_delete_cycle_id = None
+        self.parent.show_home()
+
     def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
         self.help_overlay.show()
+        self.help_overlay.show()
+        self.help_overlay.raise_()
         
     def resizeEvent(self, event):
         """

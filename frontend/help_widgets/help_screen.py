@@ -11,7 +11,14 @@ from PySide6.QtPdfWidgets import QPdfView
 
 class HelpOverlay(QWidget):
     def __init__(self, path, parent=None):
+        """
+        The HelpOverlay reveals the relevant manual as a pdf over the current screen/widget
+        Args:
+            path (str): path to the relevant manual pdf in reference to the project root
+            parent (QWidget): parent object of this widget
+        """
         super().__init__(parent)
+        self.setFixedSize(1024,600)
         
         if path is None:
             path = "resources/manuals/sample_manual.pdf"
@@ -41,16 +48,15 @@ class HelpOverlay(QWidget):
         self.pdf_view.move(290,40)
 
     def return_pressed(self):
+        """
+        Hides the help overlay when return is pressed
+        """
         self.hide()
 
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.resize(self.parent().size())
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-
     def paintEvent(self, event):
+        """
+        paints the background so that the background is greyed out
+        """
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0, 140))
 
