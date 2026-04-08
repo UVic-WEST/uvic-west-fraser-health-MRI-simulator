@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QMainWindow,
     QStackedLayout,
+    QMessageBox,
 )
 
 from frontend.home_page_widgets.home_page import HomePage
@@ -171,39 +172,63 @@ class AppRouter(QMainWindow):
             on_cancel=self.show_home,
         )
 
-    def _resolve_play_cycle_id(self, selected) -> int:
-        """Figure out which cycle id to run from whatever the home page gives us.
+    def _resolve_play_cycle_id(self, selected) -> int | None:
+        """Resolve ``cur_cycle`` to a real ``cycle_id`` present in ``cycle_factory``.
 
-        Tries a real name match from the cycle list first, then falls back to the number
-        at the end of strings like ``Cycle 2``. If nothing matches, we default to 1.
-        Tweak this if you change how the dropdown labels work pleaseeeeee
+        The home page usually passes the combo's user data (int). We also support
+        matching by ``cycle_name`` or a trailing number in labels like ``Cycle 2``,
+        but only if that id still exists. Returns ``None`` if nothing valid is selected
+        or the id is not in the current list (no silent fallback to cycle 1).
         """
         if selected is None:
-            return 1
+            return None
+
+        if isinstance(selected, int):
+            try:
+                self.cycle_factory.get_cycle_by_id(selected)
+            except ValueError:
+                return None
+            return selected
+
         name = str(selected).strip()
         for c in self.cycle_factory.list_cycles():
             if c.cycle_name == name:
                 return c.cycle_id
+
         tail = name.rsplit(None, 1)[-1]
         if tail.isdigit():
-            return int(tail)
-        return 1
+            cid = int(tail)
+            try:
+                self.cycle_factory.get_cycle_by_id(cid)
+            except ValueError:
+                return None
+            return cid
+
+        return None
 
     def play_cycle_confirmed(self):
         """
         This function routes the app to the cycle running page when the user has confirmed 
         they want to play a cycle. Sends the selected cycle's ID and duration to the running logic.
         """
-        # Get the selected cycle ID
-        selected_cycle_id = self.cur_cycle
-        self.main_layout.setCurrentWidget(self.cycle_running_page)
         cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
+        if cycle_id is None:
+            QMessageBox.warning(
+                self,
+                "Cannot play cycle",
+                "No cycle is selected, or the selected cycle is no longer available.",
+            )
+            self.show_home()
+            return
+
+        self.main_layout.setCurrentWidget(self.cycle_running_page)
         self.cycle_running_page.play_cycle(cycle_id)
 
     def show_home(self):
         """
         This function routes the application to show the homepage
         """
+        self.cycle_factory.refresh()
         self.home_page.refresh_cycles_from_backend()
         self.main_layout.setCurrentWidget(self.home_page)
 

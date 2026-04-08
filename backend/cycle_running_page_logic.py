@@ -29,10 +29,13 @@ class CycleRunningPageLogic(QObject):
     Signals:
         time_signal_in_s (int): Remaining seconds (>0), -1 for cancelled,
             0 for completed.
+        cycle_start_failed (str): Emitted when ``cycle_id`` is unknown or load fails;
+            message is safe to show to the user.
     """
 
     time_signal_in_s = Signal(int)
     error_signal = Signal(bool)
+    cycle_start_failed = Signal(str)
 
     def __init__(
         self,
@@ -110,10 +113,15 @@ class CycleRunningPageLogic(QObject):
         """
         if self._active_cycle:
             return
-        
-        self.current_cycle = self.cycle_factory.get_cycle_by_id(cycle_id=cycle_id)
+
+        try:
+            self.current_cycle = self.cycle_factory.get_cycle_by_id(cycle_id=cycle_id)
+        except ValueError as e:
+            self.cycle_start_failed.emit(str(e))
+            return
+
         self.rem_time_ms = self.current_cycle.cycle_duration_ms
-        
+
         print("Starting cycle with duration", self.rem_time_ms)
         self._set_light_intensity()
         self.time_signal_in_s.emit(self._rem_time_in_sec)

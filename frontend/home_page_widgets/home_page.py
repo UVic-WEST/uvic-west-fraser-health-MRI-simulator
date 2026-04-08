@@ -51,9 +51,8 @@ class HomePage(QWidget):
         self.main_layout.setContentsMargins(40, 110, 40, 40)
         self.cur_cycle_id = None
 
-        # Get cycles from backend
-        from backend.cycle_factory import CycleFactory
-        self.cycle_factory = CycleFactory()
+        # Single shared CycleFactory from AppRouter (via HomePageLogic) — same instance as run-cycle logic
+        self.cycle_factory = self.controller.cycle_factory
         cycles = self.cycle_factory.list_cycles()
         cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
 

@@ -1,7 +1,8 @@
-from PySide6.QtWidgets import(
+from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QMessageBox,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (
@@ -46,7 +47,18 @@ class CycleRunningPage(QWidget):
         self.controlling_buttons = ControllingButtons(self)
         self.main_layout.addSpacing(40)
         self.main_layout.addWidget(self.controlling_buttons)
-        
+
+        self.controller.cycle_start_failed.connect(self._on_cycle_start_failed)
+
+    def _on_cycle_start_failed(self, message: str):
+        """Invalid cycle id or missing config: show message and leave running page."""
+        QMessageBox.warning(
+            self,
+            "Cannot start cycle",
+            message,
+        )
+        self.parent.show_home()
+
     def play_cycle(self, cycle_id):
         """
         Start the selected cycle by passing its ID and duration to the controller.

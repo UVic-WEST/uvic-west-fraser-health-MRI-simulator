@@ -27,6 +27,21 @@ def test_light_controller_failure():
     """Current implementation never seems to indicate failure?"""
     pass
 
+def test_start_cycle_invalid_id_emits_signal_and_does_not_start(
+    cycle_running_logic, mock_cycle_factory, qtbot
+):
+    """Unknown cycle_id: emit cycle_start_failed, no active cycle, timer not started."""
+    mock_cycle_factory.get_cycle_by_id.side_effect = ValueError("No cycle with id 999")
+
+    with qtbot.waitSignal(cycle_running_logic.cycle_start_failed, timeout=1000) as blocker:
+        cycle_running_logic.start_cycle(999)
+
+    assert blocker.args == ["No cycle with id 999"]
+    assert not cycle_running_logic._active_cycle
+    assert cycle_running_logic.current_cycle is None
+    cycle_running_logic.timer.start.assert_not_called()
+
+
 def test_active_cycle_on_success(cycle_running_logic):
     """Tests there is an active cycle when both SoundPlayer.play and LightController.change_lights are successful"""
     cycle_running_logic.start_cycle(1)
