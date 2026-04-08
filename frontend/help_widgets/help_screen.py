@@ -1,0 +1,61 @@
+from PySide6.QtWidgets import (
+    QPushButton,
+    QWidget,
+)
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QPainter, QColor
+from PySide6.QtPdf import QPdfDocument
+from PySide6.QtPdfWidgets import QPdfView
+
+
+class HelpOverlay(QWidget):
+
+    def __init__(self, path, parent=None):
+        """
+        The HelpOverlay reveals the relevant manual as a pdf over the current screen/widget
+        Args:
+            path (str): path to the relevant manual pdf in reference to the project root
+            parent (QWidget): parent object of this widget
+        """
+        super().__init__(parent)
+        self.setFixedSize(1024,600)
+        
+        if path is None:
+            path = "resources/manuals/sample_manual.pdf"
+
+        self.hide()
+
+        self.return_button = QPushButton("Return",self)
+        self.return_button.setStyleSheet("""
+            background-color: #FFA630;
+            border-radius: 20px;
+            font: 24px 'Ubuntu';
+        """)
+        self.return_button.setFixedSize(200,53)
+        self.return_button.clicked.connect(self.return_pressed)
+        self.return_button.move(50,40)
+
+        # Set up document
+        self.pdf_document = QPdfDocument()
+        self.pdf_document.load(path)
+
+        self.pdf_view = QPdfView(self)
+        self.pdf_view.setDocument(self.pdf_document)
+        self.pdf_view.setFixedSize(700,800)
+        self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)
+        self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitInView)
+        self.pdf_view.setZoomFactor(0.7)
+        self.pdf_view.move(290,40)
+
+    def return_pressed(self):
+        """
+        Hides the help overlay when return is pressed
+        """
+        self.hide()
+
+    def paintEvent(self, event):
+        """
+        paints the background so that the background is greyed out
+        """
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor(0, 0, 0, 140))
