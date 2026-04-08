@@ -28,7 +28,12 @@ class HomePage(QWidget):
         self.play_widget.on_cycle_selected(selected_id)
 
     def request_cycle_delete(self, cycle_id: int):
-        """Prompt for confirmation before deleting eligible custom cycles (id >= 4)."""
+        """
+        Prompt for confirmation before deleting an eligible custom cycle.
+
+        Args:
+            cycle_id: cycle ID requested for deletion
+        """
         if cycle_id < 4:
             return
 
@@ -55,7 +60,9 @@ class HomePage(QWidget):
         )
 
     def _confirm_delete_cycle(self):
-        """Delete the pending cycle after confirmation, then return to home."""
+        """
+        Delete the pending cycle after confirmation, then return to home.
+        """
         cycle_id = self.pending_delete_cycle_id
         self.pending_delete_cycle_id = None
         if cycle_id is None or cycle_id < 4:
@@ -68,7 +75,9 @@ class HomePage(QWidget):
         self.parent.show_home()
 
     def _cancel_delete_cycle(self):
-        """Cancel deletion and return to home without modifying cycles."""
+        """
+        Cancel the pending delete action and return to home unchanged.
+        """
         self.pending_delete_cycle_id = None
         self.parent.show_home()
 

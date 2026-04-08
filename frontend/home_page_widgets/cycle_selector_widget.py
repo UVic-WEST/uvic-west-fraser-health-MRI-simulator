@@ -130,11 +130,21 @@ class CycleSelectorWidget(QWidget):
         self.cycle_delete_requested.connect(self._on_delete_requested)
 
     def _should_show_delete_icon(self, cycle_id: int) -> bool:
-        """Show delete icon only for custom cycles when more than 3 cycles exist."""
+        """
+        Return whether a cycle row should show the delete icon.
+
+        Only custom cycles with ID 4 and above are deletable, and only when
+        more than three cycles exist.
+        """
         return len(self.cycles) > 3 and cycle_id >= 4
 
     def set_cycles(self, cycles):
-        """Replace dropdown cycles and rebuild item metadata/icons."""
+        """
+        Replace the dropdown contents and rebuild row metadata/icons.
+
+        Args:
+            cycles: list of (cycle_id, cycle_name) tuples
+        """
         self.cycles = cycles
         self.id_to_name = {cid: name for cid, name in cycles}
         self.name_to_id = {name: cid for cid, name in cycles}
@@ -150,7 +160,9 @@ class CycleSelectorWidget(QWidget):
         self.cycle_selector.blockSignals(False)
 
     def eventFilter(self, watched, event):
-        """Handle clicks on trash icons within dropdown rows."""
+        """
+        Intercept dropdown clicks so trash icons can trigger delete requests.
+        """
         if watched is self.cycle_selector.view().viewport() and event.type() == QEvent.MouseButtonPress:
             mouse_event = event
             if isinstance(mouse_event, QMouseEvent):
@@ -165,7 +177,12 @@ class CycleSelectorWidget(QWidget):
         return super().eventFilter(watched, event)
 
     def _on_delete_requested(self, cycle_id: int):
-        """Forward delete requests to the parent container."""
+        """
+        Forward a delete request to the parent container.
+
+        Args:
+            cycle_id: the cycle ID chosen for deletion
+        """
         if self.parent and hasattr(self.parent, "request_cycle_delete"):
             self.parent.request_cycle_delete(cycle_id)
 
