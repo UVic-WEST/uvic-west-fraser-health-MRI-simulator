@@ -149,6 +149,7 @@ class CreateCycleLogic:
     # =========================================================
         
     def get_sounds_in_group(self, group_id: int) -> List[SoundConfig] | None:
+        print(f"[CreateCycleLogic.get_sounds_in_group] CALLED with group_id={group_id}")
         """
         Gets a list of sounds belonging to a group if group with group_id is in the list of groups to be played during custom cycle.
 
@@ -162,6 +163,7 @@ class CreateCycleLogic:
         ValueError: from _get_group(self, group_id) if group not found in list of groups to be played during custom cycle
         """
         group = self._get_group(group_id)
+        print(f"[CreateCycleLogic.get_sounds_in_group] returning sounds: {group.sounds if group.sounds else None}")
         return group.sounds if group.sounds else None
     
     def set_sounds_in_group(self, group_id: int, sounds: List[SoundConfig], allow_empty: bool = False) -> bool:
@@ -186,7 +188,6 @@ class CreateCycleLogic:
             raise ValueError("Each group must have 1–3 sounds")
         if allow_empty and len(sounds) == 0:
             print(f"[CreateCycleLogic.set_sounds_in_group] Allowing empty group {group_id}")
-            pass
         group = self._get_group(group_id)
         print(f"[CreateCycleLogic.set_sounds_in_group] setting group {group_id} sounds to: {sounds}")
         group.sounds = sounds
