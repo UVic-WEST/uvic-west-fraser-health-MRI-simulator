@@ -16,6 +16,9 @@ from PySide6.QtGui import (
 )
 from frontend.helpers import ReadOnlySlider
 
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
+
 # Import SoundConfig at the top for reliability
 from backend.sound_config import SoundConfig
 
@@ -136,24 +139,6 @@ class CCSoundGroupMappingPage(QWidget):
     SAMPLE_PLAYBACK_TIMER = None
     _dropdown_style = None
 
-    def refresh_groups_from_backend(self):
-        """
-        Refresh the group dropdown and internal group list from backend, preserving sound choices for existing groups.
-        """
-        old_group = self.group_dropdown.currentText()
-        self.group_options = get_dynamic_group_options(self.controller)
-        self.group_dropdown.blockSignals(True)
-        self.group_dropdown.clear()
-        self.group_dropdown.addItems(self.group_options)
-        # Try to restore previous group selection if still valid
-        if old_group in self.group_options:
-            self.group_dropdown.setCurrentText(old_group)
-        else:
-            self.group_dropdown.setCurrentIndex(0)
-        self.group_dropdown.blockSignals(False)
-        # Refresh UI for the selected group
-        self.on_group_changed(self.group_dropdown.currentText())
-
     def __init__(self, controller, parent=None):
         """
         Sound group mapping page with the same structure as ConfirmationPage.
@@ -188,6 +173,15 @@ class CCSoundGroupMappingPage(QWidget):
         self.error_label.setStyleSheet("color: #EC221F; font-size: 16px; font-family: Ubuntu; background: transparent;")
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setVisible(False)
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
 
         self.cancel_home_btn = QPushButton("Cancel", self)
         self.cancel_home_btn.setGeometry(20, 20, 120, 44)
@@ -529,6 +523,31 @@ class CCSoundGroupMappingPage(QWidget):
         self.volume_slider.valueChanged.connect(self.on_volume_slider_changed)
         self.on_group_changed(self.group_dropdown.currentText())
 
+    def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
+        self.help_overlay.show()
+        self.help_overlay.raise_()
+
+    def refresh_groups_from_backend(self):
+        """
+        Refresh the group dropdown and internal group list from backend, preserving sound choices for existing groups.
+        """
+        old_group = self.group_dropdown.currentText()
+        self.group_options = get_dynamic_group_options(self.controller)
+        self.group_dropdown.blockSignals(True)
+        self.group_dropdown.clear()
+        self.group_dropdown.addItems(self.group_options)
+        # Try to restore previous group selection if still valid
+        if old_group in self.group_options:
+            self.group_dropdown.setCurrentText(old_group)
+        else:
+            self.group_dropdown.setCurrentIndex(0)
+        self.group_dropdown.blockSignals(False)
+        # Refresh UI for the selected group
+        self.on_group_changed(self.group_dropdown.currentText())
+
     def _resolve_manual_sound_controller(self):
         """
         This function finds the app-level manual sound controller from parent widgets.
@@ -745,6 +764,7 @@ class CCSoundGroupMappingPage(QWidget):
         self.back_btn.setEnabled(False)
         self.next_btn.setEnabled(False)
         self.default_btn.setEnabled(False)
+        self.help_button.setEnabled(False)
 
         # Change button to grey and start countdown
         from PySide6.QtCore import QTimer
@@ -805,6 +825,7 @@ class CCSoundGroupMappingPage(QWidget):
         self.back_btn.setEnabled(True)
         self.next_btn.setEnabled(True)
         self.default_btn.setEnabled(True)
+        self.help_button.setEnabled(True)
 
     def _set_dropdowns_greyed(self, greyed):
         """

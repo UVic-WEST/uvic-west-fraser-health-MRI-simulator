@@ -16,6 +16,9 @@ from PySide6.QtGui import (
     QFont,
 )
 
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
+
 from frontend.create_cycle_widgets.cc_summary_widgets.sound_group_summary_widget import SoundGroupSummaryWidget
 
 DURATION_PAGE_INDEX = 0
@@ -94,6 +97,14 @@ class CCSummary(QWidget):
         )
         self.cancel_home_btn.clicked.connect(self.cancel_to_home)
         self.cancel_home_btn.raise_()
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
 
         self.back_btn = QPushButton("Back", self)
         self.back_btn.setGeometry(20, 536, 120, 44)
@@ -191,6 +202,13 @@ class CCSummary(QWidget):
         self.content_box.setLayout(overall_layout)
         self.main_layout.addWidget(self.content_box)
         self._update_summary_buttons()
+
+    def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
+        self.help_overlay.show()
+        self.help_overlay.raise_()
 
     def showEvent(self, event):
         """

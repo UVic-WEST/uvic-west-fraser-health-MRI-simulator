@@ -195,7 +195,6 @@ class AppRouter(QMainWindow):
         they want to play a cycle. Sends the selected cycle's ID and duration to the running logic.
         """
         # Get the selected cycle ID
-        selected_cycle_id = self.cur_cycle
         self.main_layout.setCurrentWidget(self.cycle_running_page)
         cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
         self.cycle_running_page.play_cycle(cycle_id)

@@ -3,10 +3,14 @@ from PySide6.QtWidgets import(
     QGridLayout,
     QHBoxLayout,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QPushButton
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
+
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
 
 from frontend.home_page_widgets.cycle_player_widget import CyclePlayerWidget
 from frontend.home_page_widgets.sound_controls_widget import SoundControlsWidget
@@ -15,6 +19,81 @@ from frontend.home_page_widgets.sign_out_button import SignOutButton
 
 
 class HomePage(QWidget):
+    def __init__(self, controller, light_controller, sound_controller, parent=None):
+        """
+        This function builds the HomePage UI and initializes page-level state
+
+        Args:
+            controller: the page/controller reference used by HomePage
+            light_controller: the manual light panel controller reference
+            sound_controller: the manual sound panel controller reference
+            parent: the parent widget for this page
+        """
+
+        #Homepage setup
+        super().__init__(parent)
+        self.parent = parent
+        self.controller = controller
+        self.light_controller = light_controller
+        self.sound_controller = sound_controller
+        self.main_layout = QGridLayout()
+        self.main_layout.setContentsMargins(40, 110, 40, 40)
+        self.cur_cycle_id = None
+        self.pending_delete_cycle_id = None
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+
+        # Get cycles from backend
+        from backend.cycle_factory import CycleFactory
+        self.cycle_factory = CycleFactory()
+        cycles = self.cycle_factory.list_cycles()
+        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
+
+        #setting up and organizing widgets
+        self.play_widget = CyclePlayerWidget(cycle_tuples, self)
+        self.sound_controls_widget = SoundControlsWidget(self.sound_controller, self)
+        self.light_controls_widget = LightControlsWidget(self.light_controller, self)
+
+        #right column: sound controls stacked above light controls
+        right_col = QVBoxLayout()
+        right_col.setSpacing(20)
+        right_col.setContentsMargins(0, 0, 0, 0)
+        right_col.addWidget(self.sound_controls_widget)
+        right_col.addWidget(self.light_controls_widget)
+        right_col.addStretch()
+
+        #horizontal row: cycle player | stacked sound+light controls
+        widgets_row = QHBoxLayout()
+        widgets_row.setSpacing(20)
+        widgets_row.setContentsMargins(0, 0, 0, 0)
+        widgets_row.addWidget(self.play_widget)
+        widgets_row.addLayout(right_col)
+        widgets_container = QWidget()
+        widgets_container.setLayout(widgets_row)
+        self.main_layout.addWidget(widgets_container, 0, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.setLayout(self.main_layout)
+
+        #setting up sign out button (positioned absolutely in top left)
+        self.sign_out_button = SignOutButton(self)
+        self.sign_out_button.move(20, 20)
+        self.sign_out_button.raise_()  # Bring to front
+
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
+
+        #setting up logo (positioned absolutely so it doesn't affect layout)
+        logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
+        logo_pixmap = QPixmap(logo_path)
+        self.logo_label = QLabel(self)
+        self.logo_label.setPixmap(logo_pixmap)
+        self.logo_label.setScaledContents(False)
+        self.logo_label.adjustSize()
+        self.logo_label.raise_()  # Bring to front
+
     def refresh_cycles_from_backend(self):
         """
         Refresh the cycle list from the backend and update the player widget.
@@ -81,73 +160,13 @@ class HomePage(QWidget):
         self.pending_delete_cycle_id = None
         self.parent.show_home()
 
-    def __init__(self, controller, light_controller, sound_controller, parent=None):
+    def help_pressed(self):
         """
-        This function builds the HomePage UI and initializes page-level state
-
-        Args:
-            controller: the page/controller reference used by HomePage
-            light_controller: the manual light panel controller reference
-            sound_controller: the manual sound panel controller reference
-            parent: the parent widget for this page
+        Shows the help screen overlay for this page
         """
-
-        #Homepage setup
-        super().__init__(parent)
-        self.parent = parent
-        self.controller = controller
-        self.light_controller = light_controller
-        self.sound_controller = sound_controller
-        self.main_layout = QGridLayout()
-        self.main_layout.setContentsMargins(40, 110, 40, 40)
-        self.cur_cycle_id = None
-        self.pending_delete_cycle_id = None
-
-        # Get cycles from backend
-        from backend.cycle_factory import CycleFactory
-        self.cycle_factory = CycleFactory()
-        cycles = self.cycle_factory.list_cycles()
-        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
-
-        #setting up and organizing widgets
-        self.play_widget = CyclePlayerWidget(cycle_tuples, self)
-        self.sound_controls_widget = SoundControlsWidget(self.sound_controller, self)
-        self.light_controls_widget = LightControlsWidget(self.light_controller, self)
-
-        #right column: sound controls stacked above light controls
-        right_col = QVBoxLayout()
-        right_col.setSpacing(20)
-        right_col.setContentsMargins(0, 0, 0, 0)
-        right_col.addWidget(self.sound_controls_widget)
-        right_col.addWidget(self.light_controls_widget)
-        right_col.addStretch()
-
-        #horizontal row: cycle player | stacked sound+light controls
-        widgets_row = QHBoxLayout()
-        widgets_row.setSpacing(20)
-        widgets_row.setContentsMargins(0, 0, 0, 0)
-        widgets_row.addWidget(self.play_widget)
-        widgets_row.addLayout(right_col)
-        widgets_container = QWidget()
-        widgets_container.setLayout(widgets_row)
-        self.main_layout.addWidget(widgets_container, 0, 0, Qt.AlignmentFlag.AlignVCenter)
-        self.setLayout(self.main_layout)
-
-        #setting up sign out button (positioned absolutely in top left)
-        self.sign_out_button = SignOutButton(self)
-        self.sign_out_button.move(20, 20)
-        self.sign_out_button.raise_()  # Bring to front
-
-        #setting up logo (positioned absolutely so it doesn't affect layout)
-        logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
-        logo_pixmap = QPixmap(logo_path)
-        self.logo_label = QLabel(self)
-        self.logo_label.setPixmap(logo_pixmap)
-        self.logo_label.setScaledContents(False)
-        self.logo_label.adjustSize()
-        self.logo_label.raise_()  # Bring to front
-    
-    
+        self.help_overlay.show()
+        self.help_overlay.raise_()
+        
     def resizeEvent(self, event):
         """
         This function repositions the logo when the widget is resized

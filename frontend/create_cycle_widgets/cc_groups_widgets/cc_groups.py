@@ -15,6 +15,9 @@ from PySide6.QtGui import (
 )
 
 
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
+
 class CCGroupsPage(QWidget):
     def __init__(self, controller, parent=None):
         """
@@ -35,6 +38,15 @@ class CCGroupsPage(QWidget):
         self.main_layout.setContentsMargins(40, 0, 40, 16)
         self.main_layout.setSpacing(4)
         self.setLayout(self.main_layout)
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
 
         self.cancel_home_btn = QPushButton("Cancel", self)
         self.cancel_home_btn.setGeometry(20, 20, 120, 44)
@@ -232,6 +244,13 @@ class CCGroupsPage(QWidget):
         self.content_box.setLayout(content_layout)
         self.main_layout.addWidget(self.content_box)
         self._update_stepper_button_states()
+
+    def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
+        self.help_overlay.show()
+        self.help_overlay.raise_()
 
     def _update_stepper_button_states(self):
         """
