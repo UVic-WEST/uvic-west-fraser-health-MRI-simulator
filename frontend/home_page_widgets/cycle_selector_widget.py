@@ -55,32 +55,35 @@ class FixedComboBox(QComboBox):
         view = self.view()
         view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
-
+    
     def showPopup(self):
         """
-        This function shows the combo box popup below the widget with constrained height.
+        Show popup below the widget with constrained height and rounded container styling.
         """
+        from PySide6.QtWidgets import QFrame
+
         view = self.view()
         max_visible_items = self.popup_max_visible_items
         view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setMaxVisibleItems(max_visible_items)
 
-        view.setStyleSheet('''
-            QAbstractItemView {
+        # Keep inner list transparent so the popup container paints the rounded shape.
+        view.setFrameShape(QFrame.NoFrame)
+        view.setStyleSheet("""
+            QListView {
+                background: #FAF5F5;
+                border: none;
                 color: black;
-                background: white;
-                selection-color: black;
-                selection-background-color: #d9d9d9;
-                border: 1px solid #0474BA;
-                border-radius: 14px;
                 padding: 4px;
                 outline: 0;
+                selection-background-color: #d9d9d9;
+                selection-color: black;
             }
             QScrollBar:vertical {
-                background: white;
+                background:  #FAF5F5;
                 width: 14px;
-                margin: 2px 0 2px 0;
+                margin: 8px 2px 8px 0;
                 border-radius: 7px;
             }
             QScrollBar::handle:vertical {
@@ -89,29 +92,47 @@ class FixedComboBox(QComboBox):
                 border-radius: 7px;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                background: none;
+                background: #FAF5F5;
                 height: 0px;
             }
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
+                background:  #FAF5F5;
             }
-        ''')
-
-        popup_width = self.width()
-        view.setMinimumWidth(popup_width)
-        view.setMaximumWidth(popup_width)
+        """)
 
         row_height = view.sizeHintForRow(0)
         if row_height <= 0:
             row_height = 28
         visible_rows = max(1, min(self.count(), max_visible_items))
-        popup_height = (row_height * visible_rows) + (2 * view.frameWidth())
-        view.setMinimumHeight(popup_height)
-        view.setMaximumHeight(popup_height)
+
+        # Content size for the inner view.
+        content_width = self.width()
+        content_height = (row_height * visible_rows) + 8
+
+        view.setMinimumWidth(content_width)
+        view.setMaximumWidth(content_width)
+        view.setMinimumHeight(content_height)
+        view.setMaximumHeight(content_height)
 
         super().showPopup()
+
         popup = view.window()
         if popup:
+            # Let rounded container corners be truly transparent outside border radius.
+            popup.setAttribute(Qt.WA_TranslucentBackground, True)
+
+            popup.setStyleSheet("""
+                QFrame {
+                    background: white;
+                    border: 1px solid #0474BA;
+                    border-radius: 14px;
+                }
+            """)
+
+            # Add small slack so right border never clips.
+            popup_width = content_width + 2
+            popup_height = content_height + 2
+
             popup.setMinimumWidth(popup_width)
             popup.setMaximumWidth(popup_width)
             popup.setMinimumHeight(popup_height)
