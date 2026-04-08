@@ -1,15 +1,15 @@
-import sys
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QPushButton, QVBoxLayout,
-    QWidget, QLabel, QFrame
+    QPushButton,
+    QWidget,
 )
-from PySide6.QtCore import Qt, QSize, QUrl
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QPainter, QColor
-from PySide6.QtPdf import QPdfPageRenderer, QPdfDocument
+from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
 
 
 class HelpOverlay(QWidget):
+
     def __init__(self, path, parent=None):
         """
         The HelpOverlay reveals the relevant manual as a pdf over the current screen/widget
@@ -59,4 +59,3 @@ class HelpOverlay(QWidget):
         """
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0, 140))
-

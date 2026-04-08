@@ -6,19 +6,14 @@ from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import (
     QPixmap,
     QFont,
+    QIcon, 
+
 )
 
-
-
-from PySide6.QtCore import Qt, QSize, QTimer
-from PySide6.QtGui import (
-    QPixmap,
-    QIcon, 
-    )
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
 
 from frontend.helpers import ReadOnlySlider
-
-
 
 class CCBrightnessPage(QWidget):
     def __init__(self, controller, parent=None):
@@ -76,6 +71,15 @@ class CCBrightnessPage(QWidget):
         self.next_btn.setStyleSheet(self.cancel_home_btn.styleSheet())
         self.next_btn.clicked.connect(self.mapping_confirmed)
         self.next_btn.raise_()
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
+
 
         self.default_btn = QPushButton("Default", self)
         self.default_btn.setGeometry(752, 536, 120, 44)
@@ -149,6 +153,13 @@ class CCBrightnessPage(QWidget):
             except Exception as e:
                 print(f"[CCBrightnessPage] Error getting light level from backend: {e}")
 
+    def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
+        self.help_overlay.show()
+        self.help_overlay.raise_()
+        
     def set_background(self, image_path):
         self.bg_label = QLabel(self)
         self.bg_label.setPixmap(

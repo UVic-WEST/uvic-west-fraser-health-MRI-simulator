@@ -165,7 +165,6 @@ class HomePage(QWidget):
         Shows the help screen overlay for this page
         """
         self.help_overlay.show()
-        self.help_overlay.show()
         self.help_overlay.raise_()
         
     def resizeEvent(self, event):

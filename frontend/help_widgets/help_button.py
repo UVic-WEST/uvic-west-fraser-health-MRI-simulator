@@ -1,8 +1,6 @@
-from PySide6.QtWidgets import(
-    QPushButton
-)
+from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QPixmap, QIcon, QRegion
+from PySide6.QtGui import QIcon
 
 
 class HelpButton(QPushButton):
