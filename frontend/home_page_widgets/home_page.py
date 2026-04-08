@@ -44,9 +44,8 @@ class HomePage(QWidget):
         self.help_manual_path = None
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
 
-        # Get cycles from backend
-        from backend.cycle_factory import CycleFactory
-        self.cycle_factory = CycleFactory()
+        # Single shared CycleFactory from AppRouter (via HomePageLogic) — same instance as run-cycle logic
+        self.cycle_factory = self.controller.cycle_factory
         cycles = self.cycle_factory.list_cycles()
         cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
 
