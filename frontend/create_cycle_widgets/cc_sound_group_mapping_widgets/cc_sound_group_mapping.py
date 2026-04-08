@@ -437,6 +437,12 @@ class CCSoundGroupMappingPage(QWidget):
             QPushButton:pressed {
                 background-color: #024a74;
             }
+            QPushButton:disabled {
+                background-color: #B4B4B4;
+                color: white;
+                border: none;
+                border-radius: 8px;
+            }
             """
         )
 
@@ -453,6 +459,12 @@ class CCSoundGroupMappingPage(QWidget):
             }
             QPushButton:pressed {
                 background-color: #024a74;
+            }
+            QPushButton:disabled {
+                background-color: #B4B4B4;
+                color: white;
+                border: none;
+                border-radius: 8px;
             }
             """
         )
@@ -785,6 +797,9 @@ class CCSoundGroupMappingPage(QWidget):
         self.group_dropdown.setEnabled(True)
         self._set_dropdowns_greyed(False)
         self._set_dropdowns_placeholder(SOUND_DROPDOWN_PLACEHOLDER)
+        # Restore volume controls after temporary sample lockout.
+        self.decrease_volume_button.setEnabled(True)
+        self.increase_volume_button.setEnabled(True)
         # Re-enable navigation and default buttons
         self.cancel_home_btn.setEnabled(True)
         self.back_btn.setEnabled(True)

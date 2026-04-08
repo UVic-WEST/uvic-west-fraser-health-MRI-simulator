@@ -67,3 +67,12 @@ class CyclePlayerWidget(QWidget):
     def open_custom_cycle_warning(self):
         self.parent.show_custom_cycle_warning()
 
+    def request_cycle_delete(self, cycle_id):
+        """
+        Forward a delete request from the selector widget to the home page.
+
+        Args:
+            cycle_id: cycle ID requested for deletion
+        """
+        self.parent.request_cycle_delete(cycle_id)
+

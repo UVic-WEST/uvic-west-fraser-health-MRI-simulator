@@ -10,25 +10,134 @@
     "volume": 50,
     "light_configuration": 50,
     "actions": [
-      {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Pulse", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Drill(S)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 15000, "type": "sound_stop", "params": {"file_name": "Pulse"}},
-      {"timestamp": 15000, "type": "sound_stop", "params": {"file_name": "Drill(S)"}},
-
-      {"timestamp": 15000, "type": "sound_start", "params": {"file_name": "Beeps", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 15000, "type": "sound_start", "params": {"file_name": "Scan", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 30000, "type": "sound_stop", "params": {"file_name": "Beeps"}},
-      {"timestamp": 30000, "type": "sound_stop", "params": {"file_name": "Scan"}},
-
-      {"timestamp": 30000, "type": "sound_start", "params": {"file_name": "Drill(M)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 30000, "type": "sound_start", "params": {"file_name": "Alarm", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 45000, "type": "sound_stop", "params": {"file_name": "Drill(M)"}},
-      {"timestamp": 45000, "type": "sound_stop", "params": {"file_name": "Alarm"}},
-
-      {"timestamp": 45000, "type": "sound_start", "params": {"file_name": "Buzz", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 45000, "type": "sound_start", "params": {"file_name": "Drill(L)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 60000, "type": "sound_stop", "params": {"file_name": "Buzz"}},
-      {"timestamp": 60000, "type": "sound_stop", "params": {"file_name": "Drill(L)"}}
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Pulse",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(S)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 15000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Pulse"
+        }
+      },
+      {
+        "timestamp": 15000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(S)"
+        }
+      },
+      {
+        "timestamp": 15000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Beeps",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 15000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Scan",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Beeps"
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Scan"
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(M)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Alarm",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 45000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(M)"
+        }
+      },
+      {
+        "timestamp": 45000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Alarm"
+        }
+      },
+      {
+        "timestamp": 45000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Buzz",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 45000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(L)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 60000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Buzz"
+        }
+      },
+      {
+        "timestamp": 60000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(L)"
+        }
+      }
     ]
   },
   {
@@ -42,29 +151,134 @@
     "volume": 50,
     "light_configuration": 50,
     "actions": [
-      {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Pulse", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 22500, "type": "sound_stop", "params": {"file_name": "Pulse"}},
-
-      {"timestamp": 22500, "type": "sound_start", "params": {"file_name": "Drill(S)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 45000, "type": "sound_stop", "params": {"file_name": "Drill(S)"}},
-
-      {"timestamp": 45000, "type": "sound_start", "params": {"file_name": "Beeps", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 67500, "type": "sound_stop", "params": {"file_name": "Beeps"}},
-
-      {"timestamp": 67500, "type": "sound_start", "params": {"file_name": "Scan", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 90000, "type": "sound_stop", "params": {"file_name": "Scan"}},
-      
-      {"timestamp": 90000, "type": "sound_start", "params": {"file_name": "Drill(M)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 112500, "type": "sound_stop", "params": {"file_name": "Drill(M)"}},
-
-      {"timestamp": 112500, "type": "sound_start", "params": {"file_name": "Alarm", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 135000, "type": "sound_stop", "params": {"file_name": "Alarm"}},
-
-      {"timestamp": 135000, "type": "sound_start", "params": {"file_name": "Buzz", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 157500, "type": "sound_stop", "params": {"file_name": "Buzz"}},
-      
-      {"timestamp": 157500, "type": "sound_start", "params": {"file_name": "Drill(L)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 180000, "type": "sound_stop", "params": {"file_name": "Drill(L)"}}
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Pulse",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 22500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Pulse"
+        }
+      },
+      {
+        "timestamp": 22500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(S)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 45000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(S)"
+        }
+      },
+      {
+        "timestamp": 45000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Beeps",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 67500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Beeps"
+        }
+      },
+      {
+        "timestamp": 67500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Scan",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 90000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Scan"
+        }
+      },
+      {
+        "timestamp": 90000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(M)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 112500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(M)"
+        }
+      },
+      {
+        "timestamp": 112500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Alarm",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 135000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Alarm"
+        }
+      },
+      {
+        "timestamp": 135000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Buzz",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 157500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Buzz"
+        }
+      },
+      {
+        "timestamp": 157500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(L)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 180000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(L)"
+        }
+      }
     ]
   },
   {
@@ -78,29 +292,134 @@
     "volume": 50,
     "light_configuration": 50,
     "actions": [
-      {"timestamp": 0, "type": "sound_start", "params": {"file_name": "Pulse", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 37500, "type": "sound_stop", "params": {"file_name": "Pulse"}},
-
-      {"timestamp": 37500, "type": "sound_start", "params": {"file_name": "Drill(S)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 75000, "type": "sound_stop", "params": {"file_name": "Drill(S)"}},
-
-      {"timestamp": 75000, "type": "sound_start", "params": {"file_name": "Beeps", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 112500, "type": "sound_stop", "params": {"file_name": "Beeps"}},
-
-      {"timestamp": 112500, "type": "sound_start", "params": {"file_name": "Scan", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 150000, "type": "sound_stop", "params": {"file_name": "Scan"}},
-      
-      {"timestamp": 150000, "type": "sound_start", "params": {"file_name": "Drill(M)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 187500, "type": "sound_stop", "params": {"file_name": "Drill(M)"}},
-
-      {"timestamp": 187500, "type": "sound_start", "params": {"file_name": "Alarm", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 225000, "type": "sound_stop", "params": {"file_name": "Alarm"}},
-
-      {"timestamp": 225000, "type": "sound_start", "params": {"file_name": "Buzz", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 262500, "type": "sound_stop", "params": {"file_name": "Buzz"}},
-      
-      {"timestamp": 262500, "type": "sound_start", "params": {"file_name": "Drill(L)", "volume": 50, "duration_ms": 15000}},
-      {"timestamp": 300000, "type": "sound_stop", "params": {"file_name": "Drill(L)"}}
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Pulse",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 37500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Pulse"
+        }
+      },
+      {
+        "timestamp": 37500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(S)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 75000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(S)"
+        }
+      },
+      {
+        "timestamp": 75000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Beeps",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 112500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Beeps"
+        }
+      },
+      {
+        "timestamp": 112500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Scan",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 150000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Scan"
+        }
+      },
+      {
+        "timestamp": 150000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(M)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 187500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(M)"
+        }
+      },
+      {
+        "timestamp": 187500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Alarm",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 225000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Alarm"
+        }
+      },
+      {
+        "timestamp": 225000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Buzz",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 262500,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Buzz"
+        }
+      },
+      {
+        "timestamp": 262500,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(L)",
+          "volume": 50,
+          "duration_ms": 15000
+        }
+      },
+      {
+        "timestamp": 300000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(L)"
+        }
+      }
     ]
   }
 ]

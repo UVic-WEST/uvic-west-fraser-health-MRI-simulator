@@ -108,6 +108,7 @@ class CycleRunningPageLogic(QObject):
         Returns:
             None
         """
+        self.cycle_factory.refresh()
         if self._active_cycle:
             return
         
