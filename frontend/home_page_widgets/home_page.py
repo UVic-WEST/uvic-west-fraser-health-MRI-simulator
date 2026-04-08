@@ -3,10 +3,14 @@ from PySide6.QtWidgets import(
     QGridLayout,
     QHBoxLayout,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QPushButton
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
+
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
 
 from frontend.home_page_widgets.cycle_player_widget import CyclePlayerWidget
 from frontend.home_page_widgets.sound_controls_widget import SoundControlsWidget
@@ -51,6 +55,9 @@ class HomePage(QWidget):
         self.main_layout.setContentsMargins(40, 110, 40, 40)
         self.cur_cycle_id = None
 
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+
         # Get cycles from backend
         from backend.cycle_factory import CycleFactory
         self.cycle_factory = CycleFactory()
@@ -86,6 +93,12 @@ class HomePage(QWidget):
         self.sign_out_button.move(20, 20)
         self.sign_out_button.raise_()  # Bring to front
 
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
+
         #setting up logo (positioned absolutely so it doesn't affect layout)
         logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
         logo_pixmap = QPixmap(logo_path)
@@ -95,7 +108,9 @@ class HomePage(QWidget):
         self.logo_label.adjustSize()
         self.logo_label.raise_()  # Bring to front
     
-    
+    def help_pressed(self):
+        self.help_overlay.show()
+        
     def resizeEvent(self, event):
         """
         This function repositions the logo when the widget is resized
