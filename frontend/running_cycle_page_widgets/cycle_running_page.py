@@ -126,7 +126,6 @@ class CycleRunningPage(QWidget):
         """
         organizes the background of the running cycle page
         """
-
         self.bg_label = QLabel(self)
         self.bg_label.setPixmap(
             QPixmap(image_path).scaled(

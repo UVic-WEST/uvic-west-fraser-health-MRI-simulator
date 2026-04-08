@@ -3,10 +3,14 @@ from PySide6.QtWidgets import(
     QGridLayout,
     QHBoxLayout,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QPushButton
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
+
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
 
 from frontend.home_page_widgets.cycle_player_widget import CyclePlayerWidget
 from frontend.home_page_widgets.sound_controls_widget import SoundControlsWidget
@@ -15,21 +19,6 @@ from frontend.home_page_widgets.sign_out_button import SignOutButton
 
 
 class HomePage(QWidget):
-    def refresh_cycles_from_backend(self):
-        """
-        Refresh the cycle list from the backend and update the player widget.
-        Call this when rerouting to the homepage to ensure the list is up to date.
-        """
-        cycles = self.cycle_factory.list_cycles()
-        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
-        self.play_widget.cycle_selector_widget.cycles = cycle_tuples
-        self.play_widget.cycle_selector_widget.id_to_name = {cid: name for cid, name in cycle_tuples}
-        self.play_widget.cycle_selector_widget.name_to_id = {name: cid for cid, name in cycle_tuples}
-        self.play_widget.cycle_selector_widget.cycle_selector.clear()
-        for cid, name in cycle_tuples:
-            self.play_widget.cycle_selector_widget.cycle_selector.addItem(name, cid)
-        self.play_widget.cycle_selector_widget.cycle_selector.setCurrentIndex(0)
-
     def __init__(self, controller, light_controller, sound_controller, parent=None):
         """
         This function builds the HomePage UI and initializes page-level state
@@ -50,6 +39,10 @@ class HomePage(QWidget):
         self.main_layout = QGridLayout()
         self.main_layout.setContentsMargins(40, 110, 40, 40)
         self.cur_cycle_id = None
+        self.pending_delete_cycle_id = None
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
 
         # Single shared CycleFactory from AppRouter (via HomePageLogic) — same instance as run-cycle logic
         self.cycle_factory = self.controller.cycle_factory
@@ -85,6 +78,12 @@ class HomePage(QWidget):
         self.sign_out_button.move(20, 20)
         self.sign_out_button.raise_()  # Bring to front
 
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
+
         #setting up logo (positioned absolutely so it doesn't affect layout)
         logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
         logo_pixmap = QPixmap(logo_path)
@@ -93,8 +92,80 @@ class HomePage(QWidget):
         self.logo_label.setScaledContents(False)
         self.logo_label.adjustSize()
         self.logo_label.raise_()  # Bring to front
-    
-    
+
+    def refresh_cycles_from_backend(self):
+        """
+        Refresh the cycle list from the backend and update the player widget.
+        Call this when rerouting to the homepage to ensure the list is up to date.
+        """
+        self.cycle_factory.refresh()
+        cycles = self.cycle_factory.list_cycles()
+        cycle_tuples = [(c.cycle_id, c.cycle_name) for c in cycles]
+        self.play_widget.cycle_selector_widget.set_cycles(cycle_tuples)
+        selected_id = self.play_widget.cycle_selector_widget.get_selected_cycle_id()
+        self.play_widget.on_cycle_selected(selected_id)
+
+    def request_cycle_delete(self, cycle_id: int):
+        """
+        Prompt for confirmation before deleting an eligible custom cycle.
+
+        Args:
+            cycle_id: cycle ID requested for deletion
+        """
+        if cycle_id < 4:
+            return
+
+        self.pending_delete_cycle_id = cycle_id
+        cycle_name = None
+        for cycle in self.cycle_factory.list_cycles():
+            if cycle.cycle_id == cycle_id:
+                cycle_name = cycle.cycle_name
+                break
+
+        display_name = cycle_name or f"Cycle {cycle_id}"
+        warning_message = (
+            f"Are you sure you want to\ndelete {display_name}?\n\n"
+            "This action cannot be undone."
+        )
+
+        self.parent.show_warning(
+            warning_message=warning_message,
+            on_confirm=self._confirm_delete_cycle,
+            on_cancel=self._cancel_delete_cycle,
+            button_mode="both",
+            green_button_text="YES",
+            red_button_text="NO",
+        )
+
+    def _confirm_delete_cycle(self):
+        """
+        Delete the pending cycle after confirmation, then return to home.
+        """
+        cycle_id = self.pending_delete_cycle_id
+        self.pending_delete_cycle_id = None
+        if cycle_id is None or cycle_id < 4:
+            self.parent.show_home()
+            return
+
+        removed = self.controller.delete_cycle(cycle_id)
+        if removed:
+            self.refresh_cycles_from_backend()
+        self.parent.show_home()
+
+    def _cancel_delete_cycle(self):
+        """
+        Cancel the pending delete action and return to home unchanged.
+        """
+        self.pending_delete_cycle_id = None
+        self.parent.show_home()
+
+    def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
+        self.help_overlay.show()
+        self.help_overlay.raise_()
+        
     def resizeEvent(self, event):
         """
         This function repositions the logo when the widget is resized

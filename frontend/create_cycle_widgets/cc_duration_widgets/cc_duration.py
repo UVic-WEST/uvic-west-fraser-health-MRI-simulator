@@ -12,6 +12,9 @@ from PySide6.QtGui import (
     QPainter,
     QColor
 )
+
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
 from PySide6.QtGui import QFontDatabase
 
 class CCDurationPage(QWidget):
@@ -61,17 +64,20 @@ class CCDurationPage(QWidget):
         self.cancel_home_btn.clicked.connect(self.cancel_to_home)
         self.cancel_home_btn.raise_()
 
-        self.back_btn = QPushButton("Back", self)
-        self.back_btn.setGeometry(20, 536, 120, 44)
-        self.back_btn.setStyleSheet(self.cancel_home_btn.styleSheet())
-        self.back_btn.clicked.connect(self.mapping_cancelled)
-        self.back_btn.raise_()
-
         self.next_btn = QPushButton("Next", self)
         self.next_btn.setGeometry(884, 536, 120, 44)
         self.next_btn.setStyleSheet(self.cancel_home_btn.styleSheet())
         self.next_btn.clicked.connect(self.mapping_confirmed)
         self.next_btn.raise_()
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
 
         self.default_btn = QPushButton("Default", self)
         self.default_btn.setGeometry(752, 536, 120, 44)
@@ -132,34 +138,8 @@ class CCDurationPage(QWidget):
         self.main_layout.addWidget(self.content_box)
         self.minutes = 0
         self.seconds = 0
-
-        self.set_logicbuttons()
         self.setup_DurationScreen()
         self.on_page_enter()
-        
-    def set_logicbuttons(self):
-        """
-        This function handles logic for making all control buttons clickable ad setting their positions
-        """
-
-        #help button
-        self.help_btn = QPushButton("",self)
-        self.help_btn.setGeometry(164,23.18,49,45.44)
-        self.help_btn.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                border: none;
-            }
-            QPushButton:hover {
-                background: rgba(255, 255, 255, 30);
-                border-radius: 25px;
-            }
-            QPushButton:pressed {
-                background: rgba(255, 255, 255, 60);
-                border-radius: 25px;
-            }
-        """)
-        self.help_btn.clicked.connect(self.go_help)
 
     def setup_DurationScreen(self):
         """
@@ -260,11 +240,12 @@ class CCDurationPage(QWidget):
         """
         print("reset")
 
-    def go_help(self):
+    def help_pressed(self):
         """
-        This function handle when help button is clicked user is taken to the help screen
+        Shows the help screen overlay for this page
         """
-        print("help")
+        self.help_overlay.show()
+        self.help_overlay.raise_()
 
     def inc_time(self):
         """
@@ -391,11 +372,6 @@ class CCDurationPage(QWidget):
         )
         self.bg_label.setGeometry(0, 1, self.width(), self.height())
         self.bg_label.lower()
-
-    def mapping_cancelled(self):
-        print("back was pressed")
-        if self.parent and hasattr(self.parent, "back_pressed"):
-            self.parent.back_pressed()
 
     def mapping_confirmed(self):
         # Print the duration sent to the backend when next is pressed

@@ -16,6 +16,9 @@ from PySide6.QtGui import (
     QFont,
 )
 
+from frontend.help_widgets.help_screen import HelpOverlay
+from frontend.help_widgets.help_button import HelpButton
+
 from frontend.create_cycle_widgets.cc_summary_widgets.sound_group_summary_widget import SoundGroupSummaryWidget
 
 DURATION_PAGE_INDEX = 0
@@ -53,6 +56,13 @@ class FixedComboBox(QComboBox):
 
 class CCSummary(QWidget):
     def __init__(self, controller, parent=None):
+        """
+        Build the summary page UI and bind controls for final review/edit flow.
+
+        Args:
+            controller: create-cycle controller used to read/save configuration
+            parent: parent widget/router for navigation callbacks
+        """
         super().__init__(parent)
         self.parent = parent
         self.controller = controller
@@ -87,6 +97,14 @@ class CCSummary(QWidget):
         )
         self.cancel_home_btn.clicked.connect(self.cancel_to_home)
         self.cancel_home_btn.raise_()
+
+        self.help_manual_path = None
+        self.help_overlay = HelpOverlay(self.help_manual_path,self)
+        #setting up help button
+        self.help_button = HelpButton(self)
+        self.help_button.move(140, 20)
+        self.help_button.raise_()
+        self.help_button.clicked.connect(self.help_pressed)
 
         self.back_btn = QPushButton("Back", self)
         self.back_btn.setGeometry(20, 536, 120, 44)
@@ -131,17 +149,17 @@ class CCSummary(QWidget):
         content_layout.setSpacing(16)
 
         duration_summary_btn_icon = 'resources/create_cycle_assets/clock_icon.png'
-        self.duration_summary_btn = QPushButton("Cycle Duration: 03:00",self)
+        self.duration_summary_btn = QPushButton("Cycle Duration: --:--", self)
         self.set_up_remapping_buttons(self.duration_summary_btn, duration_summary_btn_icon)
         self.duration_summary_btn.clicked.connect(self.edit_duration)
 
         lights_summary_btn_icon = 'resources/create_cycle_assets/brightness_icon.png'
-        self.lights_summary_btn = QPushButton("Cycle Lights: 60%")
+        self.lights_summary_btn = QPushButton("Cycle Lights: --%")
         self.set_up_remapping_buttons(self.lights_summary_btn, lights_summary_btn_icon)
         self.lights_summary_btn.clicked.connect(self.edit_lights)
 
         groups_summary_btn = 'resources/create_cycle_assets/group_icon.png'
-        self.groups_summary_btn = QPushButton("Total Groups: 4")
+        self.groups_summary_btn = QPushButton("Total Groups: --")
         self.set_up_remapping_buttons(self.groups_summary_btn, groups_summary_btn)
         self.groups_summary_btn.clicked.connect(self.edit_groups)
 
@@ -183,8 +201,84 @@ class CCSummary(QWidget):
 
         self.content_box.setLayout(overall_layout)
         self.main_layout.addWidget(self.content_box)
+        self._update_summary_buttons()
+
+    def help_pressed(self):
+        """
+        Shows the help screen overlay for this page
+        """
+        self.help_overlay.show()
+        self.help_overlay.raise_()
+
+    def showEvent(self, event):
+        """
+        Refresh summary values whenever the page becomes visible.
+
+        Args:
+            event: Qt show event
+        """
+        super().showEvent(event)
+        self._update_summary_buttons()
+
+    def _update_summary_buttons(self):
+        """
+        Refreshes summary button labels from backend controller values.
+        """
+        self._update_duration_summary_button()
+        self._update_lights_summary_button()
+        self._update_groups_summary_button()
+        if hasattr(self, "preview_panel") and hasattr(self.preview_panel, "refresh_from_backend"):
+            self.preview_panel.refresh_from_backend()
+
+    def _update_duration_summary_button(self):
+        """
+        Reads duration from backend controller and updates the summary button label.
+        """
+        duration_text = "--:--"
+        if hasattr(self.controller, "get_duration"):
+            try:
+                total_seconds = int(self.controller.get_duration())
+                minutes, seconds = divmod(max(0, total_seconds), 60)
+                duration_text = f"{minutes:02}:{seconds:02}"
+            except Exception as e:
+                print(f"[_update_duration_summary_button] Error: {e}")
+
+        self.duration_summary_btn.setText(f"Cycle Duration: {duration_text}")
+
+    def _update_lights_summary_button(self):
+        """
+        Reads light level from backend controller and updates the summary button label.
+        """
+        lights_text = "--"
+        if hasattr(self.controller, "get_light_level"):
+            try:
+                lights_text = str(int(self.controller.get_light_level()))
+            except Exception as e:
+                print(f"[_update_lights_summary_button] Error: {e}")
+
+        self.lights_summary_btn.setText(f"Cycle Lights: {lights_text}%")
+
+    def _update_groups_summary_button(self):
+        """
+        Reads total groups from backend controller and updates the summary button label.
+        """
+        groups_text = "--"
+        if hasattr(self.controller, "get_total_groups"):
+            try:
+                total_groups, _ = self.controller.get_total_groups()
+                groups_text = str(int(total_groups))
+            except Exception as e:
+                print(f"[_update_groups_summary_button] Error: {e}")
+
+        self.groups_summary_btn.setText(f"Total Groups: {groups_text}")
 
     def set_background(self, image_path):
+        """
+        Set the page background image.
+
+        Args:
+            image_path: path to the background asset
+        """
         self.bg_label = QLabel(self)
         self.bg_label.setPixmap(
             QPixmap(image_path).scaled(
@@ -197,16 +291,25 @@ class CCSummary(QWidget):
         self.bg_label.lower()
 
     def mapping_cancelled(self):
+        """
+        Route to the previous step in the create-cycle flow.
+        """
         print("back was pressed")
         if self.parent and hasattr(self.parent, "back_pressed"):
             self.parent.back_pressed()
 
     def mapping_confirmed(self):
+        """
+        Route to the next step in the create-cycle flow.
+        """
         print("next was pressed")
         if self.parent and hasattr(self.parent, "next_pressed"):
             self.parent.next_pressed()
 
     def cancel_to_home(self):
+        """
+        Cancel customization and navigate back to the home page.
+        """
         print("cancel was pressed")
         current = self.parent
         while current is not None:
@@ -226,6 +329,10 @@ class CCSummary(QWidget):
             page_index: index of page in the parent stacked layout
         """
         if self.parent and hasattr(self.parent, "main_layout"):
+            if page_index == SOUNDS_PAGE_INDEX and hasattr(self.parent, "_ensure_sound_group_mapping_page"):
+                self.parent._ensure_sound_group_mapping_page()
+                if hasattr(self.parent, "cc_sound_group_mapping_page") and self.parent.cc_sound_group_mapping_page is not None:
+                    self.parent.cc_sound_group_mapping_page.refresh_groups_from_backend()
             self.parent.main_layout.setCurrentIndex(page_index)
 
     def edit_duration(self):
@@ -306,10 +413,57 @@ class CCSummary(QWidget):
         Args:
             None
         """
+        save_errors = []
+        saved_cycle = None
+        if hasattr(self.controller, "save_cycle"):
+            try:
+                saved_cycle = self.controller.save_cycle()
+            except Exception as e:
+                save_errors.append(f"Save failed: {e}")
+
+        if saved_cycle is None:
+            if hasattr(self.controller, "validate_cycle"):
+                try:
+                    is_valid, errors = self.controller.validate_cycle()
+                    if not is_valid:
+                        save_errors.extend(errors)
+                except Exception as e:
+                    save_errors.append(f"Validation failed: {e}")
+
+            self._show_save_failed_warning(save_errors)
+            return
+
         current = self.parent
         while current is not None:
             if hasattr(current, "show_home"):
                 current.show_home()
+                return
+
+            if hasattr(current, "parent"):
+                parent_ref = current.parent
+                current = parent_ref() if callable(parent_ref) else parent_ref
+            else:
+                current = None
+
+    def _show_save_failed_warning(self, errors=None):
+        """
+        Show a warning when cycle save fails and return user to summary.
+        """
+        if not errors:
+            warning_message = "Could not save cycle.\nPlease review your inputs and try again."
+        else:
+            details = "\n".join(f"- {msg}" for msg in errors[:3])
+            warning_message = f"Could not save cycle:\n{details}"
+
+        current = self.parent
+        while current is not None:
+            if hasattr(current, "show_warning"):
+                current.show_warning(
+                    warning_message=warning_message,
+                    button_mode="red",
+                    red_button_text="GO BACK",
+                    on_cancel=self._return_to_summary,
+                )
                 return
 
             if hasattr(current, "parent"):
@@ -340,6 +494,13 @@ class CCSummary(QWidget):
                 current = None
 
     def set_up_remapping_buttons(self, button, path):
+        """
+        Apply shared styling/icon setup for summary remapping buttons.
+
+        Args:
+            button: button instance to style
+            path: icon asset path
+        """
         summary_button_style = """
             QPushButton {
                 background-color: #0474BA;
