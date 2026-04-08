@@ -89,6 +89,7 @@ class CycleRunningPage(QWidget):
         """
         self.cycle = cycle_id
         self.controller.start_cycle(cycle_id)
+        self.cycle_status.setText("RUNNING")
 
     def pause_cycle(self):
         """
