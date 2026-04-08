@@ -437,6 +437,12 @@ class CCSoundGroupMappingPage(QWidget):
             QPushButton:pressed {
                 background-color: #024a74;
             }
+            QPushButton:disabled {
+                background-color: #B4B4B4;
+                color: white;
+                border: none;
+                border-radius: 8px;
+            }
             """
         )
 
@@ -453,6 +459,12 @@ class CCSoundGroupMappingPage(QWidget):
             }
             QPushButton:pressed {
                 background-color: #024a74;
+            }
+            QPushButton:disabled {
+                background-color: #B4B4B4;
+                color: white;
+                border: none;
+                border-radius: 8px;
             }
             """
         )

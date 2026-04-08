@@ -4,6 +4,8 @@ from PySide6.QtWidgets import (
     QComboBox,
     QStyledItemDelegate,
     QStyle,
+    QAbstractItemView,
+    QScroller,
 )
 from PySide6.QtCore import QPoint, Signal, Qt, QRect, QEvent
 from PySide6.QtGui import QFont, QMouseEvent, QPainter
@@ -44,13 +46,76 @@ class FixedComboBox(QComboBox):
         None
     """
 
+    def __init__(self, parent=None):
+        """
+        Initialize combo box with touch-friendly scrolling behavior.
+        """
+        super().__init__(parent)
+        self.popup_max_visible_items = 3
+        view = self.view()
+        view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
+
     def showPopup(self):
         """
-        This function shows the combo box popup below the widget
+        This function shows the combo box popup below the widget with constrained height.
         """
+        view = self.view()
+        max_visible_items = self.popup_max_visible_items
+        view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setMaxVisibleItems(max_visible_items)
+
+        view.setStyleSheet('''
+            QAbstractItemView {
+                color: black;
+                background: white;
+                selection-color: black;
+                selection-background-color: #d9d9d9;
+                border: 1px solid #0474BA;
+                border-radius: 14px;
+                padding: 4px;
+                outline: 0;
+            }
+            QScrollBar:vertical {
+                background: white;
+                width: 14px;
+                margin: 2px 0 2px 0;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:vertical {
+                background: #0474BA;
+                min-height: 24px;
+                border-radius: 7px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                background: none;
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+        ''')
+
+        popup_width = self.width()
+        view.setMinimumWidth(popup_width)
+        view.setMaximumWidth(popup_width)
+
+        row_height = view.sizeHintForRow(0)
+        if row_height <= 0:
+            row_height = 28
+        visible_rows = max(1, min(self.count(), max_visible_items))
+        popup_height = (row_height * visible_rows) + (2 * view.frameWidth())
+        view.setMinimumHeight(popup_height)
+        view.setMaximumHeight(popup_height)
+
         super().showPopup()
-        popup = self.view().window()
+        popup = view.window()
         if popup:
+            popup.setMinimumWidth(popup_width)
+            popup.setMaximumWidth(popup_width)
+            popup.setMinimumHeight(popup_height)
+            popup.setMaximumHeight(popup_height)
             popup.move(self.mapToGlobal(QPoint(0, self.height())))
 
 
