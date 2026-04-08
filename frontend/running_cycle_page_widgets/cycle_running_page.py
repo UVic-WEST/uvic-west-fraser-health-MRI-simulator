@@ -95,12 +95,14 @@ class CycleRunningPage(QWidget):
         pauses the currently running cycle
         """
         self.controller.pause_cycle()
+        self.cycle_status.setText("PAUSED")
 
     def resume_cycle(self):
         """
         resumes the currently running cycle
         """
         self.controller.resume_cycle()
+        self.cycle_status.setText("RUNNING")
 
     def stop_cycle(self):
         """
