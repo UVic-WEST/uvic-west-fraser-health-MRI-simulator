@@ -14,7 +14,7 @@
         "timestamp": 0,
         "type": "sound_start",
         "params": {
-          "file_name": "Pulse",
+          "file_name": "./resources/sounds/wavs/Pulse.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -23,7 +23,7 @@
         "timestamp": 0,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(S)",
+          "file_name": "./resources/sounds/wavs/Drill(S).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -32,21 +32,21 @@
         "timestamp": 15000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Pulse"
+          "file_name": "./resources/sounds/wavs/Pulse.wav"
         }
       },
       {
         "timestamp": 15000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(S)"
+          "file_name": "./resources/sounds/wavs/Drill(S).wav"
         }
       },
       {
         "timestamp": 15000,
         "type": "sound_start",
         "params": {
-          "file_name": "Beeps",
+          "file_name": "./resources/sounds/wavs/Beeps.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -55,7 +55,7 @@
         "timestamp": 15000,
         "type": "sound_start",
         "params": {
-          "file_name": "Scan",
+          "file_name": "./resources/sounds/wavs/Scan.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -64,21 +64,21 @@
         "timestamp": 30000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Beeps"
+          "file_name": "./resources/sounds/wavs/Beeps.wav"
         }
       },
       {
         "timestamp": 30000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Scan"
+          "file_name": "./resources/sounds/wavs/Scan.wav"
         }
       },
       {
         "timestamp": 30000,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(M)",
+          "file_name": "./resources/sounds/wavs/Drill(M).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -87,7 +87,7 @@
         "timestamp": 30000,
         "type": "sound_start",
         "params": {
-          "file_name": "Alarm",
+          "file_name": "./resources/sounds/wavs/Alarm.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -96,21 +96,21 @@
         "timestamp": 45000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(M)"
+          "file_name": "./resources/sounds/wavs/Drill(M).wav"
         }
       },
       {
         "timestamp": 45000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Alarm"
+          "file_name": "./resources/sounds/wavs/Alarm.wav"
         }
       },
       {
         "timestamp": 45000,
         "type": "sound_start",
         "params": {
-          "file_name": "Buzz",
+          "file_name": "./resources/sounds/wavs/Buzz.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -119,7 +119,7 @@
         "timestamp": 45000,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(L)",
+          "file_name": "./resources/sounds/wavs/Drill(L).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -128,14 +128,14 @@
         "timestamp": 60000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Buzz"
+          "file_name": "./resources/sounds/wavs/Buzz.wav"
         }
       },
       {
         "timestamp": 60000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(L)"
+          "file_name": "./resources/sounds/wavs/Drill(L).wav"
         }
       }
     ]
@@ -155,7 +155,7 @@
         "timestamp": 0,
         "type": "sound_start",
         "params": {
-          "file_name": "Pulse",
+          "file_name": "./resources/sounds/wavs/Pulse.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -164,14 +164,14 @@
         "timestamp": 22500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Pulse"
+          "file_name": "./resources/sounds/wavs/Pulse.wav"
         }
       },
       {
         "timestamp": 22500,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(S)",
+          "file_name": "./resources/sounds/wavs/Drill(S).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -180,14 +180,14 @@
         "timestamp": 45000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(S)"
+          "file_name": "./resources/sounds/wavs/Drill(S).wav"
         }
       },
       {
         "timestamp": 45000,
         "type": "sound_start",
         "params": {
-          "file_name": "Beeps",
+          "file_name": "./resources/sounds/wavs/Beeps.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -196,14 +196,14 @@
         "timestamp": 67500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Beeps"
+          "file_name": "./resources/sounds/wavs/Beeps.wav"
         }
       },
       {
         "timestamp": 67500,
         "type": "sound_start",
         "params": {
-          "file_name": "Scan",
+          "file_name": "./resources/sounds/wavs/Scan.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -212,14 +212,14 @@
         "timestamp": 90000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Scan"
+          "file_name": "./resources/sounds/wavs/Scan.wav"
         }
       },
       {
         "timestamp": 90000,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(M)",
+          "file_name": "./resources/sounds/wavs/Drill(M).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -228,14 +228,14 @@
         "timestamp": 112500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(M)"
+          "file_name": "./resources/sounds/wavs/Drill(M).wav"
         }
       },
       {
         "timestamp": 112500,
         "type": "sound_start",
         "params": {
-          "file_name": "Alarm",
+          "file_name": "./resources/sounds/wavs/Alarm.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -244,14 +244,14 @@
         "timestamp": 135000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Alarm"
+          "file_name": "./resources/sounds/wavs/Alarm.wav"
         }
       },
       {
         "timestamp": 135000,
         "type": "sound_start",
         "params": {
-          "file_name": "Buzz",
+          "file_name": "./resources/sounds/wavs/Buzz.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -260,14 +260,14 @@
         "timestamp": 157500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Buzz"
+          "file_name": "./resources/sounds/wavs/Buzz.wav"
         }
       },
       {
         "timestamp": 157500,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(L)",
+          "file_name": "./resources/sounds/wavs/Drill(L).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -276,7 +276,7 @@
         "timestamp": 180000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(L)"
+          "file_name": "./resources/sounds/wavs/Drill(L).wav"
         }
       }
     ]
@@ -296,7 +296,7 @@
         "timestamp": 0,
         "type": "sound_start",
         "params": {
-          "file_name": "Pulse",
+          "file_name": "./resources/sounds/wavs/Pulse.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -305,14 +305,14 @@
         "timestamp": 37500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Pulse"
+          "file_name": "./resources/sounds/wavs/Pulse.wav"
         }
       },
       {
         "timestamp": 37500,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(S)",
+          "file_name": "./resources/sounds/wavs/Drill(S).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -321,14 +321,14 @@
         "timestamp": 75000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(S)"
+          "file_name": "./resources/sounds/wavs/Drill(S).wav"
         }
       },
       {
         "timestamp": 75000,
         "type": "sound_start",
         "params": {
-          "file_name": "Beeps",
+          "file_name": "./resources/sounds/wavs/Beeps.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -337,14 +337,14 @@
         "timestamp": 112500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Beeps"
+          "file_name": "./resources/sounds/wavs/Beeps.wav"
         }
       },
       {
         "timestamp": 112500,
         "type": "sound_start",
         "params": {
-          "file_name": "Scan",
+          "file_name": "./resources/sounds/wavs/Scan.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -353,14 +353,14 @@
         "timestamp": 150000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Scan"
+          "file_name": "./resources/sounds/wavs/Scan.wav"
         }
       },
       {
         "timestamp": 150000,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(M)",
+          "file_name": "./resources/sounds/wavs/Drill(M).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -369,14 +369,14 @@
         "timestamp": 187500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(M)"
+          "file_name": "./resources/sounds/wavs/Drill(M).wav"
         }
       },
       {
         "timestamp": 187500,
         "type": "sound_start",
         "params": {
-          "file_name": "Alarm",
+          "file_name": "./resources/sounds/wavs/Alarm.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -385,14 +385,14 @@
         "timestamp": 225000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Alarm"
+          "file_name": "./resources/sounds/wavs/Alarm.wav"
         }
       },
       {
         "timestamp": 225000,
         "type": "sound_start",
         "params": {
-          "file_name": "Buzz",
+          "file_name": "./resources/sounds/wavs/Buzz.wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -401,14 +401,14 @@
         "timestamp": 262500,
         "type": "sound_stop",
         "params": {
-          "file_name": "Buzz"
+          "file_name": "./resources/sounds/wavs/Buzz.wav"
         }
       },
       {
         "timestamp": 262500,
         "type": "sound_start",
         "params": {
-          "file_name": "Drill(L)",
+          "file_name": "./resources/sounds/wavs/Drill(L).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -417,7 +417,7 @@
         "timestamp": 300000,
         "type": "sound_stop",
         "params": {
-          "file_name": "Drill(L)"
+          "file_name": "./resources/sounds/wavs/Drill(L).wav"
         }
       }
     ]
