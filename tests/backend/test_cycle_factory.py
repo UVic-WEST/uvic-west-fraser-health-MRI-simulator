@@ -69,7 +69,7 @@ def test_repository_empty():
             
 def test_repository_duplicate_ids():
     """If duplicate IDs present in cycle repository, CycleFactory should return first match."""
-    duplicate_cycles = [CycleConfig(cycle_id = 1, cycle_name = "Cycle 1", cycle_duration_ms = 100), CycleConfig(cycle_id = 1, cycle_name = "Cycle 2", cycle_duration_ms = 200)]
+    duplicate_cycles = [CycleConfig(cycle_id = 1, cycle_name = "Cycle 1", cycle_duration_ms = 100, light_configuration = 50, actions = []), CycleConfig(cycle_id = 1, cycle_name = "Cycle 2", cycle_duration_ms = 200, light_configuration = 50, actions = [])]
     
     with patch("backend.cycle_repository.CycleRepository.load_all", return_value=duplicate_cycles):
         factory = CycleFactory()
@@ -79,8 +79,8 @@ def test_repository_duplicate_ids():
         
 def test_refresh():
     """refresh() should reload cycles and all relevant data from cycle repository."""
-    initial_cycles = [CycleConfig(cycle_id=1, cycle_name="Initial", cycle_duration_ms=100)]
-    updated_cycles = [CycleConfig(cycle_id=2, cycle_name="Updated", cycle_duration_ms=200)]
+    initial_cycles = [CycleConfig(cycle_id=1, cycle_name="Initial", cycle_duration_ms=100, light_configuration = 50, actions = [])]
+    updated_cycles = [CycleConfig(cycle_id=2, cycle_name="Updated", cycle_duration_ms=200, light_configuration = 50, actions = [])]
     
     with patch("backend.cycle_repository.CycleRepository.load_all", side_effect=[initial_cycles, updated_cycles]):
         factory = CycleFactory()
