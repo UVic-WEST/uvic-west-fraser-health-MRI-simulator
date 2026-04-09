@@ -4,9 +4,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QHBoxLayout,
-    QComboBox,
-    QAbstractItemView,
-    QScroller
 
 )
 from PySide6.QtCore import Qt
@@ -54,12 +51,12 @@ class CyclePreviewPage(QWidget):
 
         #setting up help button
         self.help_button = HelpButton(self)
-        self.help_button.move(140, 20)
+        self.help_button.move(20, 20)
         self.help_button.raise_()
         self.help_button.clicked.connect(self.help_pressed)
 
         self.play_cycle_btn = QPushButton("Play Cycle", self)
-        self.play_cycle_btn.setGeometry(884, 536, 125, 44)
+        self.play_cycle_btn.setGeometry(884, 536, 130, 44)
         self.play_cycle_btn.setStyleSheet(
             """
             QPushButton {
@@ -78,7 +75,7 @@ class CyclePreviewPage(QWidget):
             }
             """
         )
-        self.play_cycle_btn.clicked.connect(self.play_cycle_button_pressed)
+        self.play_cycle_btn.clicked.connect(self.play_cycle_pressed)
         self.play_cycle_btn.raise_()
 
         self.cancel_home_btn = QPushButton("Cancel", self)
@@ -108,7 +105,7 @@ class CyclePreviewPage(QWidget):
         self.page_title.setFont(QFont("Ubuntu", 32))
         self.page_title.setStyleSheet("color: white; background: transparent; padding: 0px; margin: 0px;")
         self.page_title.setAlignment(Qt.AlignCenter)
-        self.page_title.setFixedHeight(46)
+        self.page_title.setFixedHeight(70)
         self.page_title.setContentsMargins(0, 0, 0, 0)
 
         self.title_layout = QVBoxLayout()
@@ -171,7 +168,7 @@ class CyclePreviewPage(QWidget):
 
     def _update_summary_buttons(self):
         """
-        Refreshes summary button labels from backend controller values.
+        Refreshes summary button labels to cycle values
         """
         self._update_duration_summary_button()
         self._update_lights_summary_button()
@@ -181,44 +178,25 @@ class CyclePreviewPage(QWidget):
 
     def _update_duration_summary_button(self):
         """
-        Reads duration from backend controller and updates the summary button label.
+        updates the summary duration button label.
         """
-        duration_text = "--:--"
-        if hasattr(self.cur_cycle, "get_duration"):
-            try:
-                total_seconds = int(self.duration)
-                minutes, seconds = divmod(max(0, total_seconds), 60)
-                duration_text = f"{minutes:02}:{seconds:02}"
-            except Exception as e:
-                print(f"[_update_duration_summary_button] Error: {e}")
-
+        total_seconds = int(self.duration)
+        minutes, seconds = divmod(max(0, total_seconds), 60)
+        duration_text = f"{minutes:02}:{seconds:02}"
         self.duration_summary_btn.setText(f"Cycle Duration: {duration_text}")
 
     def _update_lights_summary_button(self):
         """
-        Reads light level from backend controller and updates the summary button label.
+        updates the brightness level summary button label.
         """
-        lights_text = "--"
-        if hasattr(self.cur_cycle, "get_light_level"):
-            try:
-                lights_text = str(int(self.brightness))
-            except Exception as e:
-                print(f"[_update_lights_summary_button] Error: {e}")
-
+        lights_text = str(int(self.brightness))
         self.lights_summary_btn.setText(f"Cycle Lights: {lights_text}%")
 
     def _update_groups_summary_button(self):
         """
-        Reads total groups from backend controller and updates the summary button label.
+        updates the total group summary button label.
         """
-        groups_text = "--"
-        if hasattr(self.cur_cycle, "get_total_groups"):
-            try:
-                total_groups, _ = self.total_groups
-                groups_text = str(int(total_groups))
-            except Exception as e:
-                print(f"[_update_groups_summary_button] Error: {e}")
-
+        groups_text = self.total_groups
         self.groups_summary_btn.setText(f"Total Groups: {groups_text}")
 
     def set_background(self, image_path):
@@ -241,7 +219,7 @@ class CyclePreviewPage(QWidget):
 
     def cancel_to_home(self):
         """
-        Cancel customization and navigate back to the home page.
+        Cancel play cycle and return to the homepage
         """
         print("cancel was pressed")
         current = self.parent
@@ -273,17 +251,15 @@ class CyclePreviewPage(QWidget):
                 font-family: Ubuntu;
                 font-size: 18px;
             }
-            QPushButton:pressed {
-                background-color: #035f98;
-            }
         """
         button.setFixedHeight(48)
         button.setFixedSize(242, 47.67)
         button.setStyleSheet(summary_button_style)
         button.setIcon(QIcon(path))
+        button.setEnabled(False)
 
     def play_cycle_pressed(self):
         """
-        confirms that the cycle is to play, begins running cycle
+        confirms that the cycle is to play by user, begins running cycle through app router
         """
-        pass
+        self.parent.play_cycle_confirmed()

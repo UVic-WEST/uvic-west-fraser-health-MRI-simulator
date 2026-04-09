@@ -24,7 +24,7 @@ class SoundGroupSummaryWidgetPreviewPage(QWidget):
         super().__init__(parent)
         self.sound_group_mapping = sound_group_mapping
         self.current_group_index = 1
-        self.total_groups = self._get_total_groups_from_controller()
+        self.total_groups = len(sound_group_mapping)
 
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setObjectName("SoundGroupSummaryWidget")
@@ -50,9 +50,6 @@ class SoundGroupSummaryWidgetPreviewPage(QWidget):
                 text-align: center;
                 font-family: Ubuntu;
                 font-size: 18px;
-            }
-            QPushButton:pressed {
-                background-color: #035f98;
             }
         """
 
@@ -85,6 +82,7 @@ class SoundGroupSummaryWidgetPreviewPage(QWidget):
         self.group_selector_button = QPushButton("Group 1")
         self.group_selector_button.setFixedSize(142,46)
         self.group_selector_button.setStyleSheet(group_selector_button_style)
+        self.group_selector_button.setEnabled(False)
 
         self.next_group_btn = QPushButton(">")
         self.next_group_btn.setFixedSize(24, 50)
@@ -124,62 +122,29 @@ class SoundGroupSummaryWidgetPreviewPage(QWidget):
         self.main_layout.addWidget(self.volume_display)
         
         self.setLayout(self.main_layout)
-        self.refresh_from_backend()
-
-    def _get_total_groups_from_controller(self):
-        """Read total groups from controller and return a safe minimum of 1."""
-        if hasattr(self.controller, "get_total_groups"):
-            try:
-                total_groups, _ = self.controller.get_total_groups()
-                return max(1, int(total_groups))
-            except Exception:
-                pass
-        return 1
+        self.refresh_preview_panel_backend()
+        self._update_group_controls()
 
     def _update_group_controls(self):
         """Refresh group label and arrow enabled states based on current index."""
-        self.total_groups = self._get_total_groups_from_controller()
         if self.current_group_index > self.total_groups:
             self.current_group_index = self.total_groups
         self.group_selector_button.setText(f"Group {self.current_group_index}")
         self.prev_group_btn.setEnabled(self.current_group_index > 1)
         self.next_group_btn.setEnabled(self.current_group_index < self.total_groups)
 
-    def refresh_from_backend(self):
-        """Refresh group controls and sound/volume preview from backend state."""
-        self._update_group_controls()
-        self.refresh_preview_panel_backend()
-
     def _group_id(self):
         """Return the currently selected group id."""
         return self.current_group_index
 
     def _get_sound_labels_for_group(self, group_id):
-        """Get display labels for sounds assigned to a specific group."""
-        if not hasattr(self.controller, "get_sounds_in_group"):
-            return []
-
-        try:
-            backend_sounds = self.controller.get_sounds_in_group(group_id) or []
-        except Exception:
-            return []
-
-        labels = []
-        for sound in backend_sounds:
-            sound_label = getattr(sound, "file_name", None)
-            if sound_label:
-                labels.append(str(sound_label))
+        """Return the names of sounds by group id"""
+        labels = self.sound_group_mapping.get(group_id, {}).get("sound_names", [])
         return labels
 
     def _get_group_volume_for_group(self, group_id):
-        """Return the current volume for the given group, defaulting to 50."""
-        if hasattr(self.controller, "_get_group"):
-            try:
-                group = self.controller._get_group(group_id)
-                return int(getattr(group, "group_volume", 50))
-            except Exception:
-                pass
-        return 50
+        """Return the current volume for the given group"""
+        return self.sound_group_mapping.get(group_id, {}).get("volume")
 
     def _clear_preview_panel(self):
         """Remove all existing sound preview widgets from the panel."""
@@ -193,13 +158,16 @@ class SoundGroupSummaryWidgetPreviewPage(QWidget):
         """Move selection to the previous group and refresh the preview."""
         if self.current_group_index > 1:
             self.current_group_index -= 1
-            self.refresh_from_backend()
+        self.refresh_preview_panel_backend()
+        self._update_group_controls()
 
     def _select_next_group(self):
         """Move selection to the next group and refresh the preview."""
         if self.current_group_index < self.total_groups:
             self.current_group_index += 1
-            self.refresh_from_backend()
+        self.refresh_preview_panel_backend()
+        self._update_group_controls()
+
 
     def refresh_preview_panel_backend(self):
         """Render sound chips and volume text for the currently selected group."""
@@ -226,4 +194,5 @@ class SoundGroupSummaryWidgetPreviewPage(QWidget):
 
         group_volume = self._get_group_volume_for_group(current_group_id)
         self.volume_display.setText(f"Volume: {group_volume}%")
+        self.group_selector_button.setText(f"Group {current_group_id}")
         self.preview_buttons_layout.addStretch(1)

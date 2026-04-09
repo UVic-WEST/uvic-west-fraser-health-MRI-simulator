@@ -113,24 +113,8 @@ class AppRouter(QMainWindow):
         """
         self.cur_cycle = selected_cycle_id
         self.selected_cycle = selected_cycle_id
-        # Lookup name for confirmation page
-        cycle_name = None
-        if selected_cycle_id:
-            # Use the HomePage's cycle_factory to get the name
-            try:
-                cycle_obj = self.home_page.cycle_factory.get_cycle_by_id(selected_cycle_id)
-                cycle_name = cycle_obj.cycle_name
-            except Exception:
-                cycle_name = selected_cycle_id
-        # Pass both id and name to confirmation page
-        self.confirmation_page.set_cycle((selected_cycle_id, cycle_name))
-        self.main_layout.setCurrentWidget(self.confirmation_page)
-
-    def show_confirmation(self):
-        """
-        This function shows the play cycle confirmation page to play a cycle
-        """
-        self.main_layout.setCurrentWidget(self.confirmation_page)
+        # show the cycle preview page
+        self.show_cycle_preview_page()
 
     def show_warning(
         self,
@@ -167,12 +151,23 @@ class AppRouter(QMainWindow):
 
     def show_cycle_preview_page(self):
         """
-        Show warning page for custom cycle creation with custom-cycle navigation.
+        Show preview of selected cycle before running to confirm cycle selection
         """
         cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
         cycle_config = self.cycle_factory.get_cycle_by_id(cycle_id)
         self.cycle_preview_page = CyclePreviewPage(cycle_config, self)
+        self.main_layout.addWidget(self.cycle_preview_page)
         self.main_layout.setCurrentWidget(self.cycle_preview_page)
+
+    def show_custom_cycle_warning(self):
+        """
+        Show warning page for custom cycle creation with custom-cycle navigation.
+        """
+        self.show_warning(
+            warning_message="WARNING!\n REMOVE CHILD FROM MRI\n BEFORE PROCEEDING",
+            on_confirm=self.show_create_cycle_pages,
+            on_cancel=self.show_home,
+        )
 
     def _resolve_play_cycle_id(self, selected) -> int | None:
         """Resolve ``cur_cycle`` to a real ``cycle_id`` present in ``cycle_factory``.
@@ -211,7 +206,7 @@ class AppRouter(QMainWindow):
     def play_cycle_confirmed(self):
         """
         This function routes the app to the cycle running page when the user has confirmed 
-        they want to play a cycle. Sends the selected cycle's ID and duration to the running logic.
+        they want to play a cycle. Sends the selected cycle's ID and duration to the running logic. Called by cycle preview page.
         """
         cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
         if cycle_id is None:
