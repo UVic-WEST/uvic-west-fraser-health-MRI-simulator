@@ -18,6 +18,7 @@ from frontend.confirmation_page_widgets.confirmation_page import ConfirmationPag
 from frontend.warning_page_widgets.warning_page import WarningPage
 
 from frontend.running_cycle_page_widgets.cycle_running_page import CycleRunningPage
+from frontend.running_cycle_page_widgets.cycle_summary_confirmation import CyclePreviewPage
 from backend.cycle_running_page_logic import CycleRunningPageLogic
 
 from frontend.create_cycle_widgets.create_cycle_pages import CreateCycleRouter
@@ -93,7 +94,9 @@ class AppRouter(QMainWindow):
             cycle_factory=self.cycle_factory,
         )
         self.cycle_running_page = CycleRunningPage(self.cycle_running_page_controller,None,self)
+        self.cycle_preview_page = QWidget() 
         self.main_layout.addWidget(self.cycle_running_page)
+        self.main_layout.addWidget(self.cycle_preview_page)
 
         #Code for create cycle pages (pass AppRouter explicitly — parent becomes central QWidget)
         self.create_cycle_router = CreateCycleRouter(self, self.app)
@@ -162,15 +165,14 @@ class AppRouter(QMainWindow):
         )
         self.main_layout.setCurrentWidget(self.warning_page)
 
-    def show_custom_cycle_warning(self):
+    def show_cycle_preview_page(self):
         """
         Show warning page for custom cycle creation with custom-cycle navigation.
         """
-        self.show_warning(
-            warning_message="WARNING!\n REMOVE CHILD FROM MRI\n BEFORE PROCEEDING",
-            on_confirm=self.show_create_cycle_pages,
-            on_cancel=self.show_home,
-        )
+        cycle_id = self._resolve_play_cycle_id(self.cur_cycle)
+        cycle_config = self.cycle_factory.get_cycle_by_id(cycle_id)
+        self.cycle_preview_page = CyclePreviewPage(cycle_config, self)
+        self.main_layout.setCurrentWidget(self.cycle_preview_page)
 
     def _resolve_play_cycle_id(self, selected) -> int | None:
         """Resolve ``cur_cycle`` to a real ``cycle_id`` present in ``cycle_factory``.
