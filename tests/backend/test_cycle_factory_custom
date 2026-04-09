@@ -1,0 +1,117 @@
+import json
+import pytest
+from pathlib import Path
+from backend.cycle_factory import CycleFactory
+from backend.cycle_config import CycleConfig
+
+
+@pytest.fixture
+def temp_json(tmp_path):
+    """Create a temporary JSON file with initial cycles data."""
+    path = tmp_path / "cycles.json"
+    initial_data = [
+        {
+            "id": 1,
+            "name": "Preset Cycle 1",
+            "duration_ms": 60000,
+            "light_configuration": 70,
+            "actions": []
+        }
+    ]
+    path.write_text(json.dumps(initial_data))
+    return path
+
+
+@pytest.fixture
+def factory(temp_json):
+    """Instantiate CycleFactory using the temporary JSON file."""
+    return CycleFactory(json_file=temp_json)
+
+
+# -----------------------
+# Input Validation Tests
+# -----------------------
+
+def test_update_cycle_invalid_duration(factory):
+    with pytest.raises(ValueError):
+        factory.update_cycle(1, {"duration_ms": -1000})
+
+
+def test_update_cycle_invalid_light(factory):
+    with pytest.raises(ValueError):
+        factory.update_cycle(1, {"light_configuration": 200})
+
+
+def test_update_cycle_invalid_name(factory):
+    with pytest.raises(ValueError):
+        factory.update_cycle(1, {"name": ""})
+
+
+# -----------------------
+# Update & Persistence Tests
+# -----------------------
+
+def test_update_cycle_writes_to_json(factory, temp_json):
+    factory.update_cycle(1, {"name": "Updated Cycle", "duration_ms": 5000})
+    data = json.loads(temp_json.read_text())
+    updated_cycle = next(c for c in data if c["id"] == 1)
+    assert updated_cycle["name"] == "Updated Cycle"
+    assert updated_cycle["duration_ms"] == 5000
+
+
+def test_only_target_cycle_is_updated(factory, temp_json):
+    factory.add_cycle(CycleConfig(2, "Second Cycle", 10000, 50))
+    factory.update_cycle(1, {"name": "Targeted Update"})
+
+    data = json.loads(temp_json.read_text())
+    names = {c["id"]: c["name"] for c in data}
+    assert names[1] == "Targeted Update"
+    assert names[2] == "Second Cycle"
+
+
+# -----------------------
+# Output Format Tests
+# -----------------------
+
+def test_json_format_matches_layer1(factory, temp_json):
+    factory.update_cycle(1, {"name": "Layer1 Test", "light_configuration": 60, "duration_ms": 12000})
+    data = json.loads(temp_json.read_text())
+    cycle_dict = next(c for c in data if c["id"] == 1)
+
+    # Layer 1 expects these keys
+    expected_keys = {"id", "name", "duration_ms", "light_configuration", "actions"}
+    assert expected_keys.issubset(cycle_dict.keys())
+    assert isinstance(cycle_dict["actions"], list)
+
+
+# -----------------------
+# Additional Tests
+# -----------------------
+
+def test_update_cycle_with_actions(factory, temp_json):
+    actions = [
+        {
+            "timestamp_ms": 0,
+            "action_type": "SOUND_START",
+            "parameters": {"file_name": "test.wav", "volume": 50}
+        }
+    ]
+    factory.update_cycle(1, {"actions": actions})
+
+    data = json.loads(temp_json.read_text())
+    cycle = next(c for c in data if c["id"] == 1)
+    assert cycle["actions"] == actions
+
+
+def test_update_nonexistent_cycle_raises(factory):
+    with pytest.raises(ValueError):
+        factory.update_cycle(999, {"name": "No Such Cycle"})
+
+
+def test_add_cycle_and_persist(factory, temp_json):
+    new_cycle = CycleConfig(3, "New Cycle", 8000, 40)
+    factory.add_cycle(new_cycle)
+
+    data = json.loads(temp_json.read_text())
+    ids = [c["id"] for c in data]
+    assert 3 in ids
