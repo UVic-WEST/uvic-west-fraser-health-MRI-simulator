@@ -111,13 +111,15 @@ class CycleConfig:
             starts = by_ts[ts]
             sound_names: List[str] = []
             volume = 50
+            volume_set = False
             for a in starts:
                 p = a.parameters
                 fn = p.get("file_name")
                 if fn is not None:
                     sound_names.append(os.path.basename(str(fn)))
-                if "volume" in p:
+                if "volume" in p and not volume_set:
                     volume = int(p["volume"])
+                    volume_set = True
             entry: SoundGroupMappingEntry = {
                 "sound_names": sound_names,
                 "volume": volume,

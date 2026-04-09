@@ -67,3 +67,26 @@ class CycleRepository:
             return False
         CycleRepository.save_all(kept)
         return True
+    
+    # ---------------------------------------------------------
+    # SAVE/UPDATE A SINGLE CYCLE
+    # ---------------------------------------------------------
+    @staticmethod
+    def save(cycle: CycleConfig) -> None:
+        """
+        Saves a single cycle. 
+        If the ID exists, it updates the entry. If not, it appends it.
+        """
+        cycles = CycleRepository.load_all()
+        # Find if cycle exists and replace it, or append if new
+        updated = False
+        for i, existing_cycle in enumerate(cycles):
+            if existing_cycle.cycle_id == cycle.cycle_id:
+                cycles[i] = cycle
+                updated = True
+                break
+        
+        if not updated:
+            cycles.append(cycle)
+            
+        CycleRepository.save_all(cycles)

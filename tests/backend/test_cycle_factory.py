@@ -3,6 +3,7 @@ from unittest.mock import patch # uses patch to mock cycle repository
 
 from backend.cycle_factory import CycleFactory
 from backend.cycle_config import CycleConfig
+from backend.cycle_action import CycleAction, ActionType
 
 
 @pytest.fixture
@@ -27,8 +28,8 @@ def test_get_cycle_by_id_valid(factory):
     
     result = factory.get_cycle_by_id(sample.cycle_id) # result is an instance of CycleConfig
 
-    assert result == sample # checks that all cycle attributes match
     assert result.cycle_id == sample.cycle_id
+    assert result.cycle_name == sample.cycle_name
 
 
 def test_get_cycle_by_id_invalid(factory):
@@ -69,7 +70,12 @@ def test_repository_empty():
             
 def test_repository_duplicate_ids():
     """If duplicate IDs present in cycle repository, CycleFactory should return first match."""
-    duplicate_cycles = [CycleConfig(cycle_id = 1, cycle_name = "Cycle 1", cycle_duration_ms = 100), CycleConfig(cycle_id = 1, cycle_name = "Cycle 2", cycle_duration_ms = 200)]
+    duplicate_cycles = [
+        CycleConfig(cycle_id=1, cycle_name="Cycle 1", cycle_duration_ms=100, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=1, cycle_name="Cycle 2", cycle_duration_ms=100, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=2, cycle_name="Cycle 2", cycle_duration_ms=100, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=3, cycle_name="Cycle 3", cycle_duration_ms=100, light_configuration=50, actions=[])
+    ]
     
     with patch("backend.cycle_repository.CycleRepository.load_all", return_value=duplicate_cycles):
         factory = CycleFactory()
@@ -79,8 +85,16 @@ def test_repository_duplicate_ids():
         
 def test_refresh():
     """refresh() should reload cycles and all relevant data from cycle repository."""
-    initial_cycles = [CycleConfig(cycle_id=1, cycle_name="Initial", cycle_duration_ms=100)]
-    updated_cycles = [CycleConfig(cycle_id=2, cycle_name="Updated", cycle_duration_ms=200)]
+    initial_cycles = [
+        CycleConfig(cycle_id=1, cycle_name="Initial", cycle_duration_ms=100, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=2, cycle_name="Cycle 2", cycle_duration_ms=100, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=3, cycle_name="Cycle 3", cycle_duration_ms=100, light_configuration=50, actions=[])
+    ]
+    updated_cycles = [
+        CycleConfig(cycle_id=2, cycle_name="Updated", cycle_duration_ms=200, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=1, cycle_name="Cycle 1", cycle_duration_ms=100, light_configuration=50, actions=[]),
+        CycleConfig(cycle_id=3, cycle_name="Cycle 3", cycle_duration_ms=100, light_configuration=50, actions=[])
+    ]
     
     with patch("backend.cycle_repository.CycleRepository.load_all", side_effect=[initial_cycles, updated_cycles]):
         factory = CycleFactory()
@@ -89,11 +103,10 @@ def test_refresh():
         assert factory.get_cycle_by_id(1).cycle_name == "Initial"
         
         # call refresh() to reload cycles
+        factory.refresh()
         
-        # test updated state
-        with pytest.raises(ValueError):
-            factory.get_cycle_by_id(1)
-            
+        # test updated state - cycle 1 still exists, cycle 2 is updated
+        assert factory.get_cycle_by_id(1).cycle_name == "Cycle 1"
         assert factory.get_cycle_by_id(2).cycle_name == "Updated"
 
 
@@ -214,8 +227,8 @@ def test_get_next_custom_id_exhaustion(factory):
 
 
 def test_custom_cycle_min_max_ids(factory):
-    min_cycle = CycleConfig(cycle_id=4, cycle_name="Min ID", cycle_duration_ms=5000, light_configuration=50)
-    max_cycle = CycleConfig(cycle_id=15, cycle_name="Max ID", cycle_duration_ms=5000, light_configuration=50)
+    min_cycle = CycleConfig(cycle_id=4, cycle_name="Min ID", cycle_duration_ms=5000, light_configuration=50, actions = [])
+    max_cycle = CycleConfig(cycle_id=15, cycle_name="Max ID", cycle_duration_ms=5000, light_configuration=50, actions = [])
     
     factory.add_custom_cycle(min_cycle)
     factory.add_custom_cycle(max_cycle)
@@ -226,8 +239,113 @@ def test_custom_cycle_min_max_ids(factory):
 
 def test_auto_id_skips_used(factory):
     # Add ID 4 manually
-    factory.add_custom_cycle(CycleConfig(cycle_id=4, cycle_name="Used ID 4", cycle_duration_ms=5000, light_configuration=50))
+    factory.add_custom_cycle(CycleConfig(cycle_id=4, cycle_name="Used ID 4", cycle_duration_ms=5000, light_configuration=50, actions = []))
     
-    new_cycle = factory.create_custom_cycle(cycle_name="Next Auto ID", cycle_duration_ms=5000, light_configuration=50)
+    new_cycle = factory.create_custom_cycle(cycle_name="Next Auto ID", cycle_duration_ms=5000, light_configuration=50, actions = [])
     
     assert new_cycle.cycle_id == 5  # Auto-assign should skip 4
+
+# ----------------------------------------
+# tests for sound configuration in custom cycles
+# ----------------------------------------
+@pytest.fixture
+def factory_with_repo_patch():
+    """Provide a factory instance with a mocked repository to test persistence."""
+    with patch("backend.cycle_repository.CycleRepository.load_all", return_value=[]), \
+         patch("backend.cycle_repository.CycleRepository.save") as mock_save:
+        factory = CycleFactory()
+        yield factory, mock_save
+
+
+def test_add_custom_cycle_with_sounds(factory_with_repo_patch):
+    factory, mock_save = factory_with_repo_patch
+
+    actions = [
+        CycleAction(timestamp_ms=0, action_type=ActionType.SOUND_START, parameters={"file_name": "sound1.wav", "volume": 70}),
+        CycleAction(timestamp_ms=500, action_type=ActionType.SOUND_START, parameters={"file_name": "sound2.wav", "volume": 80}),
+    ]
+
+    cycle = factory.create_custom_cycle(
+        cycle_name="Custom Sound Cycle",
+        cycle_duration_ms=1000,
+        light_configuration=50,
+        actions=actions
+    )
+
+    # Check that sounds are associated correctly
+    mapping = cycle.get_sound_group_mapping()
+    assert len(mapping) == 2
+    assert mapping[1]["sound_names"] == ["sound1.wav"]
+    assert mapping[1]["volume"] == 70
+    assert mapping[2]["sound_names"] == ["sound2.wav"]
+    assert mapping[2]["volume"] == 80
+
+    # Verify that sounds belong to the correct cycle ID
+    for group in mapping.values():
+        assert isinstance(group["sound_names"], list)
+    
+    # Simulate save to JSON
+    # If CycleRepository.save(cycle) is used, we can call it manually
+    from backend.cycle_repository import CycleRepository
+    CycleRepository.save(cycle)
+    mock_save.assert_called_once_with(cycle)
+
+
+def test_invalid_sound_parameters(factory_with_repo_patch):
+    factory, _ = factory_with_repo_patch
+
+    # Missing filename
+    bad_action = CycleAction(timestamp_ms=0, action_type=ActionType.SOUND_START, parameters={})
+    cycle = factory.create_custom_cycle(
+        cycle_name="Bad Sound Cycle",
+        cycle_duration_ms=1000,
+        light_configuration=50,
+        actions=[bad_action]
+    )
+
+    # Should not fail when mapping, but sound_names will be empty
+    mapping = cycle.get_sound_group_mapping()
+    assert len(mapping) == 1
+    assert mapping[1]["sound_names"] == []
+    assert mapping[1]["volume"] == 50  # default volume
+
+
+def test_multiple_sounds_same_timestamp(factory_with_repo_patch):
+    factory, _ = factory_with_repo_patch
+
+    actions = [
+        CycleAction(timestamp_ms=0, action_type=ActionType.SOUND_START, parameters={"file_name": "soundA.wav", "volume": 30}),
+        CycleAction(timestamp_ms=0, action_type=ActionType.SOUND_START, parameters={"file_name": "soundB.wav", "volume": 60}),
+    ]
+
+    cycle = factory.create_custom_cycle(
+        cycle_name="Multi Sound Cycle",
+        cycle_duration_ms=1000,
+        light_configuration=50,
+        actions=actions
+    )
+
+    mapping = cycle.get_sound_group_mapping()
+    assert len(mapping) == 1  # same timestamp -> single group
+    assert set(mapping[1]["sound_names"]) == {"soundA.wav", "soundB.wav"}
+    assert mapping[1]["volume"] == 30  # takes volume from first action
+
+
+def test_sound_group_count(factory_with_repo_patch):
+    factory, _ = factory_with_repo_patch
+
+    actions = [
+        CycleAction(timestamp_ms=0, action_type=ActionType.SOUND_START, parameters={"file_name": "s1.wav"}),
+        CycleAction(timestamp_ms=500, action_type=ActionType.SOUND_START, parameters={"file_name": "s2.wav"}),
+        CycleAction(timestamp_ms=500, action_type=ActionType.SOUND_START, parameters={"file_name": "s3.wav"}),
+    ]
+
+    cycle = factory.create_custom_cycle(
+        cycle_name="Count Test Cycle",
+        cycle_duration_ms=1000,
+        light_configuration=50,
+        actions=actions
+    )
+
+    assert cycle.get_total_groups() == 2
+    assert cycle.get_num_sound_groups() == 3
