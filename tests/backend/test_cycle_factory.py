@@ -3,6 +3,7 @@ from unittest.mock import patch # uses patch to mock cycle repository
 
 from backend.cycle_factory import CycleFactory
 from backend.cycle_config import CycleConfig
+from backend.cycle_action import CycleAction, ActionType
 
 
 @pytest.fixture
@@ -247,12 +248,6 @@ def test_auto_id_skips_used(factory):
 # ----------------------------------------
 # tests for sound configuration in custom cycles
 # ----------------------------------------
-import pytest
-from unittest.mock import patch
-from backend.cycle_factory import CycleFactory
-from backend.cycle_config import CycleConfig
-from backend.cycle_action import CycleAction, ActionType
-
 @pytest.fixture
 def factory_with_repo_patch():
     """Provide a factory instance with a mocked repository to test persistence."""
@@ -290,7 +285,7 @@ def test_add_custom_cycle_with_sounds(factory_with_repo_patch):
         assert isinstance(group["sound_names"], list)
     
     # Simulate save to JSON
-    # If your CycleRepository.save(cycle) is used, we can call it manually
+    # If CycleRepository.save(cycle) is used, we can call it manually
     from backend.cycle_repository import CycleRepository
     CycleRepository.save(cycle)
     mock_save.assert_called_once_with(cycle)
