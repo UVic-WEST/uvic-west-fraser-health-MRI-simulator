@@ -421,5 +421,114 @@
         }
       }
     ]
+  },
+  {
+    "id": 4,
+    "name": "Cycle 4",
+    "duration_ms": 60000,
+    "lights": {
+      "on": true,
+      "brightness": 40
+    },
+    "volume": 50,
+    "light_configuration": 40,
+    "actions": [
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(M)",
+          "volume": 50,
+          "duration_ms": 30000
+        }
+      },
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Pulse",
+          "volume": 50,
+          "duration_ms": 30000
+        }
+      },
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Alarm",
+          "volume": 50,
+          "duration_ms": 30000
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(M)"
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Pulse"
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Alarm"
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(M)",
+          "volume": 50,
+          "duration_ms": 30000
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Scan",
+          "volume": 50,
+          "duration_ms": 30000
+        }
+      },
+      {
+        "timestamp": 30000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Alarm",
+          "volume": 50,
+          "duration_ms": 30000
+        }
+      },
+      {
+        "timestamp": 60000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(M)"
+        }
+      },
+      {
+        "timestamp": 60000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Scan"
+        }
+      },
+      {
+        "timestamp": 60000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Alarm"
+        }
+      }
+    ]
   }
 ]
