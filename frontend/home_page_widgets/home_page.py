@@ -33,6 +33,7 @@ class HomePage(QWidget):
         #Homepage setup
         super().__init__(parent)
         self.parent = parent
+        self.setFixedSize(1024, 600)
         self.controller = controller
         self.light_controller = light_controller
         self.sound_controller = sound_controller
@@ -40,6 +41,8 @@ class HomePage(QWidget):
         self.main_layout.setContentsMargins(40, 110, 40, 40)
         self.cur_cycle_id = None
         self.pending_delete_cycle_id = None
+        self.background_path = "resources/home_page_assets/home_page_background.png"
+        self.set_background(self.background_path)
 
         self.help_manual_path = None
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
@@ -84,15 +87,19 @@ class HomePage(QWidget):
         self.help_button.raise_()
         self.help_button.clicked.connect(self.help_pressed)
 
-        #setting up logo (positioned absolutely so it doesn't affect layout)
-        logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
-        logo_pixmap = QPixmap(logo_path)
-        self.logo_label = QLabel(self)
-        self.logo_label.setPixmap(logo_pixmap)
-        self.logo_label.setScaledContents(False)
-        self.logo_label.adjustSize()
-        self.logo_label.raise_()  # Bring to front
+    def set_background(self, image_path):
+        self.bg_label = QLabel(self)
+        self.bg_label.setPixmap(
+            QPixmap(image_path).scaled(
+                self.size(),
+                Qt.IgnoreAspectRatio,
+                Qt.SmoothTransformation,
+            )
+        )
+        self.bg_label.setGeometry(0, 1, self.width(), self.height())
+        self.bg_label.lower()
 
+    
     def refresh_cycles_from_backend(self):
         """
         Refresh the cycle list from the backend and update the player widget.
@@ -163,19 +170,9 @@ class HomePage(QWidget):
         """
         Shows the help screen overlay for this page
         """
+        self.close_manual_controllers()
         self.help_overlay.show()
         self.help_overlay.raise_()
-        
-    def resizeEvent(self, event):
-        """
-        This function repositions the logo when the widget is resized
-
-        Args:
-            event: the Qt resize event passed by the framework
-        """
-        super().resizeEvent(event)
-        # Position logo in top-right corner with padding
-        self.logo_label.move(self.width() - self.logo_label.width() - 40, 20)
 
     ###########################
     #######################

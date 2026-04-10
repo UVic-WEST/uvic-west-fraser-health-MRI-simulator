@@ -4,9 +4,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QHBoxLayout,
-    QComboBox,
-    QAbstractItemView,
-    QScroller
 
 )
 from PySide6.QtCore import Qt
@@ -25,34 +22,6 @@ DURATION_PAGE_INDEX = 0
 GROUPS_PAGE_INDEX = 1
 LIGHTS_PAGE_INDEX = 2
 SOUNDS_PAGE_INDEX = 3
-
-def get_dynamic_group_options(controller):
-    """
-    Returns a list of group names (e.g., ["GROUP 1", ...]) based on backend CreateCycleLogic.get_total_groups().
-    """
-    if hasattr(controller, 'get_total_groups'):
-        total_groups, _ = controller.get_total_groups()
-        # Always use the backend value, never fallback
-        print(f"Total groups from backend: {total_groups}")  # Debug print
-        return [f"GROUP {i+1}" for i in range(total_groups)]
-    # If backend not available, return empty (should not happen in production)
-    return []
-
-class FixedComboBox(QComboBox):
-    """
-    Combo box with a fixed popup position and constrained popup sizing.
-    """
-
-    def __init__(self, parent=None):
-        """
-        initializes the FixedComboBox and sets up touch scrolling for the popup.
-        """
-        super().__init__(parent)
-        self.popup_max_visible_items = 3
-        self._prevent_hide_popup = False
-        view = self.view()
-        view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
 
 class CCSummary(QWidget):
     def __init__(self, controller, parent=None):
