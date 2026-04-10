@@ -17,6 +17,7 @@ from frontend.home_page_widgets.sound_controls_widget import SoundControlsWidget
 from frontend.home_page_widgets.light_controls_widget import LightControlsWidget
 from frontend.home_page_widgets.sign_out_button import SignOutButton
 
+MAX_CYCLES = 15
 
 class HomePage(QWidget):
     def __init__(self, controller, light_controller, sound_controller, parent=None):
@@ -88,6 +89,9 @@ class HomePage(QWidget):
         self.help_button.clicked.connect(self.help_pressed)
 
     def set_background(self, image_path):
+        """
+        Set background for widget
+        """
         self.bg_label = QLabel(self)
         self.bg_label.setPixmap(
             QPixmap(image_path).scaled(
@@ -213,6 +217,19 @@ class HomePage(QWidget):
         ``show_custom_cycle_warning`` so confirm/cancel callbacks are set; bare
         ``show_warning()`` leaves callbacks unset and Continue falls back to home.
         """
+
+        self.refresh_cycles_from_backend()
+
+        if len(self.cycle_factory.list_cycles()) == MAX_CYCLES:
+
+            self.parent.show_warning(
+            warning_message= "Maximum cycles stored,\nplease delete a cycle before\n creating a new cycle.",
+            on_confirm=self.parent.show_home(),
+            button_mode="green",
+            green_button_text="Ok",
+            )
+            return
+
         self.close_manual_controllers()
         self.parent.show_custom_cycle_warning()
 
