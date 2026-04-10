@@ -79,6 +79,14 @@ class SignInPage(QWidget):
         self.enter_button.move(130,293)
         self.enter_button.clicked.connect(self.enter_pressed)
 
+        self.warning_text = QLabel("incorrect pin, please reenter.",self)
+        self.warning_text.setFont(QFont("Ubuntu",20))
+        self.setStyleSheet("""
+            color: #676363;
+        """)
+        self.warning_text.move(138,400)
+        self.warning_text.hide()
+
         self.pinpad = PinPad(self)
         self.pinpad.pinpad_pressed.connect(self.update_entry)
         self.pinpad.move(567,41)
@@ -129,9 +137,14 @@ class SignInPage(QWidget):
 
         if validated is None:
             self.call_timeout()
+            self.warning_text.hide()
 
         if validated:
             self.login_successful()
+            self.warning_text.hide()
+
+        if validated is False:
+            self.warning_text.show()
 
         self.clr_password_input()
 
