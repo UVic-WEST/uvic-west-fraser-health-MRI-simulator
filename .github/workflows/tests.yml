@@ -37,4 +37,5 @@ jobs:
       - name: Run tests
         env:
           QT_QPA_PLATFORM: offscreen
+          SDL_AUDIODRIVER: dummy
         run: pytest -v
