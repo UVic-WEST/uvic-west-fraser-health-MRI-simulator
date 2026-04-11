@@ -7,6 +7,7 @@ from PySide6.QtGui import (
     QFont, 
     QPixmap
     )
+from PySide6.QtCore import Qt
 from frontend.sign_in_page_widgets.pinpad_widget import PinPad
 
 MAX_PASSWORD_INPUT = 4
@@ -29,22 +30,13 @@ class SignInPage(QWidget):
         self.current_entry = ""
         self.password_attempts = 0
 
-        #fraser logo
-        fraser_logo_path = 'resources/frontend_common_assets/fraser_health_logo.png'
-        fraser_logo_pix = QPixmap(fraser_logo_path)
-        self.fraser_logo = QLabel(self)
-        self.fraser_logo.setFixedSize(94, 77)
-        self.fraser_logo.setPixmap(fraser_logo_pix)
-        self.fraser_logo.move(0,0)
-
         #enter pin label
         self.enter_pin_label = QLabel("Enter Pin",self)
-        self.enter_pin_label.setFixedSize(341,63)
+        self.enter_pin_label.setFixedSize(341,100)
         self.enter_pin_label.setStyleSheet(
             "color: black;")
-        self.enter_pin_label.setFont(QFont("Ubuntu", 50))
-        #self.left_layout.addWidget(self.enter_pin_label)
-        self.enter_pin_label.move(170,112)
+        self.enter_pin_label.setFont(QFont("Ubuntu", 40))
+        self.enter_pin_label.move(200,210)
 
         #password input box label
         self.input_box = QLabel("", self)
@@ -57,18 +49,17 @@ class SignInPage(QWidget):
             border-radius: 24px;
             qproperty-alignment: AlignCenter;
         """)
-        self.input_box.move(135,185)
+        self.input_box.move(135,300)
 
         #enter button
         self.enter_button = QPushButton("Enter",self)
-        self.enter_button.setFixedSize(351,100)
-        self.enter_button.setFont(QFont("Ubuntu", 50))
+        self.enter_button.setFixedSize(351,90)
+        self.enter_button.setFont(QFont("Ubuntu", 45))
         self.enter_button.setStyleSheet("""
             QPushButton {
                 background-color: #0474BA;
                 color: white;
-                border: 3px solid #00A7E1;
-                border-radius: 24px
+                border-radius: 25px
             }
             QPushButton:pressed {
                 background-color: #0A6AA6;
@@ -76,20 +67,35 @@ class SignInPage(QWidget):
                 border: 3px solid #0474BA;
                 }
         """)
-        self.enter_button.move(130,293)
+        self.enter_button.move(130,400)
         self.enter_button.clicked.connect(self.enter_pressed)
 
+        #"incorrect pin" or "incorrect digit ammount" text
         self.warning_text = QLabel("incorrect pin, please reenter.",self)
-        self.warning_text.setFont(QFont("Ubuntu",20))
+        self.warning_text.setFont(QFont("Ubuntu",15))
         self.setStyleSheet("""
             color: #676363;
         """)
-        self.warning_text.move(138,400)
+        self.warning_text.move(185,495)
         self.warning_text.hide()
 
+        #pinpad
         self.pinpad = PinPad(self)
         self.pinpad.pinpad_pressed.connect(self.update_entry)
         self.pinpad.move(567,41)
+
+        #logos
+        logos_path = 'resources/frontend_common_assets/fraser_west_logos.png'
+        self.logos = QLabel(self)
+        self.logos.setFixedSize(380,190)
+        logos_pix = QPixmap(logos_path).scaled(
+            self.logos.size(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        )
+        self.logos.setPixmap(logos_pix)
+        self.logos.move(125,50)
+        self.logos.raise_()
 
     def update_entry(self, pin:str):
         """
@@ -131,6 +137,9 @@ class SignInPage(QWidget):
         this submits the current password entry for verification and acts accordingly. Only acts if the pin is 4 numbers long.
         """
         if len(self.current_entry) < 4:
+            self.warning_text.setText("4 digit pin is required to enter") 
+            self.warning_text.move(180,495)
+            self.warning_text.show()
             return
         
         validated = self.login_controller.login(self.current_entry)
@@ -144,6 +153,8 @@ class SignInPage(QWidget):
             self.warning_text.hide()
 
         if validated is False:
+            self.warning_text.setText("incorrect pin, please reenter.")  
+            self.warning_text.move(185,495)
             self.warning_text.show()
 
         self.clr_password_input()
