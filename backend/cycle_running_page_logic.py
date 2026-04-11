@@ -207,53 +207,6 @@ class CycleRunningPageLogic(QObject):
 
         self.rem_time_ms = 0
 
-    def _restart_active_sounds(self):
-        """Re-start sounds that should still be playing at ``_ms_elapsed``.
-
-        Walks the action list to pair each SOUND_START with its matching
-        SOUND_STOP (by file_name).  If the current elapsed time falls between
-        a start and its stop, the sound is replayed with its remaining duration.
-        """
-        if not self._active_cycle:
-            return
-
-        elapsed = self._ms_elapsed
-        actions = self.current_cycle.actions
-
-        stop_times: dict[str, int] = {}
-        for a in actions:
-            if a.action_type == ActionType.SOUND_STOP:
-                fn = a.parameters.get("file_name", "")
-                if fn and a.timestamp_ms > elapsed:
-                    if fn not in stop_times or a.timestamp_ms < stop_times[fn]:
-                        stop_times[fn] = a.timestamp_ms
-
-        for a in actions:
-            if a.action_type != ActionType.SOUND_START:
-                continue
-            if a.timestamp_ms > elapsed:
-                break
-
-            fn = a.parameters.get("file_name", "")
-            if not fn:
-                continue
-
-            end_ms = stop_times.get(fn)
-            if end_ms is None or end_ms <= elapsed:
-                continue
-
-            remaining_sec = (end_ms - elapsed) / 1000.0
-            sid = a.parameters.get("sound_id", 1)
-            resolved_path = self._resolve_sound_path(fn)
-            sound = SoundConfig(
-                sound_id=int(sid) if sid is not None else 1,
-                file_name=resolved_path,
-                duration=remaining_sec,
-                volume=a.parameters.get("volume", 50),
-            )
-            self.sound_player.play(sound)
-
-    #### lower layer communication functions ###
 
     def _set_light_intensity(self):
         """
