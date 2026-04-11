@@ -64,7 +64,7 @@ class PinPad(QWidget):
             QPushButton{
                 background-color: #0474BA;
                 color: white;
-                border: 5px solid #00A7E1;
+                border: 3px solid #00A7E1;
                 border-radius: 24px 
             }
             QPushButton:pressed {
