@@ -421,5 +421,114 @@
         }
       }
     ]
+  },
+  {
+    "id": 4,
+    "name": "Cycle 4",
+    "duration_ms": 300000,
+    "lights": {
+      "on": true,
+      "brightness": 50
+    },
+    "volume": 42,
+    "light_configuration": 50,
+    "actions": [
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Pulse",
+          "volume": 20,
+          "duration_ms": 75000
+        }
+      },
+      {
+        "timestamp": 0,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(S)",
+          "volume": 20,
+          "duration_ms": 75000
+        }
+      },
+      {
+        "timestamp": 75000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Pulse"
+        }
+      },
+      {
+        "timestamp": 75000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(S)"
+        }
+      },
+      {
+        "timestamp": 75000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(L)",
+          "volume": 50,
+          "duration_ms": 75000
+        }
+      },
+      {
+        "timestamp": 75000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(S)",
+          "volume": 50,
+          "duration_ms": 75000
+        }
+      },
+      {
+        "timestamp": 150000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(L)"
+        }
+      },
+      {
+        "timestamp": 150000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(S)"
+        }
+      },
+      {
+        "timestamp": 150000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Pulse",
+          "volume": 50,
+          "duration_ms": 75000
+        }
+      },
+      {
+        "timestamp": 225000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Pulse"
+        }
+      },
+      {
+        "timestamp": 225000,
+        "type": "sound_start",
+        "params": {
+          "file_name": "Drill(S)",
+          "volume": 50,
+          "duration_ms": 75000
+        }
+      },
+      {
+        "timestamp": 300000,
+        "type": "sound_stop",
+        "params": {
+          "file_name": "Drill(S)"
+        }
+      }
+    ]
   }
 ]
