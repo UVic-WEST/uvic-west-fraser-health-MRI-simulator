@@ -7,6 +7,7 @@ controllers on each lifecycle event (start, pause, resume, stop, completion).
 
 from __future__ import annotations
 
+import os
 from typing import Optional
 
 from PySide6.QtCore import (
@@ -19,6 +20,10 @@ from backend.cycle_action import ActionType
 from backend.sound_config import SoundConfig
 from embedded.sound_player import SoundPlayer
 from embedded.light_controller import LightController
+
+_SOUNDS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "resources", "sounds", "wavs"
+)
 
 class CycleRunningPageLogic(QObject):
     """Backend logic for the cycle-running page.
@@ -129,20 +134,21 @@ class CycleRunningPageLogic(QObject):
         self.timer.start()
 
     def pause_cycle(self):
-        """This function pauses the current cycle. It stops the timer and signals to lower layer that the
-        cycle should be stopped, but does not reset internal state."""
+        """Pause the current cycle. Pauses sounds in place so they can be
+        resumed from the same position."""
         if not self._active_timer:
             return
-    
+
         self.timer.stop()
-        self._lower_layer_stop_cycle()
+        self.sound_player.pause()
 
     def resume_cycle(self):
-        """This functions resumes the current cycle."""
+        """Resume the current cycle, continuing sounds from where they were paused."""
         if self._active_timer:
             return
-        
+
         self._set_light_intensity()
+        self.sound_player.unpause()
         self.timer.start()
 
     def stop_cycle(self):
@@ -201,7 +207,6 @@ class CycleRunningPageLogic(QObject):
 
         self.rem_time_ms = 0
 
-    #### lower layer communication functions ###
 
     def _set_light_intensity(self):
         """
@@ -218,6 +223,23 @@ class CycleRunningPageLogic(QObject):
         """Ensures that lights are set back to idle and sound stops."""
         self.light_controller.system_idle()
         self.sound_player.stop()
+
+    @staticmethod
+    def _resolve_sound_path(bare_name: str) -> str:
+        """Turn a bare sound name like 'Pulse' into a full path like
+        'resources/sounds/wavs/Pulse.wav'. Custom cycles store bare names
+        while preset cycles already have full paths, so this handles both.
+        """
+        if not bare_name or os.path.isfile(bare_name):
+            return bare_name
+        if not os.path.isdir(_SOUNDS_DIR):
+            return bare_name
+
+        candidate = os.path.join(_SOUNDS_DIR, f"{bare_name}.wav")
+        if os.path.isfile(candidate):
+            return candidate
+
+        return bare_name
 
     def _lower_layer_dispatch_sounds(self, action):
         """Execute a single CycleAction against the hardware layer.
@@ -240,9 +262,10 @@ class CycleRunningPageLogic(QObject):
             if duration_sec is None:
                 duration_sec = 0.0
             sid = params.get("sound_id", 1)
+            resolved_path = self._resolve_sound_path(params.get("file_name", ""))
             sound = SoundConfig(
                 sound_id=int(sid) if sid is not None else 1,
-                file_name=params.get("file_name", ""),
+                file_name=resolved_path,
                 duration=float(duration_sec),
                 volume=params.get("volume", 50),
             )
