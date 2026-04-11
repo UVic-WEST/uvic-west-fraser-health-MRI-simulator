@@ -113,7 +113,6 @@ class AppRouter(QMainWindow):
         """
         self.cur_cycle = selected_cycle_id
         self.selected_cycle = selected_cycle_id
-        # show the cycle preview page
         self.show_cycle_preview_page()
 
     def show_warning(
