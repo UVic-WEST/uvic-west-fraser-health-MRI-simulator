@@ -158,8 +158,7 @@ def test_pause_notifies_lower_layer(cycle_running_logic):
 
     cycle_running_logic.pause_cycle()
 
-    cycle_running_logic.light_controller.system_idle.assert_called_once()
-    cycle_running_logic.sound_player.stop.assert_called_once()
+    cycle_running_logic.sound_player.pause.assert_called_once()
 
 def test_resumes_restarts_timer_progress(cycle_running_logic):
     cycle_running_logic.start_cycle(1)
