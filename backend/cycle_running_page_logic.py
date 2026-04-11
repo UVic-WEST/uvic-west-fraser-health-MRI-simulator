@@ -7,6 +7,7 @@ controllers on each lifecycle event (start, pause, resume, stop, completion).
 
 from __future__ import annotations
 
+import os
 from typing import Optional
 
 from PySide6.QtCore import (
@@ -19,6 +20,10 @@ from backend.cycle_action import ActionType
 from backend.sound_config import SoundConfig
 from embedded.sound_player import SoundPlayer
 from embedded.light_controller import LightController
+
+_SOUNDS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "resources", "sounds", "wavs"
+)
 
 class CycleRunningPageLogic(QObject):
     """Backend logic for the cycle-running page.
@@ -129,20 +134,21 @@ class CycleRunningPageLogic(QObject):
         self.timer.start()
 
     def pause_cycle(self):
-        """This function pauses the current cycle. It stops the timer and signals to lower layer that the
-        cycle should be stopped, but does not reset internal state."""
+        """Pause the current cycle. Pauses sounds in place so they can be
+        resumed from the same position."""
         if not self._active_timer:
             return
-    
+
         self.timer.stop()
-        self._lower_layer_stop_cycle()
+        self.sound_player.pause()
 
     def resume_cycle(self):
-        """This functions resumes the current cycle."""
+        """Resume the current cycle, continuing sounds from where they were paused."""
         if self._active_timer:
             return
-        
+
         self._set_light_intensity()
+        self.sound_player.unpause()
         self.timer.start()
 
     def stop_cycle(self):
@@ -201,6 +207,52 @@ class CycleRunningPageLogic(QObject):
 
         self.rem_time_ms = 0
 
+    def _restart_active_sounds(self):
+        """Re-start sounds that should still be playing at ``_ms_elapsed``.
+
+        Walks the action list to pair each SOUND_START with its matching
+        SOUND_STOP (by file_name).  If the current elapsed time falls between
+        a start and its stop, the sound is replayed with its remaining duration.
+        """
+        if not self._active_cycle:
+            return
+
+        elapsed = self._ms_elapsed
+        actions = self.current_cycle.actions
+
+        stop_times: dict[str, int] = {}
+        for a in actions:
+            if a.action_type == ActionType.SOUND_STOP:
+                fn = a.parameters.get("file_name", "")
+                if fn and a.timestamp_ms > elapsed:
+                    if fn not in stop_times or a.timestamp_ms < stop_times[fn]:
+                        stop_times[fn] = a.timestamp_ms
+
+        for a in actions:
+            if a.action_type != ActionType.SOUND_START:
+                continue
+            if a.timestamp_ms > elapsed:
+                break
+
+            fn = a.parameters.get("file_name", "")
+            if not fn:
+                continue
+
+            end_ms = stop_times.get(fn)
+            if end_ms is None or end_ms <= elapsed:
+                continue
+
+            remaining_sec = (end_ms - elapsed) / 1000.0
+            sid = a.parameters.get("sound_id", 1)
+            resolved_path = self._resolve_sound_path(fn)
+            sound = SoundConfig(
+                sound_id=int(sid) if sid is not None else 1,
+                file_name=resolved_path,
+                duration=remaining_sec,
+                volume=a.parameters.get("volume", 50),
+            )
+            self.sound_player.play(sound)
+
     #### lower layer communication functions ###
 
     def _set_light_intensity(self):
@@ -218,6 +270,24 @@ class CycleRunningPageLogic(QObject):
         """Ensures that lights are set back to idle and sound stops."""
         self.light_controller.system_idle()
         self.sound_player.stop()
+
+    @staticmethod
+    def _resolve_sound_path(bare_name: str) -> str:
+        """Resolve a bare sound name (e.g. 'Pulse') to a full file path.
+
+        Looks for ``<bare_name>.wav`` in ``_SOUNDS_DIR``.  Returns the
+        original string unchanged if no match is found.
+        """
+        if not bare_name or os.path.isfile(bare_name):
+            return bare_name
+        if not os.path.isdir(_SOUNDS_DIR):
+            return bare_name
+
+        candidate = os.path.join(_SOUNDS_DIR, f"{bare_name}.wav")
+        if os.path.isfile(candidate):
+            return candidate
+
+        return bare_name
 
     def _lower_layer_dispatch_sounds(self, action):
         """Execute a single CycleAction against the hardware layer.
@@ -240,9 +310,10 @@ class CycleRunningPageLogic(QObject):
             if duration_sec is None:
                 duration_sec = 0.0
             sid = params.get("sound_id", 1)
+            resolved_path = self._resolve_sound_path(params.get("file_name", ""))
             sound = SoundConfig(
                 sound_id=int(sid) if sid is not None else 1,
-                file_name=params.get("file_name", ""),
+                file_name=resolved_path,
                 duration=float(duration_sec),
                 volume=params.get("volume", 50),
             )

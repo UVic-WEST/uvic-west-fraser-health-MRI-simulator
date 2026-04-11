@@ -40,6 +40,16 @@ class SoundPlayer:
 
         return True, f"Playing sound {sound.file_name} at {sound.volume}%"
 
+    def pause(self) -> str:
+        """Pause all currently playing sounds (resumable)."""
+        pygame.mixer.pause()
+        return "Paused all sounds"
+
+    def unpause(self) -> str:
+        """Resume all paused sounds from where they left off."""
+        pygame.mixer.unpause()
+        return "Unpaused all sounds"
+
     def stop(self) -> str:
         """Stop all currently sound playing processes"""
         pygame.mixer.stop()
