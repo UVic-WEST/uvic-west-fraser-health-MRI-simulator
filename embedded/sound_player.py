@@ -1,97 +1,103 @@
-import subprocess 
+import pygame.mixer
 from backend.sound_config import SoundConfig
+
+pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
+pygame.mixer.init()
+pygame.mixer.set_num_channels(3)
 
 class SoundPlayer:
     """
-    Handles sound playback requests.
+    Handles sound playback requests using pygame.mixer
 
-    This class will eventually communicate with the Raspberry Pi OS
-    audio system (Layer 2). For now, those calls are stubbed.
+    Communicates directly with Raspberry Pi audio output to drive 
+    speaker playback. Supports up to 3 simultaneous looping sounds
+    which play indefinitely until stop() is called
     """
 
     def __init__(self):
-        self.current_sound = None # Currently playing sound 
-        self.current_volume = 0 # Session-specific sound volume 
+        self.current_sounds = []
+        self.current_volume = 50
 
-    def play(self, sound: SoundConfig) -> str:
-        """
-            Play a sound using the configuration provided.
-
-            Stub for Layer 2 communication.
-            **Untested** hardware implementation
-        """
-        self.current_sound = sound
+    def play(self, sound: SoundConfig) -> tuple:
+        """Play a sound using the configuration provided."""
+        self.current_sounds.append(sound)
         self.current_volume = sound.volume
 
         try:
-            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
-            subprocess.run(["aplay", self.current_sound.file_name], check=True, capture_output=True)
+            pygame_sound = pygame.mixer.Sound(sound.file_name)
+            pygame_sound.set_volume(sound.volume / 100.0)
 
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
-            return False, f"Failed to play sound, error: {error_msg}"
+            channel = pygame.mixer.find_channel()
+            if channel is None:
+                self.current_sounds.remove(sound)
+                return False, "No free channels available"
 
-        return True, f"Playing sound {self.current_sound.file_name} at {self.current_volume}%"
+            channel.play(pygame_sound, loops=-1)
+
+        except (FileNotFoundError, pygame.error) as e:
+            self.current_sounds.remove(sound)
+            return False, f"Failed to play sound, error: {str(e)}"
+
+        return True, f"Playing sound {sound.file_name} at {sound.volume}%"
 
     def stop(self) -> str:
-        """
-            Stops all sound playing (aplay) processes.
-        
-            Stub for Layer 2 communication.
-            **Untested** hardware implementation
-        """
-        self.current_sound = None
-        
-        try:
-            subprocess.run(["killall", "aplay"], check=True, capture_output=True)
-
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
-            return f"Failed to stop sound, error: {error_msg}"
-            
-        return "Stopped current sound"
-
+        """Stop all currently sound playing processes"""
+        pygame.mixer.stop()
+        self.current_sounds = []
+        return "Stopped all sounds"
 
     def incr_volume(self) -> str:
-        """
-            Increment volume of currently playing sound by 10%
-        
-            Stub for Layer 2 communication.
-            **Untested** hardware implementation
-        """
-        if not self.current_sound:
+        """Increment volume of currently playing sounds by 10%."""
+        if not pygame.mixer.get_busy():
             return "No sound is currently playing"
-        
+
         self.current_volume = min(100, self.current_volume + 10)
+        for i in range(pygame.mixer.get_num_channels()):
+            channel = pygame.mixer.Channel(i)
+            if channel.get_busy():
+                channel.set_volume(self.current_volume / 100.0)
 
-        try:
-            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
-            
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
-            return f"Failed to increment sound, error: {error_msg}"
-        
         return f"Set volume to {self.current_volume}%"
-
 
     def decr_volume(self) -> str:
-        """
-            Decrement volume of currently playing sound by 10%
-        
-            Stub for Layer 2 communication.
-            **Untested** hardware implementation
-        """
-        if not self.current_sound:
+        """Decrement volume of currently playing sounds by 10%."""
+        if not pygame.mixer.get_busy():
             return "No sound is currently playing"
-        
+
         self.current_volume = max(0, self.current_volume - 10)
-        
-        try:
-            subprocess.run(["amixer", "sset", "PCM,0", f"{self.current_volume}%"], check=True, capture_output=True)
-            
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_msg = e.stderr.decode() if hasattr(e, 'stderr') and e.stderr else str(e)
-            return f"Failed to decrement sound, error: {error_msg}"
-        
+        for i in range(pygame.mixer.get_num_channels()):
+            channel = pygame.mixer.Channel(i)
+            if channel.get_busy():
+                channel.set_volume(self.current_volume / 100.0)
 
         return f"Set volume to {self.current_volume}%"
+
+
+if __name__ == "__main__": # Use for isolated hardware testing
+    player = SoundPlayer()
+
+    file_name = input("Enter sound file path: ").strip()
+    volume = int(input("Enter volume (0-100): ").strip())
+
+    sound = SoundConfig(file_name=file_name, sound_id=10, duration=10.0, volume=volume)
+    success, message = player.play(sound)
+    print(message)
+
+    print("Commands: + (incr volume), - (decr volume), s (stop), q (quit)")
+    try:
+        while True:
+            cmd = input("> ").strip()
+            if cmd == "+":
+                print(player.incr_volume())
+            elif cmd == "-":
+                print(player.decr_volume())
+            elif cmd == "s":
+                print(player.stop())
+            elif cmd == "q":
+                player.stop()
+                break
+            else:
+                print("Unknown command")
+    except KeyboardInterrupt:
+        print("\nInterrupted, stopping sounds...")
+        player.stop()
