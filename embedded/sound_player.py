@@ -15,21 +15,27 @@ class SoundPlayer:
     """
 
     def __init__(self):
+        self.current_sounds = []
         self.current_volume = 50
 
     def play(self, sound: SoundConfig) -> tuple:
         """Play a sound using the configuration provided."""
+        self.current_sounds.append(sound)
+        self.current_volume = sound.volume
+
         try:
             pygame_sound = pygame.mixer.Sound(sound.file_name)
             pygame_sound.set_volume(sound.volume / 100.0)
 
             channel = pygame.mixer.find_channel()
             if channel is None:
+                self.current_sounds.remove(sound)
                 return False, "No free channels available"
 
             channel.play(pygame_sound, loops=-1)
 
         except (FileNotFoundError, pygame.error) as e:
+            self.current_sounds.remove(sound)
             return False, f"Failed to play sound, error: {str(e)}"
 
         return True, f"Playing sound {sound.file_name} at {sound.volume}%"
@@ -37,6 +43,7 @@ class SoundPlayer:
     def stop(self) -> str:
         """Stop all currently sound playing processes"""
         pygame.mixer.stop()
+        self.current_sounds = []
         return "Stopped all sounds"
 
     def incr_volume(self) -> str:
