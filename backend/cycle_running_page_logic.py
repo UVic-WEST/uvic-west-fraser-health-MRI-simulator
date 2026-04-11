@@ -226,10 +226,9 @@ class CycleRunningPageLogic(QObject):
 
     @staticmethod
     def _resolve_sound_path(bare_name: str) -> str:
-        """Resolve a bare sound name (e.g. 'Pulse') to a full file path.
-
-        Looks for ``<bare_name>.wav`` in ``_SOUNDS_DIR``.  Returns the
-        original string unchanged if no match is found.
+        """Turn a bare sound name like 'Pulse' into a full path like
+        'resources/sounds/wavs/Pulse.wav'. Custom cycles store bare names
+        while preset cycles already have full paths, so this handles both.
         """
         if not bare_name or os.path.isfile(bare_name):
             return bare_name
