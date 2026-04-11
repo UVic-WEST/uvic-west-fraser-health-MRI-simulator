@@ -3,10 +3,10 @@ from PySide6.QtWidgets import (
     QPushButton
 )
 from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 
 class CustomCycleButton(QWidget):
-    custom_cycle_requested = Signal()
+    custom_cycle_requested = Signal(int)
 
     def __init__(self, parent=None):
         """
@@ -41,14 +41,9 @@ class CustomCycleButton(QWidget):
         
         #connect button click
         self.custom_cycle_button.clicked.connect(self.custom_cycle_button_pressed)
-    
-    # Handle Create Custom Cycle button presses.
-    #######################
-    #################
-    #we will probably want to delete this once the custom cycle page is created
+
     def custom_cycle_button_pressed(self):
         """
         This function handles the Create Custom Cycle button press action.
         """
-        print("Create Custom Cycle selected")
-        self.parent._on_custom_cycle_requested()
+        self.custom_cycle_requested.emit(1)
