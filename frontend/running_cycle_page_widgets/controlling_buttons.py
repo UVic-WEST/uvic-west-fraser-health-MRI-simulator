@@ -22,7 +22,7 @@ class ControllingButtons(QWidget):
         # # **IMPORTANT:** set layout to this widget
         self.pause_button_asset_path = 'resources/cycle_running_page_assets/pause_button.png'
         self.stop_button_asset_path = 'resources/cycle_running_page_assets/stop_button.png'
-        self.resume_button_asset_path = 'resources/cycle_running_page_assets/Resume_Button.png'
+        self.resume_button_asset_path = 'resources/cycle_running_page_assets/resume_button.png'
         
         #setting up widgets
         #pause button
