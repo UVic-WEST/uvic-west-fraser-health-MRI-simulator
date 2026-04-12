@@ -174,6 +174,7 @@ class CCBrightnessPage(QWidget):
 
     def mapping_cancelled(self):
         print("back was pressed")
+        self._reset_lights()
         if self.parent and hasattr(self.parent, "back_pressed"):
             self.parent.back_pressed()
 
@@ -184,6 +185,7 @@ class CCBrightnessPage(QWidget):
 
     def cancel_to_home(self):
         print("cancel was pressed")
+        self._reset_lights()
         current = self.parent
         while current is not None:
             if hasattr(current, "show_home"):
@@ -193,6 +195,13 @@ class CCBrightnessPage(QWidget):
                 current = current.parent()
             else:
                 current = None
+
+    def _reset_lights(self):
+        """Turn lights off so hardware doesn't stay at the preview brightness."""
+        if self.controller and hasattr(self.controller, "light_controller"):
+            lc = self.controller.light_controller
+            if lc and hasattr(lc, "system_idle"):
+                lc.system_idle()
 
     def default_button_pressed(self):
         """
