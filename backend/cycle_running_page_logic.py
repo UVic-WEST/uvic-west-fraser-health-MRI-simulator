@@ -141,6 +141,7 @@ class CycleRunningPageLogic(QObject):
 
         self.timer.stop()
         self.sound_player.pause()
+        self.light_controller.system_idle()
 
     def resume_cycle(self):
         """Resume the current cycle, continuing sounds from where they were paused."""
