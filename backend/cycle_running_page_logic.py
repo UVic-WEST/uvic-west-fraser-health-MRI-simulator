@@ -278,8 +278,8 @@ class CycleRunningPageLogic(QObject):
 
             sound = SoundConfig(
                 sound_id=int(sid) if sid is not None else 1,
-                file_name=file_name,        # ✅ clean name for UI
-                file_path=file_path,        # ✅ actual path for playback
+                file_name=file_name,       
+                file_path=file_path,       
                 duration=float(duration_sec),
                 volume=params.get("volume", 50),
             )
