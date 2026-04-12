@@ -347,7 +347,7 @@
         "type": "sound_start",
         "params": {
           "file_name": "Drill(S)",
-          "file_path": "./resources/sounds/wavs/Drill(S).wav",
+          "file_path":   "./resources/sounds/wavs/Drill(S).wav",
           "volume": 50,
           "duration_ms": 15000
         }
@@ -466,86 +466,6 @@
         "params": {
           "file_name": "Drill(L)",
           "file_path": "./resources/sounds/wavs/Drill(L).wav"
-        }
-      }
-    ]
-  },
-  {
-    "id": 4,
-    "name": "Cycle 4",
-    "duration_ms": 300000,
-    "lights": {
-      "on": true,
-      "brightness": 50
-    },
-    "volume": 50,
-    "light_configuration": 50,
-    "actions": [
-      {
-        "timestamp": 0,
-        "type": "sound_start",
-        "params": {
-          "file_name": "Scan",
-          "file_path": "/Users/sadikshyabaral/Desktop/mri/uvic-west-fraser-health-MRI-simulator/resources/sounds/wavs/Scan.wav",
-          "volume": 50,
-          "duration_ms": 300000
-        }
-      },
-      {
-        "timestamp": 0,
-        "type": "sound_start",
-        "params": {
-          "file_name": "Beeps",
-          "file_path": "/Users/sadikshyabaral/Desktop/mri/uvic-west-fraser-health-MRI-simulator/resources/sounds/wavs/Beeps.wav",
-          "volume": 50,
-          "duration_ms": 300000
-        }
-      },
-      {
-        "timestamp": 300000,
-        "type": "sound_stop",
-        "params": {
-          "file_name": "Scan",
-          "file_path": "/Users/sadikshyabaral/Desktop/mri/uvic-west-fraser-health-MRI-simulator/resources/sounds/wavs/Scan.wav"
-        }
-      },
-      {
-        "timestamp": 300000,
-        "type": "sound_stop",
-        "params": {
-          "file_name": "Beeps",
-          "file_path": "/Users/sadikshyabaral/Desktop/mri/uvic-west-fraser-health-MRI-simulator/resources/sounds/wavs/Beeps.wav"
-        }
-      }
-    ]
-  },
-  {
-    "id": 5,
-    "name": "Cycle 5",
-    "duration_ms": 300000,
-    "lights": {
-      "on": true,
-      "brightness": 60
-    },
-    "volume": 20,
-    "light_configuration": 60,
-    "actions": [
-      {
-        "timestamp": 0,
-        "type": "sound_start",
-        "params": {
-          "file_name": "Drill(M)",
-          "file_path": "/Users/sadikshyabaral/Desktop/mri/uvic-west-fraser-health-MRI-simulator/resources/sounds/wavs/Drill(M).wav",
-          "volume": 20,
-          "duration_ms": 300000
-        }
-      },
-      {
-        "timestamp": 300000,
-        "type": "sound_stop",
-        "params": {
-          "file_name": "Drill(M)",
-          "file_path": "/Users/sadikshyabaral/Desktop/mri/uvic-west-fraser-health-MRI-simulator/resources/sounds/wavs/Drill(M).wav"
         }
       }
     ]
