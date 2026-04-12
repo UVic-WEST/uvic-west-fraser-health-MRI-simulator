@@ -34,7 +34,7 @@ class SoundPlayer:
 
             channel.play(pygame_sound, loops=-1)
 
-        except (FileNotFoundError, pygame.error) as e:
+        except Exception as e:
             self.current_sounds.remove(sound)
             return False, f"Failed to play sound, error: {str(e)}"
 
