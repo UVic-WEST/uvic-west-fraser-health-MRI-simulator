@@ -24,7 +24,7 @@ class SoundPlayer:
         self.current_volume = sound.volume
 
         try:
-            pygame_sound = pygame.mixer.Sound(sound.file_name)
+            pygame_sound = pygame.mixer.Sound(sound.file_path)
             pygame_sound.set_volume(sound.volume / 100.0)
 
             channel = pygame.mixer.find_channel()

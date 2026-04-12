@@ -149,10 +149,20 @@ class ManualSoundController(QObject):
             if file_path is None:
                 continue
 
-            sound_config = SoundConfig(file_path, sound_id, 0.0, volume)
+            sound_config = SoundConfig(
+                file_name=self._extract_name(file_path),
+                file_path=file_path,
+                sound_id=sound_id,
+                duration=0.0,
+                volume=volume,
+            )
             self.sound_player.play(sound_config)
 
         return True
+    
+    def _extract_name(self, file_path: str) -> str:
+        name_part = os.path.splitext(os.path.basename(file_path))[0]
+        return name_part.rsplit("_", 1)[0]
 
     def _get_id_to_file_map(self) -> dict:
         """Build a mapping of sound_id to file path.

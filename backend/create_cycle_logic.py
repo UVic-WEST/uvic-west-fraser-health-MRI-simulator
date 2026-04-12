@@ -233,10 +233,11 @@ class CreateCycleLogic:
         if self.sound_player:
             for sound in group.sounds:
                 resolved = SoundConfig(
-                    file_name=self._resolve_sound_path(sound.file_name),
+                    file_name=sound.file_name,
                     sound_id=sound.sound_id,
                     duration=sound.duration,
                     volume=group.group_volume,
+                    file_path=self._resolve_sound_path(sound.file_name),
                 )
                 self.sound_player.play(resolved)
         return True
@@ -364,19 +365,24 @@ class CreateCycleLogic:
                             timestamp_ms=current_time,
                             action_type=ActionType.SOUND_START,
                             parameters={
-                                "file_name": resolved,
+                                "file_name": sound.file_name,
+                                "file_path": resolved,
                                 "volume": group.group_volume,
                                 "duration_ms": group_duration,
                             },
                         )
                     )
                 for sound in group.sounds:
-                    resolved = self._resolve_sound_path(sound.file_name)
+                    resolved_path = self._resolve_sound_path(sound.file_name)
+                    
                     actions.append(
                         CycleAction(
                             timestamp_ms=current_time + group_duration,
                             action_type=ActionType.SOUND_STOP,
-                            parameters={"file_name": resolved},
+                            parameters={
+                                "file_name": sound.file_name,
+                                "file_path": resolved_path,
+                            },
                         )
                     )
 
