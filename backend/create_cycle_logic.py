@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import List, Tuple
 
 from backend.sound_config import SoundConfig
@@ -9,6 +10,10 @@ from backend.cycle_config import CycleConfig
 from backend.cycle_repository import CycleRepository
 from embedded.light_controller import LightController
 from embedded.sound_player import SoundPlayer
+
+_SOUNDS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "resources", "sounds", "wavs"
+)
 
 DEFAULT_LIGHT_LEVEL = 50
 DEFAULT_SOUND_LEVEL = 50
@@ -227,8 +232,19 @@ class CreateCycleLogic:
             return False
         if self.sound_player:
             for sound in group.sounds:
-                self.sound_player.play(sound)
+                resolved = SoundConfig(
+                    file_name=self._resolve_sound_path(sound.file_name),
+                    sound_id=sound.sound_id,
+                    duration=sound.duration,
+                    volume=group.group_volume,
+                )
+                self.sound_player.play(resolved)
         return True
+
+    def stop_sample(self):
+        """Stop any currently playing sample sounds."""
+        if self.sound_player:
+            self.sound_player.stop()
 
     def sound_mapping_accessed(self):
         self.sound_set = True
@@ -252,6 +268,18 @@ class CreateCycleLogic:
     #---------------------------------------------------------------------------
     # helper function to search for sound group in selected cycle sounds given group_id
     # --------------------------------------------------------------------------
+    @staticmethod
+    def _resolve_sound_path(bare_name: str) -> str:
+        """Resolve a bare sound name (e.g. 'Pulse') to its .wav file path."""
+        if not bare_name or os.path.isfile(bare_name):
+            return bare_name
+        if not os.path.isdir(_SOUNDS_DIR):
+            return bare_name
+        candidate = os.path.join(_SOUNDS_DIR, f"{bare_name}.wav")
+        if os.path.isfile(candidate):
+            return candidate
+        return bare_name
+
     def _get_group(self, group_id: int) -> "SoundGroupConfig":
         for group in self.group_list:
             if group.group_id == group_id:
@@ -330,24 +358,25 @@ class CreateCycleLogic:
             # start all sounds in group simultaneously
             if group.sounds:
                 for sound in group.sounds:
+                    resolved = self._resolve_sound_path(sound.file_name)
                     actions.append(
                         CycleAction(
                             timestamp_ms=current_time,
                             action_type=ActionType.SOUND_START,
                             parameters={
-                                "file_name": sound.file_name,
+                                "file_name": resolved,
                                 "volume": group.group_volume,
                                 "duration_ms": group_duration,
                             },
                         )
                     )
-                # stop all sounds at the end of group duration
                 for sound in group.sounds:
+                    resolved = self._resolve_sound_path(sound.file_name)
                     actions.append(
                         CycleAction(
                             timestamp_ms=current_time + group_duration,
                             action_type=ActionType.SOUND_STOP,
-                            parameters={"file_name": sound.file_name},
+                            parameters={"file_name": resolved},
                         )
                     )
 

@@ -813,6 +813,8 @@ class CCSoundGroupMappingPage(QWidget):
         This function is called when sample playback is finished.
         """
         self.SAMPLE_PLAYBACK_ACTIVE = False
+        if hasattr(self.controller, "stop_sample"):
+            self.controller.stop_sample()
         self.sound_dropdown.setEnabled(True)
         self.group_dropdown.setEnabled(True)
         self._set_dropdowns_greyed(False)
@@ -892,6 +894,8 @@ class CCSoundGroupMappingPage(QWidget):
         """
         This function stops sample playback when leaving this page.
         """
+        if hasattr(self.controller, "stop_sample"):
+            self.controller.stop_sample()
         if self.manual_sound_controller is not None:
             self.manual_sound_controller.set_manual_sound_controller_status(False)
 
