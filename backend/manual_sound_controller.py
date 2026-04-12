@@ -33,7 +33,7 @@ class ManualSoundController(QObject):
         sound_player: Layer 3 SoundPlayer instance.
         is_active (bool): Whether the manual controller is currently in use.
         current_sounds (List[int]): IDs of currently playing sounds.
-        current_volume (int): Volume for all playing sounds (0–100).
+        current_volume (int): Volume for all playing sounds (0-100).
     """
 
     def __init__(self, sound_player, parent=None):
@@ -118,7 +118,7 @@ class ManualSoundController(QObject):
         Called on every update from the UI (sound added/removed, volume changed).
 
         Args:
-            sounds (List[int]): List of sound IDs to play (0–3 items).
+            sounds (List[int]): List of sound IDs to play (0-3 items).
             volume (int): Volume level from 0 to 100 in increments of 10.
 
         Returns:

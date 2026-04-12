@@ -190,7 +190,7 @@ class CreateCycleLogic:
         """
         if not allow_empty and not (1 <= len(sounds) <= 3):
             print(f"[CreateCycleLogic.set_sounds_in_group] Invalid number of sounds: {len(sounds)}")
-            raise ValueError("Each group must have 1–3 sounds")
+            raise ValueError("Each group must have 1-3 sounds")
         if allow_empty and len(sounds) == 0:
             print(f"[CreateCycleLogic.set_sounds_in_group] Allowing empty group {group_id}")
         group = self._get_group(group_id)
@@ -320,10 +320,10 @@ class CreateCycleLogic:
         else:
             for group in self.group_list:
                 if not (0 <= group.group_volume <= 100):
-                    errors.append(f"Group {group.group_id}: volume must be 0–100")
+                    errors.append(f"Group {group.group_id}: volume must be 0-100")
 
                 if not group.sounds or not (1 <= len(group.sounds) <= 3):
-                    errors.append(f"Group {group.group_id}: must have 1–3 sounds")
+                    errors.append(f"Group {group.group_id}: must have 1-3 sounds")
 
         return (len(errors) == 0, errors)
     
