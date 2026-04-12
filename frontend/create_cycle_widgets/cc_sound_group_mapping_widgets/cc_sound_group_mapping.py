@@ -39,6 +39,7 @@ def get_dynamic_group_options(controller):
 
 SOUND_DROPDOWN_PLACEHOLDER = "SOUNDS"
 MAX_SOUNDS_PER_GROUP = 3
+SAMPLE_PLAYBACK_SECONDS = 5
 
 
 class FixedComboBox(QComboBox):
@@ -745,8 +746,8 @@ class CCSoundGroupMappingPage(QWidget):
             print(f"[play_sample_pressed] Error calling play_group_sample: {exc}")
             return
 
-        # Use a fixed 10 second sample duration for UI lockout
-        max_duration = 10
+        # Use a fixed 5 second sample duration for UI lockout
+        max_duration = SAMPLE_PLAYBACK_SECONDS
         self.SAMPLE_PLAYBACK_ACTIVE = True
 
         # Grey out dropdowns and show countdown as placeholder

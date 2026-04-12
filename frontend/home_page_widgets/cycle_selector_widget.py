@@ -13,7 +13,10 @@ from PySide6.QtGui import QFont, QMouseEvent, QPainter
 from frontend.home_page_widgets.custom_cycle_button import CustomCycleButton
 
 CYCLE_OPTIONS_DROPDOWN_COLOUR = "#FAF5F5"
+SCROLL_BACKGROUND_COLOUR = "#F1F1EE"
 DROPDOWN_BUTTON_GAP_PX = 20
+DROP_DOWN_ROW_EXTRA_PX = 4
+DROP_DOWN_ITEM_PADDING_Y_PX = 8
 DELETE_ICON_ROLE = Qt.UserRole + 1
 
 
@@ -51,7 +54,7 @@ class FixedComboBox(QComboBox):
         Initialize combo box with touch-friendly scrolling behavior.
         """
         super().__init__(parent)
-        self.popup_max_visible_items = 3
+        self.popup_max_visible_items = 2
         view = self.view()
         view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
@@ -72,16 +75,20 @@ class FixedComboBox(QComboBox):
         view.setFrameShape(QFrame.NoFrame)
         view.setStyleSheet("""
             QListView {
-                background: #FAF5F5;
+                background: #F1F1EE;
                 border: none;
                 color: black;
-                padding: 4px;
+                padding: 6px;
                 outline: 0;
                 selection-background-color: #d9d9d9;
                 selection-color: black;
             }
+            QListView::item {
+                min-height: 48px;
+                padding: 8px 12px;
+            }
             QScrollBar:vertical {
-                background:  #FAF5F5;
+                background: #F1F1EE;
                 width: 14px;
                 margin: 8px 2px 8px 0;
                 border-radius: 7px;
@@ -92,22 +99,24 @@ class FixedComboBox(QComboBox):
                 border-radius: 7px;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                background: #FAF5F5;
+                background: #F1F1EE;
                 height: 0px;
             }
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background:  #FAF5F5;
+                background: #F1F1EE;
             }
         """)
 
         row_height = view.sizeHintForRow(0)
         if row_height <= 0:
             row_height = 28
-        visible_rows = max(1, min(self.count(), max_visible_items))
+        row_height += DROP_DOWN_ROW_EXTRA_PX + DROP_DOWN_ITEM_PADDING_Y_PX
+        visible_rows = min(self.count(), 2.25) if self.count() > 2 else self.count()
+        visible_rows = max(1, visible_rows)
 
         # Content size for the inner view.
         content_width = self.width()
-        content_height = (row_height * visible_rows) + 8
+        content_height = int((row_height * visible_rows) + 8)
 
         view.setMinimumWidth(content_width)
         view.setMaximumWidth(content_width)
@@ -123,7 +132,7 @@ class FixedComboBox(QComboBox):
 
             popup.setStyleSheet("""
                 QFrame {
-                    background: white;
+                    background: #F1F1EE;
                     border: 1px solid #0474BA;
                     border-radius: 14px;
                 }
@@ -181,7 +190,8 @@ class CycleSelectorWidget(QWidget):
             }}
             QComboBox QAbstractItemView {{
                 color: black;
-                background: white;
+                background: {SCROLL_BACKGROUND_COLOUR};
+                alternate-background-color: {SCROLL_BACKGROUND_COLOUR};
                 selection-color: black;
                 selection-background-color: #d9d9d9;
             }}

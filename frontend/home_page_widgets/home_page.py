@@ -39,7 +39,7 @@ class HomePage(QWidget):
         self.light_controller = light_controller
         self.sound_controller = sound_controller
         self.main_layout = QGridLayout()
-        self.main_layout.setContentsMargins(40, 110, 40, 40)
+        self.main_layout.setContentsMargins(40, 20, 40, 40)
         self.cur_cycle_id = None
         self.pending_delete_cycle_id = None
         self.background_path = "resources/home_page_assets/home_page_background.png"
