@@ -24,7 +24,7 @@ class SoundPlayer:
         self.current_volume = sound.volume
 
         try:
-            pygame_sound = pygame.mixer.Sound(sound.file_name)
+            pygame_sound = pygame.mixer.Sound(sound.file_path)
             pygame_sound.set_volume(sound.volume / 100.0)
 
             channel = pygame.mixer.find_channel()
@@ -34,7 +34,7 @@ class SoundPlayer:
 
             channel.play(pygame_sound, loops=-1)
 
-        except (FileNotFoundError, pygame.error) as e:
+        except Exception as e:
             self.current_sounds.remove(sound)
             return False, f"Failed to play sound, error: {str(e)}"
 

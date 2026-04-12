@@ -14,14 +14,15 @@ class SoundConfig:
     file_name: str # file path of sound file 
     sound_id: int # unique identifier for a sound file
     duration: float # seconds
-    volume: 50 # value from 0 - 100 (preset percentage of full volume, initally 50%)
+    volume: int = 50 # value from 0 - 100 (preset percentage of full volume, initally 50%)
+    file_path: str | None = None # file path for sound file
     
     def __post_init__(self):
         """Validate sound config values.
 
         Raises:
             ValueError: If file_name is empty, duration is negative, or
-                volume is outside the 0–100 range.
+                volume is outside the 0-100 range.
         """
         
         if not self.file_name:

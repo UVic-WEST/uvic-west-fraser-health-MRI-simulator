@@ -190,7 +190,7 @@ class CreateCycleLogic:
         """
         if not allow_empty and not (1 <= len(sounds) <= 3):
             print(f"[CreateCycleLogic.set_sounds_in_group] Invalid number of sounds: {len(sounds)}")
-            raise ValueError("Each group must have 1–3 sounds")
+            raise ValueError("Each group must have 1-3 sounds")
         if allow_empty and len(sounds) == 0:
             print(f"[CreateCycleLogic.set_sounds_in_group] Allowing empty group {group_id}")
         group = self._get_group(group_id)
@@ -233,10 +233,11 @@ class CreateCycleLogic:
         if self.sound_player:
             for sound in group.sounds:
                 resolved = SoundConfig(
-                    file_name=self._resolve_sound_path(sound.file_name),
+                    file_name=sound.file_name,
                     sound_id=sound.sound_id,
                     duration=sound.duration,
                     volume=group.group_volume,
+                    file_path=self._resolve_sound_path(sound.file_name),
                 )
                 self.sound_player.play(resolved)
         return True
@@ -319,10 +320,10 @@ class CreateCycleLogic:
         else:
             for group in self.group_list:
                 if not (0 <= group.group_volume <= 100):
-                    errors.append(f"Group {group.group_id}: volume must be 0–100")
+                    errors.append(f"Group {group.group_id}: volume must be 0-100")
 
                 if not group.sounds or not (1 <= len(group.sounds) <= 3):
-                    errors.append(f"Group {group.group_id}: must have 1–3 sounds")
+                    errors.append(f"Group {group.group_id}: must have 1-3 sounds")
 
         return (len(errors) == 0, errors)
     
@@ -364,19 +365,24 @@ class CreateCycleLogic:
                             timestamp_ms=current_time,
                             action_type=ActionType.SOUND_START,
                             parameters={
-                                "file_name": resolved,
+                                "file_name": sound.file_name,
+                                "file_path": resolved,
                                 "volume": group.group_volume,
                                 "duration_ms": group_duration,
                             },
                         )
                     )
                 for sound in group.sounds:
-                    resolved = self._resolve_sound_path(sound.file_name)
+                    resolved_path = self._resolve_sound_path(sound.file_name)
+                    
                     actions.append(
                         CycleAction(
                             timestamp_ms=current_time + group_duration,
                             action_type=ActionType.SOUND_STOP,
-                            parameters={"file_name": resolved},
+                            parameters={
+                                "file_name": sound.file_name,
+                                "file_path": resolved_path,
+                            },
                         )
                     )
 

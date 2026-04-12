@@ -1,5 +1,9 @@
 import pytest
+import sys
 from unittest.mock import MagicMock, patch
+
+sys.modules["pygame"] = MagicMock()
+sys.modules["pygame.mixer"] = MagicMock()
 
 from backend.auth import Auth
 from backend.cycle_running_page_logic import CycleRunningPageLogic

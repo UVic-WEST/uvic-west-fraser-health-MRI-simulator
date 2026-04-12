@@ -33,7 +33,7 @@ class ManualSoundController(QObject):
         sound_player: Layer 3 SoundPlayer instance.
         is_active (bool): Whether the manual controller is currently in use.
         current_sounds (List[int]): IDs of currently playing sounds.
-        current_volume (int): Volume for all playing sounds (0–100).
+        current_volume (int): Volume for all playing sounds (0-100).
     """
 
     def __init__(self, sound_player, parent=None):
@@ -118,7 +118,7 @@ class ManualSoundController(QObject):
         Called on every update from the UI (sound added/removed, volume changed).
 
         Args:
-            sounds (List[int]): List of sound IDs to play (0–3 items).
+            sounds (List[int]): List of sound IDs to play (0-3 items).
             volume (int): Volume level from 0 to 100 in increments of 10.
 
         Returns:
@@ -149,10 +149,20 @@ class ManualSoundController(QObject):
             if file_path is None:
                 continue
 
-            sound_config = SoundConfig(file_path, sound_id, 0.0, volume)
+            sound_config = SoundConfig(
+                file_name=self._extract_name(file_path),
+                file_path=file_path,
+                sound_id=sound_id,
+                duration=0.0,
+                volume=volume,
+            )
             self.sound_player.play(sound_config)
 
         return True
+    
+    def _extract_name(self, file_path: str) -> str:
+        name_part = os.path.splitext(os.path.basename(file_path))[0]
+        return name_part.rsplit("_", 1)[0]
 
     def _get_id_to_file_map(self) -> dict:
         """Build a mapping of sound_id to file path.

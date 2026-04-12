@@ -141,6 +141,7 @@ class CycleRunningPageLogic(QObject):
 
         self.timer.stop()
         self.sound_player.pause()
+        self.light_controller.system_idle()
 
     def resume_cycle(self):
         """Resume the current cycle, continuing sounds from where they were paused."""
@@ -211,7 +212,7 @@ class CycleRunningPageLogic(QObject):
     def _set_light_intensity(self):
         """
         Passes instruction to lower-layer light controller to set the light brightness to the level specified
-        by the cycle configuration. ``light_configuration`` is 0–100; ``LightController`` expects 0.0–1.0.
+        by the cycle configuration. ``light_configuration`` is 0-100; ``LightController`` expects 0.0-1.0.
         """
         if not self.current_cycle.lights_on:
             self.light_controller.system_off()
@@ -262,10 +263,14 @@ class CycleRunningPageLogic(QObject):
             if duration_sec is None:
                 duration_sec = 0.0
             sid = params.get("sound_id", 1)
-            resolved_path = self._resolve_sound_path(params.get("file_name", ""))
+            
+            file_name = params.get("file_name", "")
+            file_path = params.get("file_path")
+            
             sound = SoundConfig(
                 sound_id=int(sid) if sid is not None else 1,
-                file_name=resolved_path,
+                file_name=file_name,       
+                file_path=file_path,       
                 duration=float(duration_sec),
                 volume=params.get("volume", 50),
             )
