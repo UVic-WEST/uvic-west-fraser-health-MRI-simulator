@@ -15,6 +15,8 @@ from PySide6.QtCore import (
 ) 
 from frontend.helpers import make_button_circle
 
+PLAY_BUTTON_SIZE = 120
+
 class PlaySquareWidget(QWidget):
     def __init__(self, parent=None):
         """
@@ -29,7 +31,7 @@ class PlaySquareWidget(QWidget):
         main_layout = QGridLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        self.setFixedSize(353,273)
+        self.setFixedSize(353,244)
 
         ## this has the current cycle id, gets updated from CyclePlayerWidget
         self.cur_cycle_id = None
@@ -51,13 +53,18 @@ class PlaySquareWidget(QWidget):
 
         # Keep icon/button on top of the blue box so transparent pixels show blue, not page white.
         blue_box_layout = QGridLayout(blue_box)
-        blue_box_layout.setContentsMargins(12, 6, 12, 12)
+        blue_box_layout.setContentsMargins(10, 4, 10, 8)
         blue_box_layout.setSpacing(0)
         
         #for the actual play button to press the cycle
-        cycle_play_button_pix = QPixmap(play_button_asset_path)
+        cycle_play_button_pix = QPixmap(play_button_asset_path).scaled(
+            PLAY_BUTTON_SIZE,
+            PLAY_BUTTON_SIZE,
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
+        )
         cycle_play_button = QPushButton()
-        cycle_play_button_size = cycle_play_button_pix.width()
+        cycle_play_button_size = PLAY_BUTTON_SIZE
 
         cycle_play_button.setFixedSize(cycle_play_button_size,cycle_play_button_size)
         cycle_play_button.setIcon(QIcon(cycle_play_button_pix))
