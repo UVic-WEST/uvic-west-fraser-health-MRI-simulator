@@ -115,3 +115,9 @@ class CreateCycleRouter(QWidget):
             if self.cc_sound_group_mapping_page is not None:
                 self.cc_sound_group_mapping_page.refresh_groups_from_backend()
         self.main_layout.setCurrentIndex(back_page_index)
+
+    def cancel_create_cycle(self):
+        """
+        cancel out of create cycle via the router for estop
+        """
+        self.main_layout.currentWidget().cancel_to_home()
