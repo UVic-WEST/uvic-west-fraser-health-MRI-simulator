@@ -178,9 +178,6 @@ class HomePage(QWidget):
         self.help_overlay.show()
         self.help_overlay.raise_()
 
-    ###########################
-    #######################
-    # stores the currently selected cycle ID from child widgets
     def set_cur_cycle(self, cycle_id):
         """
         Stores the currently selected cycle ID

@@ -119,7 +119,10 @@ class AppRouter(QMainWindow):
             elif current_page is self.create_cycle_router:
                 self.create_cycle_router.cancel_create_cycle()
             elif current_page is self.home_page:
-                self.home_page.close_manual_controllers
+                self.home_page.close_manual_controllers()
+            elif current_page is self.timed_out_page:
+                self.timed_out_page.manual_stop_timeout()
+
             self.signout()
             self.main_layout.setCurrentWidget(self.estop_warning_page)
 

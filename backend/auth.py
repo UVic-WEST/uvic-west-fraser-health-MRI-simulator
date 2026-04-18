@@ -85,7 +85,12 @@ class Auth(QObject):
             self.timer.stop()
             self.unlock()
 
-    
+    def manual_stop_timeout(self):
+        """stops the timer in the case of estop being pressed"""
+        if self.timer:
+            self.timer.stop()
+            self.unlock()
+
     def unlock(self):
         """Reset the lockout state so the user can attempt login again.
 
@@ -95,7 +100,6 @@ class Auth(QObject):
         self.remaining_attempts = 3
         return
 
-    
     def logout(self):
         """Log the user out and reset authentication state.
 

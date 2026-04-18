@@ -17,6 +17,9 @@ class TempEstop(QMainWindow):
         layout = QVBoxLayout(root)
 
         self.estop_button = QPushButton("E-STOP", root)
+        self.estop_button.setStyleSheet(
+            "color: black; background-color: red;"
+        )
         self.estop_button.setFixedSize(100,100)
         self.estop_button.clicked.connect(self.estop_pressed)
         layout.addWidget(self.estop_button)
