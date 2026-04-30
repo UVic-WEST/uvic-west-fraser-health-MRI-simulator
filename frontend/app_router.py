@@ -14,7 +14,6 @@ from frontend.sign_in_page_widgets.sign_in_page import SignInPage
 from frontend.sign_in_page_widgets.timed_out_page import TimeOutPage
 from backend.auth import Auth
 
-from frontend.confirmation_page_widgets.confirmation_page import ConfirmationPage
 from frontend.warning_page_widgets.warning_page import WarningPage
 
 from frontend.running_cycle_page_widgets.cycle_running_page import CycleRunningPage
@@ -29,10 +28,15 @@ from backend.manual_light_controller import ManualLightController
 from backend.manual_sound_controller import ManualSoundController
 from backend.cycle_factory import CycleFactory
 
+from embedded.estop_controller import EStopController
+from frontend.warning_page_widgets.estop_page import EstopWarningPage
+from frontend.help_widgets.help_screen import HelpOverlay
+
 #PASSWORD 
 PASS = '2026'
 
 class AppRouter(QMainWindow):
+
     def __init__(self,parent=None):
         """
         This is the App router class which initializes the UI pages and their respective controllers.
@@ -76,12 +80,6 @@ class AppRouter(QMainWindow):
         self.home_page = HomePage(self.home_page_controller, self.manual_light_controller, self.manual_sound_controller, self)
         self.main_layout.addWidget(self.home_page)
 
-        #Code for confirmation page
-        self.confirmation_page = ConfirmationPage(None,self)
-        self.confirmation_page.start_cycle_requested.connect(self.play_cycle_confirmed)
-        self.confirmation_page.cancel_requested.connect(self.show_home)
-        self.main_layout.addWidget(self.confirmation_page)
-
         #Code for warning page
         self.warning_page = WarningPage(self)
         self.main_layout.addWidget(self.warning_page)
@@ -102,8 +100,38 @@ class AppRouter(QMainWindow):
         self.create_cycle_router = CreateCycleRouter(self, self.app)
         self.main_layout.addWidget(self.create_cycle_router)
 
+        #Estop Controller
+        self.estop_controller = EStopController(self)
+        self.estop_controller.estop_active.connect(self.estop_event)
+        self.estop_warning_page = EstopWarningPage(self)
+        self.main_layout.addWidget(self.estop_warning_page)
+
         self.setCentralWidget(self.app)
 
+    def estop_event(self, status:bool):
+        """
+        When Estop is pressed, it will reveal the estop screen and stop any relevant processes.
+        Once Estop is no longer active, it will return the user to the sign in screen.
+        """
+        current_page = self.main_layout.currentWidget()
+        if status:
+            # Hide all help overlays
+            HelpOverlay.hide_all()
+            
+            if current_page is self.cycle_running_page:
+                self.cycle_running_page.stop_cycle()
+            elif current_page is self.create_cycle_router:
+                self.create_cycle_router.cancel_create_cycle()
+            elif current_page is self.home_page:
+                self.home_page.close_manual_controllers()
+            elif current_page is self.timed_out_page:
+                self.timed_out_page.manual_stop_timeout()
+
+            self.signout()
+            self.main_layout.setCurrentWidget(self.estop_warning_page)
+
+        if not status:
+            self.main_layout.setCurrentWidget(self.sign_in_page)
 
     def play_cycle(self, selected_cycle_id=None):
         """

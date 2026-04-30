@@ -9,6 +9,8 @@ from PySide6.QtPdfWidgets import QPdfView
 
 
 class HelpOverlay(QWidget):
+    # Class-level registry to track all HelpOverlay instances
+    _instances = []
 
     def __init__(self, path, parent=None):
         """
@@ -19,6 +21,9 @@ class HelpOverlay(QWidget):
         """
         super().__init__(parent)
         self.setFixedSize(1024,600)
+        
+        # Register this instance
+        HelpOverlay._instances.append(self)
         
         if path is None:
             path = "resources/manuals/sample_manual.pdf"
@@ -52,6 +57,15 @@ class HelpOverlay(QWidget):
         Hides the help overlay when return is pressed
         """
         self.hide()
+
+    @classmethod
+    def hide_all(cls):
+        """
+        Hides all active HelpOverlay instances. Called when estop is pressed.
+        """
+        for instance in cls._instances:
+            if instance is not None and instance.isVisible():
+                instance.hide()
 
     def paintEvent(self, event):
         """

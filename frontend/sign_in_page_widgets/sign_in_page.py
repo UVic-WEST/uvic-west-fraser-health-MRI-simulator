@@ -72,7 +72,8 @@ class SignInPage(QWidget):
 
         #"incorrect pin" or "incorrect digit ammount" text
         self.warning_text = QLabel("incorrect pin, please reenter.",self)
-        self.warning_text.setFont(QFont("Ubuntu",15))
+        self.warning_text.setFont(QFont("Ubuntu",15))\
+        #self.warning_text.setFixedSize()
         self.setStyleSheet("""
             color: #676363;
         """)

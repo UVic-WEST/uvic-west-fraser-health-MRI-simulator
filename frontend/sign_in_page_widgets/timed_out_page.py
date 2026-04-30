@@ -68,6 +68,11 @@ class TimeOutPage(QWidget):
         self.parent.show_signin()
         self.countdown.setText(f"{str(TIMEOUT_PERIOD)}s")
         
+    def manual_stop_timeout(self):
+        """
+        Stops the countdown timer in case of estop
+        """
+        self.login_controller.manual_stop_timeout()
 
 
 
