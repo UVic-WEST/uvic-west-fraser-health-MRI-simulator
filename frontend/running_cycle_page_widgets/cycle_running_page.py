@@ -49,7 +49,7 @@ class CycleRunningPage(QWidget):
         self.countdown_timer.connect_to_backend(self.controller)
         self.main_layout.addWidget(self.countdown_timer)
 
-        self.help_manual_path = None
+        self.help_manual_path = "resources/manuals/running_cycle_manual.pdf"
         self.help_overlay = HelpOverlay(self.help_manual_path, self)
 
         # setting up help button

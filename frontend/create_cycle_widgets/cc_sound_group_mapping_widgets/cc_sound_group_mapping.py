@@ -175,7 +175,7 @@ class CCSoundGroupMappingPage(QWidget):
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setVisible(False)
 
-        self.help_manual_path = None
+        self.help_manual_path = "resources/manuals/create_cycle_manual.pdf"
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
 
         #setting up help button
