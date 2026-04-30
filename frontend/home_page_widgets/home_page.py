@@ -45,7 +45,7 @@ class HomePage(QWidget):
         self.background_path = "resources/home_page_assets/home_page_background.png"
         self.set_background(self.background_path)
 
-        self.help_manual_path = None
+        self.help_manual_path = "resources/manuals/home_page_manual.pdf"
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
 
         # Single shared CycleFactory from AppRouter (via HomePageLogic) — same instance as run-cycle logic

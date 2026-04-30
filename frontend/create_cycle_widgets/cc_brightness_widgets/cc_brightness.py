@@ -72,7 +72,7 @@ class CCBrightnessPage(QWidget):
         self.next_btn.clicked.connect(self.mapping_confirmed)
         self.next_btn.raise_()
 
-        self.help_manual_path = None
+        self.help_manual_path = "resources/manuals/create_cycle_manual.pdf"
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
         #setting up help button
         self.help_button = HelpButton(self)

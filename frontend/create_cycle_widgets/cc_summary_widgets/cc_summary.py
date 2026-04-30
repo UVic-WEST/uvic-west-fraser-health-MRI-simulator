@@ -67,7 +67,7 @@ class CCSummary(QWidget):
         self.cancel_home_btn.clicked.connect(self.cancel_to_home)
         self.cancel_home_btn.raise_()
 
-        self.help_manual_path = None
+        self.help_manual_path = "resources/manuals/create_cycle_manual.pdf"
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
         #setting up help button
         self.help_button = HelpButton(self)

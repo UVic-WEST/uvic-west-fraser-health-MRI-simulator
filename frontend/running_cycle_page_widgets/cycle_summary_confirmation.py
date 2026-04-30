@@ -46,7 +46,7 @@ class CyclePreviewPage(QWidget):
         self.main_layout.setSpacing(4)
         self.setLayout(self.main_layout)
 
-        self.help_manual_path = None
+        self.help_manual_path = "resources/manuals/running_cycle_summary_manual.pdf"
         self.help_overlay = HelpOverlay(self.help_manual_path,self)
 
         #setting up help button

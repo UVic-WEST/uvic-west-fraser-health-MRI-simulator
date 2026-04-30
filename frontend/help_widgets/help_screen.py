@@ -46,9 +46,9 @@ class HelpOverlay(QWidget):
 
         self.pdf_view = QPdfView(self)
         self.pdf_view.setDocument(self.pdf_document)
-        self.pdf_view.setFixedSize(700,800)
+        self.pdf_view.setFixedSize(700,600)
         self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)
-        self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitInView)
+        self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)
         self.pdf_view.setZoomFactor(0.7)
         self.pdf_view.move(290,40)
 
