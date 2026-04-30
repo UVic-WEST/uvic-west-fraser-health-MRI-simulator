@@ -30,6 +30,7 @@ from backend.cycle_factory import CycleFactory
 
 from embedded.estop_controller import EStopController
 from frontend.warning_page_widgets.estop_page import EstopWarningPage
+from frontend.help_widgets.help_screen import HelpOverlay
 
 #PASSWORD 
 PASS = '2026'
@@ -114,6 +115,9 @@ class AppRouter(QMainWindow):
         """
         current_page = self.main_layout.currentWidget()
         if status:
+            # Hide all help overlays
+            HelpOverlay.hide_all()
+            
             if current_page is self.cycle_running_page:
                 self.cycle_running_page.stop_cycle()
             elif current_page is self.create_cycle_router:
