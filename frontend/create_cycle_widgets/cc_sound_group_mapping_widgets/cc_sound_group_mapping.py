@@ -284,7 +284,7 @@ class CCSoundGroupMappingPage(QWidget):
         self.page_title.setFixedHeight(46)
         self.page_title.setContentsMargins(0, 0, 0, 0)
 
-        self.step_title = QLabel("Step 4: map sounds to groups")
+        self.step_title = QLabel("Step 4: Map sounds to groups")
         step_title_font = QFont("Ubuntu", 14)
         self.step_title.setFont(step_title_font)
         self.step_title.setStyleSheet("color: white; background: transparent; padding: 0px; margin: 0px;")

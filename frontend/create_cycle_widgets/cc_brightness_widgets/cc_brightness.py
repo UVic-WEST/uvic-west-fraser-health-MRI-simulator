@@ -109,7 +109,7 @@ class CCBrightnessPage(QWidget):
         self.page_title.setStyleSheet("color: white; background: transparent;")
         self.page_title.setAlignment(Qt.AlignCenter)
 
-        self.step_title = QLabel("Step 3: set lights")
+        self.step_title = QLabel("Step 3: Set brightness")
         self.step_title.setFont(QFont("Ubuntu", 14))
         self.step_title.setStyleSheet("color: white; background: transparent;")
         self.step_title.setAlignment(Qt.AlignCenter)
