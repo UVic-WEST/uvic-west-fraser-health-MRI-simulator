@@ -151,7 +151,7 @@ class CCDurationPage(QWidget):
         font_family = families[0] if families else "Courier New"
 
         self.durationText = QLabel("Enter Cycle Duration", self)
-        self.durationText.setGeometry(328,199,415,76)
+        self.durationText.setGeometry(310,190,450,90)
         self.durationText.setStyleSheet("Font-Family: Ubuntu; font-size: 44px; color: black")
         self.durationText.setAlignment(Qt.AlignCenter)
 
@@ -162,7 +162,7 @@ class CCDurationPage(QWidget):
         ))
 
         self.time_label = QLabel("05:00", self)
-        self.time_label.setGeometry(366, 291, 307, 94)  # same position!
+        self.time_label.setGeometry(366, 291, 307, 94)
         self.time_label.setStyleSheet(f"background: transparent; color: #34C759; font-size: 48px; font-family: '{font_family}'; padding-bottom: 10px;")
         self.time_label.setAlignment(Qt.AlignCenter)
 
