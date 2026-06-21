@@ -111,7 +111,7 @@ class CCGroupsPage(QWidget):
         self.page_title.setStyleSheet("color: white; background: transparent;")
         self.page_title.setAlignment(Qt.AlignCenter)
 
-        self.step_title = QLabel("Step 2: set the number of groups")
+        self.step_title = QLabel("Step 2: Set the number of groups")
         self.step_title.setFont(QFont("Ubuntu", 14))
         self.step_title.setStyleSheet("color: white; background: transparent;")
         self.step_title.setAlignment(Qt.AlignCenter)

@@ -88,7 +88,7 @@ class CCSummary(QWidget):
         self.page_title.setFixedHeight(46)
         self.page_title.setContentsMargins(0, 0, 0, 0)
 
-        self.step_title = QLabel("Step 5: summary")
+        self.step_title = QLabel("Step 5: Summary")
         self.step_title.setFont(QFont("Ubuntu", 14))
         self.step_title.setStyleSheet("color: white; background: transparent; padding: 0px; margin: 0px;")
         self.step_title.setAlignment(Qt.AlignCenter)
