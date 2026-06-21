@@ -6,8 +6,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QComboBox,
     QSlider,
-    QAbstractItemView,
-    QScroller,
+    QAbstractItemView
 )
 from PySide6.QtCore import Qt, QPoint, QTimer
 from PySide6.QtGui import (
@@ -55,31 +54,28 @@ class FixedComboBox(QComboBox):
         self.popup_max_visible_items = 5
         self._prevent_hide_popup = False
         view = self.view()
-        view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
+        view.setVerticalScrollMode(QAbstractItemView.ScrollPerItem)
+        #QScroller.grabGesture(view.viewport(), QScroller.LeftMouseButtonGesture)
 
     
     def showPopup(self):
         """
-        shows the combo box popup below the widget and constrains the popup size to a maximum number of visible items, showing a scrollbar if necessary.
-        Also styles the scrollbar and background for visibility.
+        Shows the combo box popup below the widget and constrains the popup size.
         """
         view = self.view()
         max_visible_items = self.popup_max_visible_items
-        # Show vertical scrollbar only when needed
+
         view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setMaxVisibleItems(max_visible_items)
 
-        # Style the popup background and scrollbar
-        view.setStyleSheet('''
+        view.setStyleSheet("""
             QAbstractItemView {
                 color: white;
                 background: #0474BA;
-                border: 1px solid #0474BA;
-                border-radius: 14px;
-                padding: 4px;
+                border: none;
                 outline: 0;
+                padding: 4px;
             }
             QScrollBar:vertical {
                 background: #0474BA;
@@ -99,7 +95,7 @@ class FixedComboBox(QComboBox):
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
                 background: none;
             }
-        ''')
+        """)
 
         popup_width = self.width()
         view.setMinimumWidth(popup_width)
@@ -112,11 +108,17 @@ class FixedComboBox(QComboBox):
         view.setMaximumHeight(popup_height)
 
         super().showPopup()
+
         popup = view.window()
-        if popup:
-            popup.setMinimumWidth(popup_width)
-            popup.setMaximumWidth(popup_width)
-            popup.move(self.mapToGlobal(QPoint(0, self.height())))
+        if popup is not None:
+            popup.setAttribute(Qt.WA_TranslucentBackground, True)
+            popup.setStyleSheet("""
+                QFrame {
+                    background: #F1F1EE;
+                    border: 1px solid #0474BA;
+                    border-radius: 14px;
+                }
+            """)
 
     def hidePopup(self):
         """
