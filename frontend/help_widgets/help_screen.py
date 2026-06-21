@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import (
     QPushButton,
     QWidget,
+    QScroller
 )
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QPainter, QColor
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
-
 
 class HelpOverlay(QWidget):
     # Class-level registry to track all HelpOverlay instances
@@ -45,12 +45,18 @@ class HelpOverlay(QWidget):
         self.pdf_document.load(path)
 
         self.pdf_view = QPdfView(self)
+
         self.pdf_view.setDocument(self.pdf_document)
         self.pdf_view.setFixedSize(700,600)
         self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)
         self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)
         self.pdf_view.setZoomFactor(0.7)
         self.pdf_view.move(290,40)
+
+        #changes made for touchscreen scrolling
+        self.pdf_view.viewport().setAttribute(Qt.WA_AcceptTouchEvents, True)
+        QScroller.grabGesture(self.pdf_view, QScroller.LeftMouseButtonGesture)
+        self.pdf_view.setFocus()
 
     def return_pressed(self):
         """
