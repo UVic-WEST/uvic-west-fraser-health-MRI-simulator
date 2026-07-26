@@ -1,8 +1,10 @@
 import time
 
 try:
+    print("Driving LED strip")
     from pi5neo import Pi5Neo
 except ImportError:
+    print("pi5neo not installed. Driving mock LED strip.")
     class Pi5Neo:  # Mock library for running app on non-Raspberry pi OS 
         def __init__(self, *args, **kwargs):
             self.num_leds = 120
