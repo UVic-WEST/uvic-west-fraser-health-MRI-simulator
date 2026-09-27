@@ -58,13 +58,13 @@ if __name__ == '__main__': # Running `python led_strip.py` to test
 
     try:
         while True:
-            val = input("Enter brightness (0-255): ")
+            val = input("Enter brightness (0-1): ")
             try:
-                brightness = int(val)
-                if 0 <= brightness <= 255:
+                brightness = float(val)
+                if 0.0 <= brightness <= 1.0:
                     led.set_white(brightness)
                 else:
-                    print("Please enter a number between 0 and 255.")
+                    print("Please enter a number between 0 and 1.")
             except ValueError:
                 print("Invalid input. Please enter a number.")
 

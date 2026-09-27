@@ -5,3 +5,4 @@ PySide6
 pyserial
 RPi.GPIO
 gpiozero
+Pi5neo
