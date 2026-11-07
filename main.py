@@ -32,12 +32,6 @@ class ScaledView(QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setBackgroundBrush(QColor("black"))
 
-        # QGraphicsView swallows touch events (proxy widgets don't handle them), so buttons never
-        # click. Not accepting them lets Qt synthesize mouse events from touches, as it does for
-        # a plain top-level widget.
-        self.setAttribute(Qt.WA_AcceptTouchEvents, False)
-        self.viewport().setAttribute(Qt.WA_AcceptTouchEvents, False)
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
