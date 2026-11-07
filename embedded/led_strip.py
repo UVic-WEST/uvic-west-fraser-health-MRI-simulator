@@ -22,7 +22,7 @@ class LEDStrip:
             led_freq:   SPI clock speed in kHz (default: 800)
     """
 
-    def __init__(self, spi_device='/dev/spidev0.0', led_count=120, led_freq=800):
+    def __init__(self, spi_device='/dev/spidev0.0', led_count=200, led_freq=800):
         self.strip = Pi5Neo(spi_device, led_count, led_freq)
 
 
