@@ -178,6 +178,13 @@ class LightControlsWidget(QWidget):
         self._reset_panel()
         self.controller.set_manual_light_controller_status(self._expanded)
 
+        if self._expanded:
+            # Show the level the lights are really at, without sending it to the strip again
+            self.current_brightness = self.controller.brightness
+            self.brightness_slider.blockSignals(True)
+            self.brightness_slider.setValue(self.current_brightness)
+            self.brightness_slider.blockSignals(False)
+
     def _reset_panel(self):
         """
         resets the panel defaults if it is not expanded

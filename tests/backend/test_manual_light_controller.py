@@ -43,9 +43,15 @@ def test_activate_sets_active(controller):
     assert result is True
     assert controller.is_active
 
-def test_activate_turns_lights_on(controller, fake_lights):
+def test_activate_does_not_change_lights(controller, fake_lights):
     controller.set_manual_light_controller_status(True)
-    assert fake_lights.last_brightness == DEFAULT_BRIGHTNESS / 100.0
+    assert fake_lights.last_brightness is None
+
+def test_activate_starts_from_current_light_level(controller, fake_lights):
+    fake_lights.brightness = 0.3
+    controller.set_manual_light_controller_status(True)
+    assert controller.brightness == 30
+    assert fake_lights.last_brightness is None
 
 def test_deactivate_resets_to_idle(controller, fake_lights):
     controller.set_manual_light_controller_status(True)

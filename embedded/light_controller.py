@@ -13,12 +13,14 @@ class LightController(QObject):
 
     eg: app_router.py -> cycle_running_logic.py -> your_file.py
     '''
-    BASE_BRIGHTNESS = .1
+    # 0.3 on the gamma-corrected strip gives the same output the old linear 0.1 did
+    BASE_BRIGHTNESS = .3
 
     def __init__(self,parent):
         super().__init__(parent)
         self.parent = parent
         self.locked = False
+        self.brightness = self.BASE_BRIGHTNESS  # last level sent to the strip, 0.0 - 1.0
         self.strip = LEDStrip()
         self.system_idle()
 
@@ -30,6 +32,7 @@ class LightController(QObject):
         self.locked = False
         #send signal to ELEC code to turn on light
         #send signal to ELEC code to turn brightness to 0 or to baseline light level
+        self.brightness = self.BASE_BRIGHTNESS
         self.strip.set_white(self.BASE_BRIGHTNESS)
         return True
 
@@ -46,6 +49,7 @@ class LightController(QObject):
 
         #to ask: will this require a fork?
         #send signal to elec to change light level of lights
+        self.brightness = brightness
         self.strip.set_white(brightness)
 
         self.locked = False

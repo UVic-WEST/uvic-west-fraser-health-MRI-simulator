@@ -39,9 +39,10 @@ class ManualLightController(QObject):
     def set_manual_light_controller_status(self, on: bool) -> bool:
         """Activate or deactivate the manual light controller.
 
-        When activated, the light controller is reserved and lights turn on
-        at the current brightness. When deactivated, lights return to default
-        and the controller is released.
+        When activated, the light controller is reserved and the lights are left
+        as they are; the brightness level starts from where the lights currently
+        are (rounded to the nearest 10). When deactivated, lights return to
+        default and the controller is released.
 
         Args:
             on (bool): True to activate, False to deactivate.
@@ -52,8 +53,11 @@ class ManualLightController(QObject):
         if on:
             self.is_active = True
             self.lights_on = True
-            self.brightness = DEFAULT_BRIGHTNESS
-            self.light_controller.change_lights(self.brightness / 100.0)
+            current = getattr(self.light_controller, "brightness", None)
+            if current is None:
+                self.brightness = DEFAULT_BRIGHTNESS
+            else:
+                self.brightness = min(100, max(0, round(current * 10) * 10))
         else:
             self.is_active = False
             self.lights_on = True

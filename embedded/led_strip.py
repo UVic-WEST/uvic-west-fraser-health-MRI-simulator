@@ -29,6 +29,8 @@ class LEDStrip:
         led_freq: SPI clock speed in kHz (default: 800)
     """
 
+    GAMMA = 2.0
+
     def __init__(self, spi_device='/dev/spidev0.0', led_count=200, led_freq=800):
         self.strip = Pi5Neo(spi_device, led_count, led_freq)
 
@@ -42,7 +44,9 @@ class LEDStrip:
             raise ValueError("brightness must be between 0.0 and 1.0")
 
         # Keep all RGB channels equal so changing brightness does not shift hue.
-        level = round(255 * brightness)
+        # The gamma curve spaces the steps evenly to the eye; linear steps look like the
+        # lights jump at the low end and barely change at the high end.
+        level = round(255 * brightness ** self.GAMMA)
         self.strip.clear_strip()
         for i in range(self.strip.num_leds):
             self.strip.set_led_color(i, level, level, level)
