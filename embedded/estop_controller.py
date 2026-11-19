@@ -15,7 +15,6 @@ class EStopController(QWidget):
         when pressed and estop_active(False) when released.
         """
         super().__init__(parent)
-        self.temp_button = TempEstop(self)
         
         if platform.system() == "Linux": # Raspberry pi 
             print("Running on Raspberry Pi")
@@ -28,7 +27,7 @@ class EStopController(QWidget):
                 print("Failed to configure GPIO. Error: ", e)
 
         else: # Skip GPIO configuration
-            pass
+            self.temp_button = TempEstop(self)
 
     def estop_event(self, active):
         self.estop_active.emit(active)
