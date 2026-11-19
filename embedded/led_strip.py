@@ -53,7 +53,7 @@ class LEDStrip:
         self.strip.clear_strip()
         self.strip.update_strip()
 
-
+'''
 if __name__ == '__main__':  # Running `python led_strip.py` to test
     led = LEDStrip()
 
@@ -74,3 +74,4 @@ if __name__ == '__main__':  # Running `python led_strip.py` to test
 
     except KeyboardInterrupt:
         led.power_off()
+'''
