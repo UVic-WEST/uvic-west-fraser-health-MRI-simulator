@@ -21,7 +21,7 @@ class EStopController(QWidget):
             print("Running on Raspberry Pi")
             try:
                 from gpiozero import Button
-                self.estop = Button(40)
+                self.estop = Button(21)
                 self.estop.when_pressed = lambda: self.estop_event(True)
                 self.estop.when_released = lambda: self.estop_event(False)
             except Exception as e:
