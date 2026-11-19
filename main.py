@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication
 def main():
     app = QApplication(sys.argv)
     window = AppRouter()
-    window.showFullScreen()
+    window.show()
     app.exec()
 
 if __name__ == '__main__':
