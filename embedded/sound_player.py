@@ -1,5 +1,12 @@
+import subprocess
+
 import pygame.mixer
 from backend.sound_config import SoundConfig
+from embedded.pi_config import (
+    AUDIO_MIXER,
+    AUDIO_SYSTEM_OUTPUT_GAIN,
+    RUNNING_ON_PI,
+)
 
 pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 pygame.mixer.init()
@@ -17,6 +24,26 @@ class SoundPlayer:
     def __init__(self):
         self.current_sounds = []
         self.current_volume = 50
+        self._set_system_output_gain()
+
+    def _set_system_output_gain(self) -> None:
+        """Set the Raspberry Pi hardware output gain."""
+        if not RUNNING_ON_PI:
+            return
+
+        gain = max(0, min(150, AUDIO_SYSTEM_OUTPUT_GAIN))
+        try:
+            result = subprocess.run(
+                ["amixer", "sset", AUDIO_MIXER, f"{gain}%"],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                error = result.stderr.strip() or "amixer returned a non-zero status"
+                print(f"[SoundPlayer] Unable to set system output gain: {error}")
+        except (FileNotFoundError, OSError) as exc:
+            print(f"[SoundPlayer] Unable to set system output gain: {exc}")
 
     def play(self, sound: SoundConfig) -> tuple:
         """Play a sound using the configuration provided."""
