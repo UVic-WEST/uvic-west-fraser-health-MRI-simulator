@@ -16,7 +16,7 @@ class SoundPlayer:
 
     def __init__(self):
         self.current_sounds = []
-        self.current_volume = 100
+        self.current_volume = 50
 
     def play(self, sound: SoundConfig) -> tuple:
         """Play a sound using the configuration provided."""
