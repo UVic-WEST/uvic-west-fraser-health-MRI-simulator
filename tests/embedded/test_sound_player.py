@@ -97,3 +97,22 @@ def test_decr_volume_returns_string_on_success(sound_player, sound_mid_volume):
     sound_player.play(sound_mid_volume)
     result = sound_player.decr_volume()
     assert "volume" in result.lower()
+
+def test_pi_initialization_sets_150_percent_output_gain(monkeypatch):
+    import embedded.sound_player as sound_player_module
+
+    monkeypatch.setattr(sound_player_module, "RUNNING_ON_PI", True)
+    monkeypatch.setattr(sound_player_module, "AUDIO_MIXER", "PCM,0")
+    monkeypatch.setattr(sound_player_module, "AUDIO_SYSTEM_OUTPUT_GAIN", 150)
+
+    calls = []
+
+    def run_command(command, **kwargs):
+        calls.append(command)
+        return type("Result", (), {"returncode": 0, "stderr": ""})()
+
+    monkeypatch.setattr(sound_player_module.subprocess, "run", run_command)
+
+    sound_player_module.SoundPlayer()
+
+    assert calls == [["amixer", "sset", "PCM,0", "150%"]]
