@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QScroller,
 )
-from PySide6.QtCore import QPoint, Signal, Qt, QRect, QEvent
+from PySide6.QtCore import QPoint, Signal, Qt, QRect, QEvent, QSize
 from PySide6.QtGui import QFont, QMouseEvent, QPainter
 
 from frontend.home_page_widgets.custom_cycle_button import CustomCycleButton
@@ -31,10 +31,11 @@ class CycleItemDelegate(QStyledItemDelegate):
         icon = option.widget.style().standardIcon(QStyle.SP_TrashIcon)
         icon_rect = self._icon_rect(option.rect)
         icon.paint(painter, icon_rect)
+        #icon.setIconSize(QSize(20, 20))
 
     @staticmethod
     def _icon_rect(item_rect: QRect) -> QRect:
-        icon_size = 16
+        icon_size = 36
         right_padding = 12
         x = item_rect.right() - right_padding - icon_size
         y = item_rect.top() + (item_rect.height() - icon_size) // 2
