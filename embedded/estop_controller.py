@@ -2,7 +2,6 @@ from PySide6.QtCore import (
     Signal,
 )
 from PySide6.QtWidgets import QWidget
-from embedded.temp_estop import TempEstop
 import platform
 
 class EStopController(QWidget):
@@ -26,8 +25,8 @@ class EStopController(QWidget):
             except Exception as e:
                 print("Failed to configure GPIO. Error: ", e)
 
-        else: # Skip GPIO configuration
-            self.temp_button = TempEstop(self)
+        else:
+            print("Not running on Raspberry Pi: physical E-Stop (GPIO21) unavailable")
 
     def estop_event(self, active):
         self.estop_active.emit(active)
